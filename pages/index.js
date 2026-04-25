@@ -615,6 +615,219 @@ function DecisionModal({ record, onClose }) {
 
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 
+
+// ── Test Decision Panel ───────────────────────────────────────────────────────
+function TestPanel({ apiKey, onSuccess }) {
+  const [open, setOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+
+  const [form, setForm] = useState({
+    decision_type: "loan_approval",
+    model_used: "",
+    credit_score: "",
+    income: "",
+    loan_amount: "",
+    approved: "true",
+    confidence: "",
+    jurisdiction: "ID",
+  });
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleSend = async () => {
+    if (!form.model_used) { setError("Please enter the AI model name."); return; }
+    if (!form.credit_score) { setError("Please enter a credit score."); return; }
+    setSending(true);
+    setError("");
+    setResult(null);
+
+    const payload = {
+      decision_type: form.decision_type,
+      model_used: form.model_used,
+      input_features: {
+        credit_score: Number(form.credit_score),
+        ...(form.income ? { income: Number(form.income) } : {}),
+        ...(form.loan_amount ? { loan_amount: Number(form.loan_amount) } : {}),
+      },
+      output: {
+        approved: form.approved === "true",
+        ...(form.confidence ? { confidence: Number(form.confidence) } : {}),
+      },
+      jurisdiction: form.jurisdiction,
+    };
+
+    try {
+      const r = await fetch(`${API}/decision`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await r.json();
+      if (r.ok) {
+        setResult(data);
+        onSuccess();
+      } else {
+        setError(data.detail || "Something went wrong.");
+      }
+    } catch (e) {
+      setError("Network error. Check your connection.");
+    }
+    setSending(false);
+  };
+
+  const inputStyle = {
+    background: "rgba(240,235,224,0.06)",
+    border: "1px solid rgba(240,235,224,0.2)",
+    color: cream,
+    padding: "10px 14px",
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "15px",
+    outline: "none",
+    width: "100%",
+  };
+
+  const selectStyle = { ...inputStyle, background: "#1e2840", cursor: "pointer" };
+  const labelStyle = { fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "6px" };
+  const fieldStyle = { marginBottom: "1rem" };
+
+  return (
+    <div style={{ marginTop: "2.5rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark }}>
+      {/* Header — always visible */}
+      <div
+        style={{ padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", borderBottom: open ? "1px solid rgba(240,235,224,0.1)" : "none" }}
+        onClick={() => { setOpen(o => !o); setResult(null); setError(""); }}
+      >
+        <div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: cream, fontWeight: 700 }}>
+            + Log a test decision
+          </div>
+          <div style={{ fontSize: "13px", color: creamDim, marginTop: "2px" }}>
+            Send a real AI decision to your account — no code needed
+          </div>
+        </div>
+        <div style={{ fontSize: "20px", color: creamDim, transition: "transform 0.2s", transform: open ? "rotate(45deg)" : "none" }}>+</div>
+      </div>
+
+      {/* Form — shown when open */}
+      {open && (
+        <div style={{ padding: "1.5rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+
+            {/* Decision type */}
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Decision type</label>
+              <select style={selectStyle} value={form.decision_type} onChange={e => set("decision_type", e.target.value)}>
+                <option value="loan_approval">Loan Approval</option>
+                <option value="fraud_check">Fraud Check</option>
+                <option value="credit_scoring">Credit Scoring</option>
+                <option value="insurance_claim">Insurance Claim</option>
+                <option value="kyc_verification">KYC Verification</option>
+                <option value="hiring_screening">Hiring Screening</option>
+              </select>
+            </div>
+
+            {/* Jurisdiction */}
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Jurisdiction / Regulator</label>
+              <select style={selectStyle} value={form.jurisdiction} onChange={e => set("jurisdiction", e.target.value)}>
+                <option value="ID">🇮🇩 Indonesia (OJK)</option>
+                <option value="SG">🇸🇬 Singapore (MAS FEAT)</option>
+                <option value="EU">🇪🇺 European Union (EU AI Act)</option>
+                <option value="UAE">🇦🇪 UAE (VARA)</option>
+              </select>
+            </div>
+
+            {/* AI model */}
+            <div style={fieldStyle}>
+              <label style={labelStyle}>AI model name *</label>
+              <input style={inputStyle} placeholder="e.g. xgboost-v2, gpt-4o, random-forest" value={form.model_used} onChange={e => set("model_used", e.target.value)} />
+            </div>
+
+            {/* Outcome */}
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Decision outcome</label>
+              <select style={selectStyle} value={form.approved} onChange={e => set("approved", e.target.value)}>
+                <option value="true">Approved / Passed / Clear</option>
+                <option value="false">Denied / Flagged / Rejected</option>
+              </select>
+            </div>
+
+            {/* Credit score */}
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Credit score *</label>
+              <input style={inputStyle} type="number" placeholder="e.g. 720" value={form.credit_score} onChange={e => set("credit_score", e.target.value)} />
+            </div>
+
+            {/* Confidence */}
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Model confidence (0–1)</label>
+              <input style={inputStyle} type="number" placeholder="e.g. 0.91" step="0.01" min="0" max="1" value={form.confidence} onChange={e => set("confidence", e.target.value)} />
+            </div>
+
+            {/* Income */}
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Applicant income (optional)</label>
+              <input style={inputStyle} type="number" placeholder="e.g. 80000" value={form.income} onChange={e => set("income", e.target.value)} />
+            </div>
+
+            {/* Loan amount */}
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Loan amount (optional)</label>
+              <input style={inputStyle} type="number" placeholder="e.g. 25000" value={form.loan_amount} onChange={e => set("loan_amount", e.target.value)} />
+            </div>
+          </div>
+
+          {error && (
+            <div style={{ background: "rgba(163,45,45,0.15)", border: "1px solid #a32d2d", color: "#e08080", padding: "10px 14px", fontSize: "14px", marginBottom: "1rem" }}>
+              {error}
+            </div>
+          )}
+
+          {/* Result */}
+          {result && (
+            <div style={{ background: "rgba(29,158,117,0.1)", border: "1px solid #1d9e75", padding: "1.25rem", marginBottom: "1rem" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#7ec8a0", marginBottom: "10px" }}>✓ Decision logged successfully</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "13px", color: creamDim }}>
+                <div><span style={{ color: cream }}>Audit ID:</span> <span style={{ fontFamily: "monospace" }}>{result.audit_id}</span></div>
+                <div><span style={{ color: cream }}>Compliance:</span> <span style={{ color: result.compliance?.compliant ? "#7ec8a0" : "#e08080" }}>{result.compliance?.status || "—"}</span></div>
+              </div>
+              {result.explanation && (
+                <div style={{ marginTop: "10px", fontSize: "14px", color: "#b0e8cc", fontStyle: "italic", lineHeight: 1.7, borderTop: "1px solid rgba(29,158,117,0.2)", paddingTop: "10px" }}>
+                  {result.explanation}
+                </div>
+              )}
+              {result.compliance?.missing_recommended?.length > 0 && (
+                <div style={{ marginTop: "8px", fontSize: "12px", color: "#e8c070" }}>
+                  Tip: Add {result.compliance.missing_recommended.slice(0,2).join(", ")} to improve compliance score.
+                </div>
+              )}
+            </div>
+          )}
+
+          <button
+            style={{ ...{ background: cream, border: "none", color: navy, padding: "12px 32px", fontFamily: "'EB Garamond', serif", fontSize: "15px", letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }, opacity: sending ? 0.6 : 1 }}
+            onClick={handleSend}
+            disabled={sending}
+          >
+            {sending ? "Sending..." : "Log this decision →"}
+          </button>
+
+          {result && (
+            <button
+              style={{ marginLeft: "12px", background: "transparent", border: "1px solid rgba(240,235,224,0.2)", color: creamDim, padding: "12px 24px", fontFamily: "'EB Garamond', serif", fontSize: "14px", cursor: "pointer" }}
+              onClick={() => { setResult(null); setForm({ decision_type: "loan_approval", model_used: "", credit_score: "", income: "", loan_amount: "", approved: "true", confidence: "", jurisdiction: "ID" }); }}
+            >
+              Log another
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Dashboard({ apiKey, companyName, onLogout }) {
   const countdown = useCountdown();
   const [health, setHealth] = useState(null);
@@ -875,6 +1088,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             </div>
           </>
         )}
+
+        {/* Test Decision Panel */}
+        <TestPanel apiKey={apiKey} onSuccess={() => { fetchAll(); fetchDecisions(); }} />
 
         {/* Breakdown by type */}
         {summary?.by_type?.length > 0 && (

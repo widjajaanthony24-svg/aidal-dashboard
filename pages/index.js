@@ -909,10 +909,20 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 // ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [apiKey, setApiKey] = useState(() => sessionStorage.getItem("aidal_key") || "");
-  const [companyName, setCompanyName] = useState(() => sessionStorage.getItem("aidal_company") || "");
+  const [apiKey, setApiKey] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const key = sessionStorage.getItem("aidal_key") || "";
+    const company = sessionStorage.getItem("aidal_company") || "";
+    if (key) { setApiKey(key); setCompanyName(company); }
+    setReady(true);
+  }, []);
 
   const handleLogin = (key, company) => {
+    sessionStorage.setItem("aidal_key", key);
+    sessionStorage.setItem("aidal_company", company);
     setApiKey(key);
     setCompanyName(company);
   };
@@ -924,9 +934,7 @@ export default function App() {
     setCompanyName("");
   };
 
-  if (!apiKey) {
-    return <LoginScreen onLogin={handleLogin} />;
-  }
-
+  if (!ready) return null;
+  if (!apiKey) return <LoginScreen onLogin={handleLogin} />;
   return <Dashboard apiKey={apiKey} companyName={companyName} onLogout={handleLogout} />;
 }

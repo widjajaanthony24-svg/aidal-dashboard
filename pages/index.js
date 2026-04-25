@@ -546,10 +546,33 @@ function LoginScreen({ onLogin }) {
 
 // ── Decision Modal ────────────────────────────────────────────────────────────
 
-function DecisionModal({ record, onClose }) {
+function DecisionModal({ record, onClose, apiKey }) {
   if (!record) return null;
-  const d = record.decision || {};
+  const [detail, setDetail] = useState(null);
+  const [loadingDetail, setLoadingDetail] = useState(true);
+
+  useEffect(() => {
+    // Fetch full detail when modal opens
+    const auditId = record.audit_id;
+    if (!auditId) { setLoadingDetail(false); return; }
+    fetch(`${API}/decision/${auditId}`, {
+      headers: { Authorization: `Bearer ${apiKey}` }
+    })
+    .then(r => r.ok ? r.json() : null)
+    .then(data => { if (data) setDetail(data); setLoadingDetail(false); })
+    .catch(() => setLoadingDetail(false));
+  }, [record.audit_id]);
+
+  // Use full detail if loaded, otherwise fall back to list data
+  const d = detail?.decision || {};
   const outcome = getOutcomeLabel(d);
+  const compliance = d.compliance || {};
+
+  const formatCurrency = (val, currency) => {
+    if (!val) return null;
+    const symbols = { USD: "$", IDR: "Rp", SGD: "S$", EUR: "€", AED: "AED " };
+    return (symbols[currency] || "") + Number(val).toLocaleString();
+  };
 
   return (
     <div style={styles.modal} onClick={onClose}>
@@ -559,54 +582,114 @@ function DecisionModal({ record, onClose }) {
           <button onClick={onClose} style={{ ...styles.btn, padding: "4px 12px", fontSize: "12px" }}>✕ Close</button>
         </div>
 
-        <div style={styles.modalRow}>
-          <span style={styles.modalKey}>Decision type</span>
-          <span style={styles.modalVal}>{d.decision_type || "—"}</span>
-        </div>
-        <div style={styles.modalRow}>
-          <span style={styles.modalKey}>Outcome</span>
-          <span style={styles.modalVal}><span style={styles.outcomeBadge(outcome)}>{outcome}</span></span>
-        </div>
-        <div style={styles.modalRow}>
-          <span style={styles.modalKey}>Model used</span>
-          <span style={styles.modalVal}>{d.model_used || "—"}</span>
-        </div>
-        <div style={styles.modalRow}>
-          <span style={styles.modalKey}>Jurisdiction</span>
-          <span style={styles.modalVal}>{d.jurisdiction || "—"}</span>
-        </div>
-        <div style={styles.modalRow}>
-          <span style={styles.modalKey}>Input features</span>
-          <span style={{ ...styles.modalVal, fontFamily: "monospace", fontSize: "13px" }}>
-            {JSON.stringify(d.input_features || {}, null, 2)}
-          </span>
-        </div>
-        <div style={styles.modalRow}>
-          <span style={styles.modalKey}>Output</span>
-          <span style={{ ...styles.modalVal, fontFamily: "monospace", fontSize: "13px" }}>
-            {JSON.stringify(d.output || {}, null, 2)}
-          </span>
-        </div>
-        <div style={styles.modalRow}>
-          <span style={styles.modalKey}>Logged at</span>
-          <span style={styles.modalVal}>{formatDate(record.logged_at)}</span>
-        </div>
-        <div style={styles.modalRow}>
-          <span style={styles.modalKey}>Audit ID</span>
-          <span style={{ ...styles.modalVal, ...styles.hashText }}>{record.audit_id}</span>
-        </div>
-        <div style={styles.modalRow}>
-          <span style={styles.modalKey}>Previous hash</span>
-          <span style={{ ...styles.modalVal, ...styles.hashText }}>{record.prev_hash || "GENESIS"}</span>
-        </div>
-
-        {d.explanation && (
-          <div>
-            <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "8px" }}>
-              AI explanation — Article 13 compliant
+        {loadingDetail ? (
+          <div style={{ color: creamDim, fontStyle: "italic", padding: "2rem 0" }}>Loading full record...</div>
+        ) : (
+          <>
+            <div style={styles.modalRow}>
+              <span style={styles.modalKey}>Decision type</span>
+              <span style={styles.modalVal}>{d.decision_type || record.decision_type || "—"}</span>
             </div>
-            <div style={styles.explanationBox}>{d.explanation}</div>
-          </div>
+            <div style={styles.modalRow}>
+              <span style={styles.modalKey}>Outcome</span>
+              <span style={styles.modalVal}><span style={styles.outcomeBadge(outcome)}>{outcome}</span></span>
+            </div>
+            <div style={styles.modalRow}>
+              <span style={styles.modalKey}>Model used</span>
+              <span style={styles.modalVal}>{d.model_used || "—"}</span>
+            </div>
+            <div style={styles.modalRow}>
+              <span style={styles.modalKey}>Jurisdiction</span>
+              <span style={styles.modalVal}>{d.jurisdiction || record.jurisdiction || "—"}</span>
+            </div>
+
+            {/* Financial details */}
+            {d.input_features && (
+              <div style={styles.modalRow}>
+                <span style={styles.modalKey}>Input data</span>
+                <div style={{ flex: 1 }}>
+                  {d.input_features.credit_score && (
+                    <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
+                      Credit score: <strong>{d.input_features.credit_score}</strong>
+                    </div>
+                  )}
+                  {d.input_features.income && (
+                    <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
+                      Income: <strong>{formatCurrency(d.input_features.income, d.input_features.currency) || d.input_features.income}</strong>
+                    </div>
+                  )}
+                  {d.input_features.loan_amount && (
+                    <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
+                      Loan amount: <strong>{formatCurrency(d.input_features.loan_amount, d.input_features.currency) || d.input_features.loan_amount}</strong>
+                    </div>
+                  )}
+                  {d.input_features.currency && (
+                    <div style={{ fontSize: "13px", color: creamDim }}>Currency: {d.input_features.currency}</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {d.output && (
+              <div style={styles.modalRow}>
+                <span style={styles.modalKey}>Model output</span>
+                <div style={{ flex: 1 }}>
+                  {d.output.approved !== undefined && (
+                    <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
+                      Decision: <strong>{d.output.approved ? "Approved" : "Denied"}</strong>
+                    </div>
+                  )}
+                  {d.output.confidence && (
+                    <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
+                      Confidence: <strong>{(d.output.confidence * 100).toFixed(0)}%</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div style={styles.modalRow}>
+              <span style={styles.modalKey}>Logged at</span>
+              <span style={styles.modalVal}>{formatDate(record.logged_at)}</span>
+            </div>
+            <div style={styles.modalRow}>
+              <span style={styles.modalKey}>Audit ID</span>
+              <span style={{ ...styles.modalVal, ...styles.hashText }}>{record.audit_id}</span>
+            </div>
+            <div style={styles.modalRow}>
+              <span style={styles.modalKey}>Previous hash</span>
+              <span style={{ ...styles.modalVal, ...styles.hashText }}>{detail?.prev_hash || "GENESIS"}</span>
+            </div>
+
+            {/* Compliance status */}
+            {compliance.checked && (
+              <div style={styles.modalRow}>
+                <span style={styles.modalKey}>Compliance</span>
+                <div style={{ flex: 1 }}>
+                  <span style={{ ...styles.outcomeBadge(compliance.compliant ? "approved" : "denied"), marginBottom: "6px", display: "inline-block" }}>
+                    {compliance.status}
+                  </span>
+                  <div style={{ fontSize: "13px", color: creamDim, marginTop: "6px" }}>{compliance.regulator}</div>
+                  <div style={{ fontSize: "12px", color: creamDim }}>Retention required: {compliance.retention_required_years} years</div>
+                  {compliance.missing_required?.length > 0 && (
+                    <div style={{ fontSize: "12px", color: "#e08080", marginTop: "4px" }}>
+                      Missing required: {compliance.missing_required.join(", ")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* AI Explanation */}
+            {(d.explanation || record.explanation) && (
+              <div>
+                <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "8px" }}>
+                  AI explanation — Article 13 compliant
+                </div>
+                <div style={styles.explanationBox}>{d.explanation || record.explanation}</div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -629,6 +712,7 @@ function TestPanel({ apiKey, onSuccess }) {
     credit_score: "",
     income: "",
     loan_amount: "",
+    currency: "IDR",
     approved: "true",
     confidence: "",
     jurisdiction: "ID",
@@ -650,6 +734,7 @@ function TestPanel({ apiKey, onSuccess }) {
         credit_score: Number(form.credit_score),
         ...(form.income ? { income: Number(form.income) } : {}),
         ...(form.loan_amount ? { loan_amount: Number(form.loan_amount) } : {}),
+        currency: form.currency,
       },
       output: {
         approved: form.approved === "true",
@@ -777,6 +862,18 @@ function TestPanel({ apiKey, onSuccess }) {
               <label style={labelStyle}>Loan amount (optional)</label>
               <input style={inputStyle} type="number" placeholder="e.g. 25000" value={form.loan_amount} onChange={e => set("loan_amount", e.target.value)} />
             </div>
+
+            {/* Currency */}
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Currency</label>
+              <select style={selectStyle} value={form.currency} onChange={e => set("currency", e.target.value)}>
+                <option value="IDR">IDR — Indonesian Rupiah</option>
+                <option value="SGD">SGD — Singapore Dollar</option>
+                <option value="USD">USD — US Dollar</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="AED">AED — UAE Dirham</option>
+              </select>
+            </div>
           </div>
 
           {error && (
@@ -817,7 +914,7 @@ function TestPanel({ apiKey, onSuccess }) {
           {result && (
             <button
               style={{ marginLeft: "12px", background: "transparent", border: "1px solid rgba(240,235,224,0.2)", color: creamDim, padding: "12px 24px", fontFamily: "'EB Garamond', serif", fontSize: "14px", cursor: "pointer" }}
-              onClick={() => { setResult(null); setForm({ decision_type: "loan_approval", model_used: "", credit_score: "", income: "", loan_amount: "", approved: "true", confidence: "", jurisdiction: "ID" }); }}
+              onClick={() => { setResult(null); setForm({ decision_type: "loan_approval", model_used: "", credit_score: "", income: "", loan_amount: "", currency: "IDR", approved: "true", confidence: "", jurisdiction: "ID" }); }}
             >
               Log another
             </button>
@@ -1117,7 +1214,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         <span>© 2026 AIDAL</span>
       </div>
 
-      {selected && <DecisionModal record={selected} onClose={() => setSelected(null)} />}
+      {selected && <DecisionModal record={selected} onClose={() => setSelected(null)} apiKey={apiKey} />}
     </div>
   );
 }

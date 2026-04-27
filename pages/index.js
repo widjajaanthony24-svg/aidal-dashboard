@@ -20,7 +20,6 @@ const styles = {
     fontSize: "16px",
   },
 
-  // ── Login screen ────────────────────────────────────────────────────────────
   loginWrap: {
     minHeight: "100vh",
     background: navyDark,
@@ -103,7 +102,6 @@ const styles = {
     lineHeight: 1.8,
   },
 
-  // ── Dashboard ───────────────────────────────────────────────────────────────
   header: {
     borderBottom: `1px solid rgba(240,235,224,0.1)`,
     padding: "1.25rem 2rem",
@@ -425,8 +423,6 @@ const styles = {
   },
 };
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
 function useCountdown() {
   const [time, setTime] = useState("");
   useEffect(() => {
@@ -465,8 +461,6 @@ function getOutcomeLabel(decision) {
   return JSON.stringify(out).slice(0, 40);
 }
 
-// ── Login Screen ─────────────────────────────────────────────────────────────
-
 function LoginScreen({ onLogin }) {
   const [key, setKey] = useState("");
   const [error, setError] = useState("");
@@ -496,7 +490,6 @@ function LoginScreen({ onLogin }) {
         return;
       }
       const data = await r.json();
-      // Save to sessionStorage so refresh keeps them logged in
       sessionStorage.setItem("aidal_key", trimmed);
       sessionStorage.setItem("aidal_company", data.company || "");
       onLogin(trimmed, data.company || "");
@@ -512,9 +505,7 @@ function LoginScreen({ onLogin }) {
       <div style={styles.loginBox}>
         <div style={styles.loginLogo}>AIDAL.</div>
         <div style={styles.loginTagline}>AI Decision Accountability Layer</div>
-
         {error && <div style={styles.loginError}>{error}</div>}
-
         <label style={styles.loginLabel}>Your API key</label>
         <input
           style={styles.loginInput}
@@ -525,7 +516,6 @@ function LoginScreen({ onLogin }) {
           onKeyDown={e => e.key === "Enter" && handleLogin()}
           autoFocus
         />
-
         <button
           style={{ ...styles.loginBtn, opacity: loading ? 0.6 : 1 }}
           onClick={handleLogin}
@@ -533,7 +523,6 @@ function LoginScreen({ onLogin }) {
         >
           {loading ? "Verifying..." : "Access Dashboard"}
         </button>
-
         <div style={styles.loginHint}>
           Don't have an API key?<br />
           POST to <span style={{ fontFamily: "monospace", color: cream }}>{API}/signup</span> with your name and email to get one.<br /><br />
@@ -544,15 +533,12 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-// ── Decision Modal ────────────────────────────────────────────────────────────
-
 function DecisionModal({ record, onClose, apiKey }) {
   if (!record) return null;
   const [detail, setDetail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(true);
 
   useEffect(() => {
-    // Fetch full detail when modal opens
     const auditId = record.audit_id;
     if (!auditId) { setLoadingDetail(false); return; }
     fetch(`${API}/decision/${auditId}`, {
@@ -563,7 +549,6 @@ function DecisionModal({ record, onClose, apiKey }) {
     .catch(() => setLoadingDetail(false));
   }, [record.audit_id]);
 
-  // Use full detail if loaded, otherwise fall back to list data
   const d = detail?.decision || {};
   const outcome = getOutcomeLabel(d);
   const compliance = d.compliance || {};
@@ -602,8 +587,6 @@ function DecisionModal({ record, onClose, apiKey }) {
               <span style={styles.modalKey}>Jurisdiction</span>
               <span style={styles.modalVal}>{d.jurisdiction || record.jurisdiction || "—"}</span>
             </div>
-
-            {/* Financial details */}
             {d.input_features && (
               <div style={styles.modalRow}>
                 <span style={styles.modalKey}>Input data</span>
@@ -615,21 +598,20 @@ function DecisionModal({ record, onClose, apiKey }) {
                   )}
                   {d.input_features.income && (
                     <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
-                      Income: <strong>{formatCurrency(d.input_features.income, d.input_features.currency) || d.input_features.income}</strong>
+                      Income: <strong>{formatCurrency(d.input_features.income, d.metadata?.currency) || d.input_features.income}</strong>
                     </div>
                   )}
                   {d.input_features.loan_amount && (
                     <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
-                      Loan amount: <strong>{formatCurrency(d.input_features.loan_amount, d.input_features.currency) || d.input_features.loan_amount}</strong>
+                      Loan amount: <strong>{formatCurrency(d.input_features.loan_amount, d.metadata?.currency) || d.input_features.loan_amount}</strong>
                     </div>
                   )}
-                  {d.input_features.currency && (
-                    <div style={{ fontSize: "13px", color: creamDim }}>Currency: {d.input_features.currency}</div>
+                  {d.metadata?.currency && (
+                    <div style={{ fontSize: "13px", color: creamDim }}>Currency: {d.metadata.currency}</div>
                   )}
                 </div>
               </div>
             )}
-
             {d.output && (
               <div style={styles.modalRow}>
                 <span style={styles.modalKey}>Model output</span>
@@ -639,15 +621,29 @@ function DecisionModal({ record, onClose, apiKey }) {
                       Decision: <strong>{d.output.approved ? "Approved" : "Denied"}</strong>
                     </div>
                   )}
+                  {d.output.flagged !== undefined && (
+                    <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
+                      Flagged: <strong>{d.output.flagged ? "Yes" : "No"}</strong>
+                    </div>
+                  )}
+                  {d.output.score !== undefined && (
+                    <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
+                      Score: <strong>{d.output.score}</strong> {d.output.tier && `(Tier ${d.output.tier})`}
+                    </div>
+                  )}
                   {d.output.confidence && (
                     <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
                       Confidence: <strong>{(d.output.confidence * 100).toFixed(0)}%</strong>
                     </div>
                   )}
+                  {d.output.action && (
+                    <div style={{ fontSize: "14px", color: cream, marginBottom: "4px" }}>
+                      Action: <strong>{d.output.action}</strong>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
-
             <div style={styles.modalRow}>
               <span style={styles.modalKey}>Logged at</span>
               <span style={styles.modalVal}>{formatDate(record.logged_at)}</span>
@@ -660,8 +656,6 @@ function DecisionModal({ record, onClose, apiKey }) {
               <span style={styles.modalKey}>Previous hash</span>
               <span style={{ ...styles.modalVal, ...styles.hashText }}>{detail?.prev_hash || "GENESIS"}</span>
             </div>
-
-            {/* Compliance status */}
             {compliance.checked && (
               <div style={styles.modalRow}>
                 <span style={styles.modalKey}>Compliance</span>
@@ -679,8 +673,6 @@ function DecisionModal({ record, onClose, apiKey }) {
                 </div>
               </div>
             )}
-
-            {/* AI Explanation */}
             {(d.explanation || record.explanation) && (
               <div>
                 <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "8px" }}>
@@ -696,10 +688,6 @@ function DecisionModal({ record, onClose, apiKey }) {
   );
 }
 
-// ── Main Dashboard ────────────────────────────────────────────────────────────
-
-
-// ── Test Decision Panel ───────────────────────────────────────────────────────
 function TestPanel({ apiKey, onSuccess }) {
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
@@ -734,13 +722,13 @@ function TestPanel({ apiKey, onSuccess }) {
         credit_score: Number(form.credit_score),
         ...(form.income ? { income: Number(form.income) } : {}),
         ...(form.loan_amount ? { loan_amount: Number(form.loan_amount) } : {}),
-        currency: form.currency,
       },
       output: {
         approved: form.approved === "true",
         ...(form.confidence ? { confidence: Number(form.confidence) } : {}),
       },
       jurisdiction: form.jurisdiction,
+      metadata: { currency: form.currency },
     };
 
     try {
@@ -779,7 +767,6 @@ function TestPanel({ apiKey, onSuccess }) {
 
   return (
     <div style={{ marginTop: "2.5rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark }}>
-      {/* Header — always visible */}
       <div
         style={{ padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", borderBottom: open ? "1px solid rgba(240,235,224,0.1)" : "none" }}
         onClick={() => { setOpen(o => !o); setResult(null); setError(""); }}
@@ -795,12 +782,9 @@ function TestPanel({ apiKey, onSuccess }) {
         <div style={{ fontSize: "20px", color: creamDim, transition: "transform 0.2s", transform: open ? "rotate(45deg)" : "none" }}>+</div>
       </div>
 
-      {/* Form — shown when open */}
       {open && (
         <div style={{ padding: "1.5rem" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-
-            {/* Decision type */}
             <div style={fieldStyle}>
               <label style={labelStyle}>Decision type</label>
               <select style={selectStyle} value={form.decision_type} onChange={e => set("decision_type", e.target.value)}>
@@ -812,8 +796,6 @@ function TestPanel({ apiKey, onSuccess }) {
                 <option value="hiring_screening">Hiring Screening</option>
               </select>
             </div>
-
-            {/* Jurisdiction */}
             <div style={fieldStyle}>
               <label style={labelStyle}>Jurisdiction / Regulator</label>
               <select style={selectStyle} value={form.jurisdiction} onChange={e => set("jurisdiction", e.target.value)}>
@@ -823,14 +805,10 @@ function TestPanel({ apiKey, onSuccess }) {
                 <option value="UAE">🇦🇪 UAE (VARA)</option>
               </select>
             </div>
-
-            {/* AI model */}
             <div style={fieldStyle}>
               <label style={labelStyle}>AI model name *</label>
-              <input style={inputStyle} placeholder="e.g. xgboost-v2, gpt-4o, random-forest" value={form.model_used} onChange={e => set("model_used", e.target.value)} />
+              <input style={inputStyle} placeholder="e.g. xgboost-v2, gpt-4o" value={form.model_used} onChange={e => set("model_used", e.target.value)} />
             </div>
-
-            {/* Outcome */}
             <div style={fieldStyle}>
               <label style={labelStyle}>Decision outcome</label>
               <select style={selectStyle} value={form.approved} onChange={e => set("approved", e.target.value)}>
@@ -838,32 +816,22 @@ function TestPanel({ apiKey, onSuccess }) {
                 <option value="false">Denied / Flagged / Rejected</option>
               </select>
             </div>
-
-            {/* Credit score */}
             <div style={fieldStyle}>
               <label style={labelStyle}>Credit score *</label>
               <input style={inputStyle} type="number" placeholder="e.g. 720" value={form.credit_score} onChange={e => set("credit_score", e.target.value)} />
             </div>
-
-            {/* Confidence */}
             <div style={fieldStyle}>
               <label style={labelStyle}>Model confidence (0–1)</label>
               <input style={inputStyle} type="number" placeholder="e.g. 0.91" step="0.01" min="0" max="1" value={form.confidence} onChange={e => set("confidence", e.target.value)} />
             </div>
-
-            {/* Income */}
             <div style={fieldStyle}>
               <label style={labelStyle}>Applicant income (optional)</label>
               <input style={inputStyle} type="number" placeholder="e.g. 80000" value={form.income} onChange={e => set("income", e.target.value)} />
             </div>
-
-            {/* Loan amount */}
             <div style={fieldStyle}>
               <label style={labelStyle}>Loan amount (optional)</label>
               <input style={inputStyle} type="number" placeholder="e.g. 25000" value={form.loan_amount} onChange={e => set("loan_amount", e.target.value)} />
             </div>
-
-            {/* Currency */}
             <div style={fieldStyle}>
               <label style={labelStyle}>Currency</label>
               <select style={selectStyle} value={form.currency} onChange={e => set("currency", e.target.value)}>
@@ -882,7 +850,6 @@ function TestPanel({ apiKey, onSuccess }) {
             </div>
           )}
 
-          {/* Result */}
           {result && (
             <div style={{ background: "rgba(29,158,117,0.1)", border: "1px solid #1d9e75", padding: "1.25rem", marginBottom: "1rem" }}>
               <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#7ec8a0", marginBottom: "10px" }}>✓ Decision logged successfully</div>
@@ -904,7 +871,7 @@ function TestPanel({ apiKey, onSuccess }) {
           )}
 
           <button
-            style={{ ...{ background: cream, border: "none", color: navy, padding: "12px 32px", fontFamily: "'EB Garamond', serif", fontSize: "15px", letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }, opacity: sending ? 0.6 : 1 }}
+            style={{ background: cream, border: "none", color: navy, padding: "12px 32px", fontFamily: "'EB Garamond', serif", fontSize: "15px", letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", opacity: sending ? 0.6 : 1 }}
             onClick={handleSend}
             disabled={sending}
           >
@@ -931,6 +898,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const [summary, setSummary] = useState(null);
   const [verify, setVerify] = useState(null);
   const [decisions, setDecisions] = useState([]);
+  const [loadingDecisions, setLoadingDecisions] = useState(true);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState("");
   const [filterJurisdiction, setFilterJurisdiction] = useState("");
@@ -940,15 +908,13 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const [total, setTotal] = useState(0);
   const limit = 10;
 
-  const headers = { Authorization: `Bearer ${apiKey}` };
-
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
       const [h, s, v] = await Promise.all([
         fetch(`${API}/health`).then(r => r.json()),
-        fetch(`${API}/summary`, { headers }).then(r => r.json()),
-        fetch(`${API}/verify`, { headers }).then(r => r.json()),
+        fetch(`${API}/summary`, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.json()),
+        fetch(`${API}/verify`, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.json()),
       ]);
       setHealth(h);
       setSummary(s);
@@ -959,17 +925,22 @@ function Dashboard({ apiKey, companyName, onLogout }) {
     setLoading(false);
   }, [apiKey]);
 
+  // ── FIXED: inline headers + Number(r.total) ──────────────────────────────
   const fetchDecisions = useCallback(async () => {
+    setLoadingDecisions(true);
     const params = new URLSearchParams({ limit, offset });
     if (filterType) params.set("decision_type", filterType);
     if (filterJurisdiction) params.set("jurisdiction", filterJurisdiction);
     try {
-      const r = await fetch(`${API}/decisions?${params}`, { headers }).then(r => r.json());
+      const r = await fetch(`${API}/decisions?${params}`, {
+        headers: { Authorization: `Bearer ${apiKey}` }
+      }).then(r => r.json());
       setDecisions(r.decisions || []);
-      setTotal(r.total || 0);
+      setTotal(Number(r.total) || 0);
     } catch (e) {
       setDecisions([]);
     }
+    setLoadingDecisions(false);
   }, [apiKey, filterType, filterJurisdiction, offset]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
@@ -978,7 +949,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const handleSearch = async () => {
     if (!searchId.trim()) return;
     try {
-      const r = await fetch(`${API}/decision/${searchId.trim()}`, { headers });
+      const r = await fetch(`${API}/decision/${searchId.trim()}`, {
+        headers: { Authorization: `Bearer ${apiKey}` }
+      });
       if (r.ok) {
         const data = await r.json();
         setSelected(data);
@@ -991,7 +964,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   };
 
   const runVerify = async () => {
-    const v = await fetch(`${API}/verify`, { headers }).then(r => r.json());
+    const v = await fetch(`${API}/verify`, {
+      headers: { Authorization: `Bearer ${apiKey}` }
+    }).then(r => r.json());
     setVerify(v);
   };
 
@@ -1004,14 +979,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
     <div style={styles.app}>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet" />
 
-      {/* Countdown */}
       <div style={styles.countdown}>
         <strong>EU AI Act deadline:</strong> &nbsp;
         <strong style={{ color: red }}>{countdown}</strong>
         &nbsp;— Non-compliance fines up to €30M
       </div>
 
-      {/* Header */}
       <div style={styles.header}>
         <div style={styles.logo}>AIDAL.</div>
         <div style={styles.headerRight}>
@@ -1036,7 +1009,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </div>
 
-        {/* Stats */}
         <div style={styles.statGrid}>
           <div style={styles.statCard}>
             <span style={styles.statLabel}>Total decisions</span>
@@ -1062,7 +1034,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         </div>
 
-        {/* Verify banner */}
         {verify && verify.status !== "no_records" && (
           <div style={styles.verifyBanner(chainOk)}>
             <div style={styles.verifyText(chainOk)}>
@@ -1077,7 +1048,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         )}
 
-        {/* Certificate */}
         {chainOk && verify?.certificate && (
           <div style={styles.certBox}>
             <div>
@@ -1092,18 +1062,15 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         )}
 
-        {/* Toolbar */}
         <div style={{ ...styles.toolbar, marginTop: "2rem" }}>
           <select style={styles.select} value={filterType} onChange={e => { setFilterType(e.target.value); setOffset(0); }}>
             <option value="">All decision types</option>
             {types.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-
           <select style={styles.select} value={filterJurisdiction} onChange={e => { setFilterJurisdiction(e.target.value); setOffset(0); }}>
             <option value="">All jurisdictions</option>
             {jurisdictions.map(j => <option key={j} value={j}>{j}</option>)}
           </select>
-
           <input
             style={styles.input}
             placeholder="Search by audit ID..."
@@ -1112,7 +1079,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             onKeyDown={e => e.key === "Enter" && handleSearch()}
           />
           <button style={styles.btnPrimary} onClick={handleSearch}>Search</button>
-
           {(filterType || filterJurisdiction) && (
             <button style={styles.btn} onClick={() => { setFilterType(""); setFilterJurisdiction(""); setOffset(0); }}>
               Clear filters
@@ -1120,8 +1086,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           )}
         </div>
 
-        {/* Table */}
-        {loading ? (
+        {loadingDecisions ? (
           <div style={styles.loading}>Loading decisions...</div>
         ) : decisions.length === 0 ? (
           <div style={styles.empty}>
@@ -1186,10 +1151,8 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </>
         )}
 
-        {/* Test Decision Panel */}
         <TestPanel apiKey={apiKey} onSuccess={() => { fetchAll(); fetchDecisions(); }} />
 
-        {/* Breakdown by type */}
         {summary?.by_type?.length > 0 && (
           <div style={{ marginTop: "2rem" }}>
             <div style={{ fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", color: creamDim, marginBottom: "1rem" }}>
@@ -1207,7 +1170,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         )}
       </div>
 
-      {/* Footer */}
       <div style={{ borderTop: "1px solid rgba(240,235,224,0.1)", padding: "1.5rem 2rem", display: "flex", justifyContent: "space-between", fontSize: "13px", color: creamDim, marginTop: "2rem" }}>
         <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: cream }}>AIDAL.</span>
         <span>AI Decision Accountability Layer · {API}</span>
@@ -1218,8 +1180,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
     </div>
   );
 }
-
-// ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [apiKey, setApiKey] = useState("");

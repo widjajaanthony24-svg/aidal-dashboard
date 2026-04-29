@@ -994,6 +994,14 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             {apiOk ? "API online" : "API offline"}
           </span>
           <button style={styles.btn} onClick={fetchAll}>↻ Refresh</button>
+          <a href="https://aidal-dashboard.vercel.app/verify" target="_blank" rel="noreferrer"
+            style={{ ...styles.btn, textDecoration: "none", fontSize: "13px", color: "#7ec8a0", borderColor: "rgba(29,158,117,0.4)" }}>
+            ✓ Public verify ↗
+          </a>
+          <a href="https://github.com/widjajaanthony24-svg/aidal-anchors" target="_blank" rel="noreferrer"
+            style={{ ...styles.btn, textDecoration: "none", fontSize: "13px" }}>
+            Anchor log ↗
+          </a>
           <a href="https://aidal-production.up.railway.app/docs" target="_blank" rel="noreferrer"
             style={{ ...styles.btn, textDecoration: "none", fontSize: "13px" }}>
             API docs ↗
@@ -1128,10 +1136,20 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                         {r.audit_id?.slice(0, 14)}...
                       </td>
                       <td style={styles.td}>
-                        <button style={{ ...styles.btn, padding: "4px 12px", fontSize: "12px" }}
-                          onClick={e => { e.stopPropagation(); setSelected(r); }}>
-                          View
-                        </button>
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <button style={{ ...styles.btn, padding: "4px 12px", fontSize: "12px" }}
+                            onClick={e => { e.stopPropagation(); setSelected(r); }}>
+                            View
+                          </button>
+                          <a
+                            href={`https://aidal-dashboard.vercel.app/verify?id=${r.audit_id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            style={{ ...styles.btn, padding: "4px 12px", fontSize: "11px", textDecoration: "none", color: "#7ec8a0", borderColor: "rgba(29,158,117,0.4)", letterSpacing: "0.5px" }}>
+                            ✓ Verify
+                          </a>
+                        </div>
                       </td>
                     </tr>
                   );

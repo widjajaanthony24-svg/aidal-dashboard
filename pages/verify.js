@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const API = "https://aidal-production.up.railway.app";
 const navy = "#2d3a5c";
@@ -24,8 +24,19 @@ function formatDate(str) {
 export default function PublicVerify() {
   const [auditId, setAuditId] = useState("");
   const [result, setResult] = useState(null);
-  const [status, setStatus] = useState(null); // "loading" | "found" | "notfound" | "error"
+  const [status, setStatus] = useState(null);
   const [steps, setSteps] = useState([]);
+
+  // Pre-fill from URL query param ?id=aud_xxxx
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      if (id) {
+        setAuditId(id);
+      }
+    }
+  }, []);
 
   const runVerification = async () => {
     const id = auditId.trim();

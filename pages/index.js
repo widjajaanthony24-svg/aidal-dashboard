@@ -163,7 +163,7 @@ const styles = {
   },
   statGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(5, 1fr)",
     gap: "1px",
     background: "rgba(240,235,224,0.1)",
     border: "1px solid rgba(240,235,224,0.1)",
@@ -235,6 +235,16 @@ const styles = {
     background: "transparent",
     border: `1px solid ${red}`,
     color: "#e08080",
+    padding: "8px 20px",
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "13px",
+    letterSpacing: "1px",
+    cursor: "pointer",
+  },
+  btnGreen: {
+    background: "rgba(29,158,117,0.15)",
+    border: `1px solid ${green}`,
+    color: "#7ec8a0",
     padding: "8px 20px",
     fontFamily: "'EB Garamond', serif",
     fontSize: "13px",
@@ -332,9 +342,9 @@ const styles = {
   modalBox: {
     background: navyDark,
     border: "1px solid rgba(240,235,224,0.15)",
-    maxWidth: 700,
+    maxWidth: 720,
     width: "100%",
-    maxHeight: "80vh",
+    maxHeight: "85vh",
     overflowY: "auto",
     padding: "2.5rem",
   },
@@ -461,6 +471,188 @@ function getOutcomeLabel(decision) {
   return JSON.stringify(out).slice(0, 40);
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// HUMAN REVIEW PANEL — shown inside decision modal
+// ══════════════════════════════════════════════════════════════════════════════
+function HumanReviewPanel({ auditId, apiKey }) {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState(null);
+  const [submitError, setSubmitError] = useState("");
+  const [form, setForm] = useState({ reviewer_id: "", outcome: "approved", notes: "" });
+
+  const fetchReviews = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetch(`${API}/decision/${auditId}/human-reviews`, {
+        headers: { Authorization: `Bearer ${apiKey}` }
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setReviews(data.reviews || []);
+      }
+    } catch (e) {}
+    setLoading(false);
+  }, [auditId, apiKey]);
+
+  useEffect(() => { fetchReviews(); }, [fetchReviews]);
+
+  const handleSubmit = async () => {
+    if (!form.reviewer_id.trim()) { setSubmitError("Reviewer ID is required."); return; }
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const r = await fetch(`${API}/decision/${auditId}/human-review`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await r.json();
+      if (r.ok) {
+        setSubmitResult(data);
+        setShowForm(false);
+        setForm({ reviewer_id: "", outcome: "approved", notes: "" });
+        fetchReviews();
+      } else {
+        setSubmitError(data.detail || "Something went wrong.");
+      }
+    } catch (e) {
+      setSubmitError("Network error.");
+    }
+    setSubmitting(false);
+  };
+
+  const inputStyle = {
+    background: "rgba(240,235,224,0.06)",
+    border: "1px solid rgba(240,235,224,0.2)",
+    color: cream,
+    padding: "10px 14px",
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "14px",
+    outline: "none",
+    width: "100%",
+    marginBottom: "10px",
+  };
+  const selectStyle = { ...inputStyle, background: navy, cursor: "pointer" };
+  const labelStyle = { fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "4px" };
+
+  const satisfied = reviews.length > 0 || submitResult;
+
+  return (
+    <div style={{ marginTop: "1.5rem", borderTop: "1px solid rgba(240,235,224,0.1)", paddingTop: "1.5rem" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <div>
+          <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
+            Human Oversight — EU AI Act Article 14
+          </div>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            padding: "3px 10px", fontSize: "12px", letterSpacing: "1px",
+            border: `1px solid ${satisfied ? green : amber}`,
+            color: satisfied ? "#7ec8a0" : "#e8c070",
+            background: satisfied ? "rgba(29,158,117,0.1)" : "rgba(186,117,23,0.1)",
+          }}>
+            {satisfied ? "✓ SATISFIED" : "⚠ PENDING"}
+          </div>
+        </div>
+        {!showForm && (
+          <button style={styles.btnGreen} onClick={() => setShowForm(true)}>
+            + Log review
+          </button>
+        )}
+      </div>
+
+      {/* Success message */}
+      {submitResult && (
+        <div style={{ background: "rgba(29,158,117,0.1)", border: `1px solid ${green}`, padding: "10px 14px", fontSize: "13px", color: "#7ec8a0", marginBottom: "1rem" }}>
+          ✓ Review logged — Article 14 satisfied. Hash: <span style={{ fontFamily: "monospace", fontSize: "11px" }}>{submitResult.review_hash?.slice(0, 20)}...</span>
+        </div>
+      )}
+
+      {/* Log review form */}
+      {showForm && (
+        <div style={{ background: "rgba(240,235,224,0.04)", border: "1px solid rgba(240,235,224,0.1)", padding: "1.25rem", marginBottom: "1rem" }}>
+          <div style={{ fontSize: "13px", color: creamDim, marginBottom: "1rem" }}>
+            This review will be cryptographically tied to the original decision hash.
+          </div>
+          {submitError && (
+            <div style={{ background: "rgba(163,45,45,0.15)", border: `1px solid ${red}`, color: "#e08080", padding: "8px 12px", fontSize: "13px", marginBottom: "10px" }}>
+              {submitError}
+            </div>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div>
+              <label style={labelStyle}>Reviewer ID *</label>
+              <input style={inputStyle} placeholder="e.g. john.doe@bank.com" value={form.reviewer_id} onChange={e => setForm(f => ({ ...f, reviewer_id: e.target.value }))} />
+            </div>
+            <div>
+              <label style={labelStyle}>Outcome</label>
+              <select style={selectStyle} value={form.outcome} onChange={e => setForm(f => ({ ...f, outcome: e.target.value }))}>
+                <option value="approved">Approved — confirmed correct</option>
+                <option value="overridden">Overridden — decision changed</option>
+                <option value="escalated">Escalated — sent for further review</option>
+                <option value="confirmed">Confirmed — spot check passed</option>
+              </select>
+            </div>
+          </div>
+          <label style={labelStyle}>Notes (optional)</label>
+          <textarea
+            style={{ ...inputStyle, height: "80px", resize: "vertical" }}
+            placeholder="Reviewer notes for the audit record..."
+            value={form.notes}
+            onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+          />
+          <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+            <button
+              style={{ ...styles.btnGreen, opacity: submitting ? 0.6 : 1 }}
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? "Logging..." : "Lock review into chain →"}
+            </button>
+            <button style={styles.btn} onClick={() => { setShowForm(false); setSubmitError(""); }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Existing reviews */}
+      {loading ? (
+        <div style={{ fontSize: "13px", color: creamDim, fontStyle: "italic" }}>Loading reviews...</div>
+      ) : reviews.length === 0 ? (
+        <div style={{ fontSize: "13px", color: creamDim }}>No human reviews logged yet for this decision.</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {reviews.map((rev, i) => (
+            <div key={i} style={{ background: "rgba(240,235,224,0.04)", border: "1px solid rgba(240,235,224,0.08)", padding: "12px 14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <span style={{ ...styles.outcomeBadge(rev.outcome === "approved" || rev.outcome === "confirmed" ? "approved" : rev.outcome === "overridden" ? "denied" : "escalated"), fontSize: "11px" }}>
+                    {rev.outcome?.toUpperCase()}
+                  </span>
+                  <span style={{ fontSize: "13px", color: cream }}>{rev.reviewer_id}</span>
+                </div>
+                <span style={{ fontSize: "12px", color: creamDim }}>{formatDate(rev.reviewed_at)}</span>
+              </div>
+              {rev.notes && <div style={{ fontSize: "13px", color: creamDim, fontStyle: "italic", marginTop: "4px" }}>{rev.notes}</div>}
+              <div style={{ fontSize: "11px", color: "rgba(240,235,224,0.3)", marginTop: "6px", fontFamily: "monospace" }}>
+                review_hash: {rev.review_hash?.slice(0, 24)}...
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════════════════════════════════
 function LoginScreen({ onLogin }) {
   const [key, setKey] = useState("");
   const [error, setError] = useState("");
@@ -533,6 +725,9 @@ function LoginScreen({ onLogin }) {
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// DECISION MODAL — now includes Human Review Panel
+// ══════════════════════════════════════════════════════════════════════════════
 function DecisionModal({ record, onClose, apiKey }) {
   if (!record) return null;
   const [detail, setDetail] = useState(null);
@@ -681,6 +876,11 @@ function DecisionModal({ record, onClose, apiKey }) {
                 <div style={styles.explanationBox}>{d.explanation || record.explanation}</div>
               </div>
             )}
+
+            {/* ── HUMAN OVERSIGHT PANEL ── */}
+            {record.audit_id && (
+              <HumanReviewPanel auditId={record.audit_id} apiKey={apiKey} />
+            )}
           </>
         )}
       </div>
@@ -688,6 +888,9 @@ function DecisionModal({ record, onClose, apiKey }) {
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// TEST PANEL
+// ══════════════════════════════════════════════════════════════════════════════
 function TestPanel({ apiKey, onSuccess }) {
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
@@ -892,6 +1095,9 @@ function TestPanel({ apiKey, onSuccess }) {
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════════════════════
 function Dashboard({ apiKey, companyName, onLogout }) {
   const countdown = useCountdown();
   const [health, setHealth] = useState(null);
@@ -925,7 +1131,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
     setLoading(false);
   }, [apiKey]);
 
-  // ── FIXED: inline headers + Number(r.total) ──────────────────────────────
   const fetchDecisions = useCallback(async () => {
     setLoadingDecisions(true);
     const params = new URLSearchParams({ limit, offset });
@@ -975,6 +1180,10 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const jurisdictions = summary?.by_jurisdiction?.map(b => b.jurisdiction).filter(Boolean) || [];
   const chainOk = verify?.verified === true;
 
+  // Human oversight from summary
+  const oversight = summary?.human_oversight;
+  const oversightPct = oversight?.oversight_rate_pct ?? 0;
+
   return (
     <div style={styles.app}>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet" />
@@ -1017,6 +1226,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </div>
 
+        {/* ── STAT GRID — now 5 cards including Article 14 ── */}
         <div style={styles.statGrid}>
           <div style={styles.statCard}>
             <span style={styles.statLabel}>Total decisions</span>
@@ -1039,6 +1249,18 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             <span style={styles.statLabel}>Decision types</span>
             <span style={styles.statValue}>{loading ? "—" : (types.length || 0)}</span>
             <div style={styles.statSub}>{types.slice(0, 2).join(", ") || "—"}</div>
+          </div>
+          {/* NEW — Article 14 card */}
+          <div style={{ ...styles.statCard, borderLeft: `2px solid ${oversightPct > 0 ? green : amber}` }}>
+            <span style={styles.statLabel}>Article 14 coverage</span>
+            <span style={{ ...styles.statValue, fontSize: "36px", color: oversightPct > 0 ? "#7ec8a0" : "#e8c070" }}>
+              {loading ? "—" : `${oversightPct}%`}
+            </span>
+            <div style={styles.statSub}>
+              {loading ? "" : oversightPct > 0
+                ? `${oversight?.decisions_reviewed} decision${oversight?.decisions_reviewed !== 1 ? "s" : ""} reviewed`
+                : "No human reviews yet"}
+            </div>
           </div>
         </div>
 
@@ -1067,6 +1289,35 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             <div style={{ fontSize: "12px", color: creamDim }}>
               Verified {formatDate(verify.verified_at)}
             </div>
+          </div>
+        )}
+
+        {/* ── ARTICLE 14 STATUS BANNER ── */}
+        {!loading && summary && (
+          <div style={{
+            background: oversightPct > 0 ? "rgba(29,158,117,0.08)" : "rgba(186,117,23,0.08)",
+            border: `1px solid ${oversightPct > 0 ? "rgba(29,158,117,0.3)" : "rgba(186,117,23,0.3)"}`,
+            padding: "1rem 1.5rem",
+            marginBottom: "2rem",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}>
+            <div>
+              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
+                EU AI Act Article 14 — Human Oversight
+              </div>
+              <div style={{ fontSize: "15px", color: oversightPct > 0 ? "#7ec8a0" : "#e8c070" }}>
+                {oversightPct > 0
+                  ? `✓ ${oversight?.decisions_reviewed} of ${oversight?.total_decisions} decisions have human review (${oversightPct}% coverage)`
+                  : "⚠ No human reviews logged yet — click any decision → Log review to satisfy Article 14"}
+              </div>
+            </div>
+            {oversightPct === 0 && (
+              <div style={{ fontSize: "13px", color: creamDim, textAlign: "right", maxWidth: "260px" }}>
+                Click any decision in the table → "Log review" to add a human review and satisfy Article 14.
+              </div>
+            )}
           </div>
         )}
 
@@ -1199,6 +1450,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ROOT
+// ══════════════════════════════════════════════════════════════════════════════
 export default function App() {
   const [apiKey, setApiKey] = useState("");
   const [companyName, setCompanyName] = useState("");

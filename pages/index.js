@@ -1299,27 +1299,17 @@ function Dashboard({ apiKey, companyName, onLogout }) {
               Download compliance report PDF
             </div>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              {["SG", "ID", "EU", "UAE"].map(jur => (
-                <a
-                  key={jur}
-                  href={`https://aidal-production.up.railway.app/compliance/report/pdf?jurisdiction=${jur}`}
-                  onClick={e => {
-                    e.preventDefault();
-                    fetch(`${API}/compliance/report/pdf?jurisdiction=${jur}`, {
-                      headers: { Authorization: `Bearer ${apiKey}` }
-                    })
-                    .then(r => r.blob())
-                    .then(blob => {
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download = `AIDAL_Compliance_Report_${jur}_${new Date().toISOString().slice(0,10)}.pdf`;
-                      a.click();
-                      URL.revokeObjectURL(url);
-                    });
-                  }}
+              {[
+                { jur: "SG", label: "MAS FEAT PDF" },
+                { jur: "ID", label: "OJK PDF" },
+                { jur: "EU", label: "EU AI Act PDF" },
+                { jur: "UAE", label: "VARA PDF" },
+                { jur: null, label: "All jurisdictions PDF" },
+              ].map(({ jur, label }) => (
+                <button
+                  key={jur || "ALL"}
                   style={{
-                    background: "transparent",
+                    background: jur ? "transparent" : "rgba(240,235,224,0.08)",
                     border: "1px solid rgba(240,235,224,0.25)",
                     color: cream,
                     padding: "8px 20px",
@@ -1327,49 +1317,35 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                     fontSize: "14px",
                     letterSpacing: "1px",
                     cursor: "pointer",
-                    textDecoration: "none",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "6px",
                   }}
+                  onClick={() => {
+                    const url = jur
+                      ? `${API}/compliance/report/pdf?jurisdiction=${jur}`
+                      : `${API}/compliance/report/pdf`;
+                    fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } })
+                      .then(r => {
+                        if (!r.ok) throw new Error("Failed");
+                        return r.blob();
+                      })
+                      .then(blob => {
+                        const blobUrl = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = blobUrl;
+                        a.download = `AIDAL_Report_${jur || "ALL"}_${new Date().toISOString().slice(0,10)}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                      })
+                      .catch(() => alert("Download failed. Check your connection."));
+                  }}
                 >
-                  ↓ {jur === "SG" ? "MAS FEAT" : jur === "ID" ? "OJK" : jur === "EU" ? "EU AI Act" : "VARA"} PDF
-                </a>
+                  ↓ {label}
+                </button>
               ))}
-              <a
-                href="#"
-                onClick={e => {
-                  e.preventDefault();
-                  fetch(`${API}/compliance/report/pdf`, {
-                    headers: { Authorization: `Bearer ${apiKey}` }
-                  })
-                  .then(r => r.blob())
-                  .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `AIDAL_Compliance_Report_ALL_${new Date().toISOString().slice(0,10)}.pdf`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  });
-                }}
-                style={{
-                  background: "rgba(240,235,224,0.08)",
-                  border: "1px solid rgba(240,235,224,0.25)",
-                  color: cream,
-                  padding: "8px 20px",
-                  fontFamily: "'EB Garamond', serif",
-                  fontSize: "14px",
-                  letterSpacing: "1px",
-                  cursor: "pointer",
-                  textDecoration: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                }}
-              >
-                ↓ All jurisdictions PDF
-              </a>
             </div>
           </div>
         )}

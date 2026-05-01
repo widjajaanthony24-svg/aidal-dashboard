@@ -1292,6 +1292,88 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         )}
 
+        {/* ── PDF DOWNLOAD BUTTONS ── */}
+        {!loading && summary && summary.total_decisions > 0 && (
+          <div style={{ marginBottom: "2rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark, padding: "1.25rem 1.5rem" }}>
+            <div style={{ fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", color: creamDim, marginBottom: "10px" }}>
+              Download compliance report PDF
+            </div>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              {["SG", "ID", "EU", "UAE"].map(jur => (
+                <a
+                  key={jur}
+                  href={`https://aidal-production.up.railway.app/compliance/report/pdf?jurisdiction=${jur}`}
+                  onClick={e => {
+                    e.preventDefault();
+                    fetch(`${API}/compliance/report/pdf?jurisdiction=${jur}`, {
+                      headers: { Authorization: `Bearer ${apiKey}` }
+                    })
+                    .then(r => r.blob())
+                    .then(blob => {
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `AIDAL_Compliance_Report_${jur}_${new Date().toISOString().slice(0,10)}.pdf`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    });
+                  }}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(240,235,224,0.25)",
+                    color: cream,
+                    padding: "8px 20px",
+                    fontFamily: "'EB Garamond', serif",
+                    fontSize: "14px",
+                    letterSpacing: "1px",
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  ↓ {jur === "SG" ? "MAS FEAT" : jur === "ID" ? "OJK" : jur === "EU" ? "EU AI Act" : "VARA"} PDF
+                </a>
+              ))}
+              <a
+                href="#"
+                onClick={e => {
+                  e.preventDefault();
+                  fetch(`${API}/compliance/report/pdf`, {
+                    headers: { Authorization: `Bearer ${apiKey}` }
+                  })
+                  .then(r => r.blob())
+                  .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `AIDAL_Compliance_Report_ALL_${new Date().toISOString().slice(0,10)}.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  });
+                }}
+                style={{
+                  background: "rgba(240,235,224,0.08)",
+                  border: "1px solid rgba(240,235,224,0.25)",
+                  color: cream,
+                  padding: "8px 20px",
+                  fontFamily: "'EB Garamond', serif",
+                  fontSize: "14px",
+                  letterSpacing: "1px",
+                  cursor: "pointer",
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                ↓ All jurisdictions PDF
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* ── ARTICLE 14 STATUS BANNER ── */}
         {!loading && summary && (
           <div style={{

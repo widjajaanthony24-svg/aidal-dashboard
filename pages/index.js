@@ -889,7 +889,261 @@ function DecisionModal({ record, onClose, apiKey }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// TEST PANEL
+// MODEL REGISTRY PANEL
+// ══════════════════════════════════════════════════════════════════════════════
+function ModelRegistryPanel({ apiKey, onSuccess }) {
+  const [open, setOpen] = useState(false);
+  const [models, setModels] = useState([]);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    model_name: "", model_version: "", model_type: "xgboost",
+    accuracy_metric: "", bias_test_result: "passed",
+    training_data_source: "", validation_date: "", jurisdiction: "SG", notes: "",
+  });
+
+  const fetchModels = useCallback(async () => {
+    setLoadingModels(true);
+    try {
+      const r = await fetch(`${API}/models`, { headers: { Authorization: `Bearer ${apiKey}` } });
+      if (r.ok) { const d = await r.json(); setModels(d.models || []); }
+    } catch (e) {}
+    setLoadingModels(false);
+  }, [apiKey]);
+
+  useEffect(() => { if (open) fetchModels(); }, [open, fetchModels]);
+
+  const handleSubmit = async () => {
+    if (!form.model_name.trim()) { setError("Model name is required."); return; }
+    if (!form.model_version.trim()) { setError("Model version is required."); return; }
+    setSubmitting(true); setError(""); setResult(null);
+    try {
+      const payload = {
+        model_name: form.model_name,
+        model_version: form.model_version,
+        model_type: form.model_type,
+        ...(form.accuracy_metric ? { accuracy_metric: Number(form.accuracy_metric) } : {}),
+        bias_test_result: form.bias_test_result,
+        training_data_source: form.training_data_source || undefined,
+        validation_date: form.validation_date || undefined,
+        jurisdiction: form.jurisdiction || undefined,
+        notes: form.notes || undefined,
+      };
+      const r = await fetch(`${API}/model/register`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await r.json();
+      if (r.ok) {
+        setResult(data);
+        setShowForm(false);
+        setForm({ model_name: "", model_version: "", model_type: "xgboost", accuracy_metric: "", bias_test_result: "passed", training_data_source: "", validation_date: "", jurisdiction: "SG", notes: "" });
+        fetchModels();
+        if (onSuccess) onSuccess();
+      } else {
+        setError(data.detail || "Something went wrong.");
+      }
+    } catch (e) { setError("Network error."); }
+    setSubmitting(false);
+  };
+
+  const inputStyle = {
+    background: "rgba(240,235,224,0.06)", border: "1px solid rgba(240,235,224,0.2)",
+    color: cream, padding: "10px 14px", fontFamily: "'EB Garamond', serif",
+    fontSize: "14px", outline: "none", width: "100%",
+  };
+  const selectStyle = { ...inputStyle, background: navyDark, cursor: "pointer" };
+  const labelStyle = { fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "4px" };
+  const fieldStyle = { marginBottom: "1rem" };
+
+  return (
+    <div style={{ marginTop: "2rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark }}>
+      {/* Header */}
+      <div
+        style={{ padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", borderBottom: open ? "1px solid rgba(240,235,224,0.1)" : "none" }}
+        onClick={() => setOpen(o => !o)}
+      >
+        <div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: cream, fontWeight: 700 }}>
+            Model Registry
+          </div>
+          <div style={{ fontSize: "13px", color: creamDim, marginTop: "2px" }}>
+            EU AI Act Article 9 — register AI models before deployment
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {models.length > 0 && (
+            <span style={{ fontSize: "13px", color: "#7ec8a0", border: "1px solid rgba(29,158,117,0.3)", padding: "2px 10px" }}>
+              {models.length} model{models.length !== 1 ? "s" : ""} registered
+            </span>
+          )}
+          <div style={{ fontSize: "20px", color: creamDim, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</div>
+        </div>
+      </div>
+
+      {open && (
+        <div style={{ padding: "1.5rem" }}>
+          {/* Success */}
+          {result && (
+            <div style={{ background: "rgba(29,158,117,0.1)", border: `1px solid ${green}`, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#7ec8a0", marginBottom: "8px" }}>
+                ✓ Model registered — Article 9 {result.article_9_satisfied ? "satisfied" : "partially satisfied"}
+              </div>
+              <div style={{ fontSize: "13px", color: creamDim }}>
+                Model ID: <span style={{ fontFamily: "monospace", color: cream }}>{result.model_id}</span>
+              </div>
+              <div style={{ fontSize: "13px", color: creamDim, marginTop: "4px" }}>
+                Hash: <span style={{ fontFamily: "monospace", fontSize: "11px" }}>{result.registration_hash?.slice(0, 32)}...</span>
+              </div>
+              {result.article_9_missing?.length > 0 && (
+                <div style={{ fontSize: "12px", color: "#e8c070", marginTop: "6px" }}>
+                  To fully satisfy Article 9, add: {result.article_9_missing.join(", ")}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Register form toggle */}
+          {!showForm ? (
+            <button style={{ ...styles.btnGreen, marginBottom: models.length > 0 ? "1.5rem" : "0" }} onClick={() => setShowForm(true)}>
+              + Register new model
+            </button>
+          ) : (
+            <div style={{ background: "rgba(240,235,224,0.03)", border: "1px solid rgba(240,235,224,0.1)", padding: "1.25rem", marginBottom: "1.5rem" }}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: cream, marginBottom: "1rem", fontWeight: 700 }}>
+                Register AI model
+              </div>
+              {error && (
+                <div style={{ background: "rgba(163,45,45,0.15)", border: `1px solid ${red}`, color: "#e08080", padding: "8px 12px", fontSize: "13px", marginBottom: "1rem" }}>
+                  {error}
+                </div>
+              )}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Model name *</label>
+                  <input style={inputStyle} placeholder="e.g. xgboost-loan" value={form.model_name} onChange={e => setForm(f => ({ ...f, model_name: e.target.value }))} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Version *</label>
+                  <input style={inputStyle} placeholder="e.g. v2.1" value={form.model_version} onChange={e => setForm(f => ({ ...f, model_version: e.target.value }))} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Model type</label>
+                  <select style={selectStyle} value={form.model_type} onChange={e => setForm(f => ({ ...f, model_type: e.target.value }))}>
+                    <option value="xgboost">XGBoost</option>
+                    <option value="neural_network">Neural Network</option>
+                    <option value="random_forest">Random Forest</option>
+                    <option value="logistic_regression">Logistic Regression</option>
+                    <option value="llm">LLM</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Jurisdiction</label>
+                  <select style={selectStyle} value={form.jurisdiction} onChange={e => setForm(f => ({ ...f, jurisdiction: e.target.value }))}>
+                    <option value="SG">🇸🇬 Singapore (MAS FEAT)</option>
+                    <option value="ID">🇮🇩 Indonesia (OJK)</option>
+                    <option value="EU">🇪🇺 EU (EU AI Act)</option>
+                    <option value="UAE">🇦🇪 UAE (VARA)</option>
+                  </select>
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Accuracy metric (0–1)</label>
+                  <input style={inputStyle} type="number" step="0.01" min="0" max="1" placeholder="e.g. 0.94" value={form.accuracy_metric} onChange={e => setForm(f => ({ ...f, accuracy_metric: e.target.value }))} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Bias test result</label>
+                  <select style={selectStyle} value={form.bias_test_result} onChange={e => setForm(f => ({ ...f, bias_test_result: e.target.value }))}>
+                    <option value="passed">Passed</option>
+                    <option value="failed">Failed</option>
+                    <option value="not_tested">Not tested</option>
+                  </select>
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Training data source</label>
+                  <input style={inputStyle} placeholder="e.g. internal_loan_data_2024" value={form.training_data_source} onChange={e => setForm(f => ({ ...f, training_data_source: e.target.value }))} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Validation date</label>
+                  <input style={inputStyle} type="date" value={form.validation_date} onChange={e => setForm(f => ({ ...f, validation_date: e.target.value }))} />
+                </div>
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Notes (optional)</label>
+                <input style={inputStyle} placeholder="e.g. Validated by risk team before production deployment" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button style={{ ...styles.btnGreen, opacity: submitting ? 0.6 : 1 }} onClick={handleSubmit} disabled={submitting}>
+                  {submitting ? "Registering..." : "Register model →"}
+                </button>
+                <button style={styles.btn} onClick={() => { setShowForm(false); setError(""); }}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {/* Models list */}
+          {loadingModels ? (
+            <div style={{ fontSize: "13px", color: creamDim, fontStyle: "italic" }}>Loading models...</div>
+          ) : models.length === 0 ? (
+            <div style={{ fontSize: "13px", color: creamDim }}>No models registered yet. Register your first model above.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {models.map((m, i) => {
+                const article9Ok = m.accuracy_metric && m.bias_test_result && m.training_data_source && m.validation_date;
+                return (
+                  <div key={i} style={{ background: "rgba(240,235,224,0.04)", border: "1px solid rgba(240,235,224,0.08)", padding: "1rem 1.25rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                      <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: cream, fontWeight: 700 }}>
+                          {m.model_name}
+                        </span>
+                        <span style={{ fontSize: "12px", color: creamDim, border: "1px solid rgba(240,235,224,0.15)", padding: "2px 8px" }}>
+                          {m.model_version}
+                        </span>
+                        <span style={{ fontSize: "12px", color: creamDim, border: "1px solid rgba(240,235,224,0.1)", padding: "2px 8px" }}>
+                          {m.model_type}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                        {m.jurisdiction && (
+                          <span style={{ fontSize: "11px", color: creamDim, border: "1px solid rgba(240,235,224,0.1)", padding: "2px 8px" }}>
+                            {m.jurisdiction}
+                          </span>
+                        )}
+                        <span style={{
+                          fontSize: "11px", letterSpacing: "1px", padding: "2px 10px",
+                          border: `1px solid ${article9Ok ? "rgba(29,158,117,0.4)" : "rgba(186,117,23,0.4)"}`,
+                          color: article9Ok ? "#7ec8a0" : "#e8c070",
+                          background: article9Ok ? "rgba(29,158,117,0.08)" : "rgba(186,117,23,0.08)",
+                        }}>
+                          {article9Ok ? "✓ Art. 9 SATISFIED" : "⚠ Art. 9 INCOMPLETE"}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", fontSize: "12px", color: creamDim }}>
+                      {m.accuracy_metric && <div>Accuracy: <span style={{ color: cream }}>{(m.accuracy_metric * 100).toFixed(1)}%</span></div>}
+                      {m.bias_test_result && <div>Bias test: <span style={{ color: m.bias_test_result === "passed" ? "#7ec8a0" : "#e08080" }}>{m.bias_test_result}</span></div>}
+                      {m.validation_date && <div>Validated: <span style={{ color: cream }}>{m.validation_date}</span></div>}
+                      {m.training_data_source && <div>Data: <span style={{ color: cream }}>{m.training_data_source}</span></div>}
+                    </div>
+                    {m.notes && <div style={{ fontSize: "12px", color: creamDim, fontStyle: "italic", marginTop: "6px" }}>{m.notes}</div>}
+                    <div style={{ fontSize: "11px", color: "rgba(240,235,224,0.3)", marginTop: "6px", fontFamily: "monospace" }}>
+                      {m.model_id} · registered {formatDate(m.registered_at)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 // ══════════════════════════════════════════════════════════════════════════════
 function TestPanel({ apiKey, onSuccess }) {
   const [open, setOpen] = useState(false);
@@ -1479,6 +1733,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         )}
 
         <TestPanel apiKey={apiKey} onSuccess={() => { fetchAll(); fetchDecisions(); }} />
+        <ModelRegistryPanel apiKey={apiKey} onSuccess={fetchAll} />
 
         {summary?.by_type?.length > 0 && (
           <div style={{ marginTop: "2rem" }}>

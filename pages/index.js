@@ -251,6 +251,16 @@ const styles = {
     letterSpacing: "1px",
     cursor: "pointer",
   },
+  btnAmber: {
+    background: "rgba(186,117,23,0.15)",
+    border: `1px solid ${amber}`,
+    color: "#e8c070",
+    padding: "8px 20px",
+    fontFamily: "'EB Garamond', serif",
+    fontSize: "13px",
+    letterSpacing: "1px",
+    cursor: "pointer",
+  },
   toolbar: {
     display: "flex",
     gap: "1rem",
@@ -542,7 +552,6 @@ function HumanReviewPanel({ auditId, apiKey }) {
 
   return (
     <div style={{ marginTop: "1.5rem", borderTop: "1px solid rgba(240,235,224,0.1)", paddingTop: "1.5rem" }}>
-      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
         <div>
           <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
@@ -565,14 +574,12 @@ function HumanReviewPanel({ auditId, apiKey }) {
         )}
       </div>
 
-      {/* Success message */}
       {submitResult && (
         <div style={{ background: "rgba(29,158,117,0.1)", border: `1px solid ${green}`, padding: "10px 14px", fontSize: "13px", color: "#7ec8a0", marginBottom: "1rem" }}>
           ✓ Review logged — Article 14 satisfied. Hash: <span style={{ fontFamily: "monospace", fontSize: "11px" }}>{submitResult.review_hash?.slice(0, 20)}...</span>
         </div>
       )}
 
-      {/* Log review form */}
       {showForm && (
         <div style={{ background: "rgba(240,235,224,0.04)", border: "1px solid rgba(240,235,224,0.1)", padding: "1.25rem", marginBottom: "1rem" }}>
           <div style={{ fontSize: "13px", color: creamDim, marginBottom: "1rem" }}>
@@ -606,21 +613,14 @@ function HumanReviewPanel({ auditId, apiKey }) {
             onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
           />
           <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
-            <button
-              style={{ ...styles.btnGreen, opacity: submitting ? 0.6 : 1 }}
-              onClick={handleSubmit}
-              disabled={submitting}
-            >
+            <button style={{ ...styles.btnGreen, opacity: submitting ? 0.6 : 1 }} onClick={handleSubmit} disabled={submitting}>
               {submitting ? "Logging..." : "Lock review into chain →"}
             </button>
-            <button style={styles.btn} onClick={() => { setShowForm(false); setSubmitError(""); }}>
-              Cancel
-            </button>
+            <button style={styles.btn} onClick={() => { setShowForm(false); setSubmitError(""); }}>Cancel</button>
           </div>
         </div>
       )}
 
-      {/* Existing reviews */}
       {loading ? (
         <div style={{ fontSize: "13px", color: creamDim, fontStyle: "italic" }}>Loading reviews...</div>
       ) : reviews.length === 0 ? (
@@ -644,6 +644,599 @@ function HumanReviewPanel({ auditId, apiKey }) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FAIRNESS DETECTION PANEL
+// ══════════════════════════════════════════════════════════════════════════════
+function FairnessPanel({ apiKey }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [report, setReport] = useState(null);
+  const [error, setError] = useState("");
+
+  const runAnalysis = async () => {
+    setLoading(true);
+    setError("");
+    setReport(null);
+    try {
+      const r = await fetch(`${API}/fairness/report`, {
+        headers: { Authorization: `Bearer ${apiKey}` }
+      });
+      const data = await r.json();
+      if (r.ok) {
+        setReport(data);
+      } else {
+        setError(data.detail || "Could not retrieve fairness report.");
+      }
+    } catch (e) {
+      setError("Network error. Check your connection.");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (open && !report && !loading) runAnalysis();
+  }, [open]);
+
+  const statusOk = report?.fairness_status === "PASS";
+  const flags = report?.bias_flags || [];
+
+  return (
+    <div style={{ marginTop: "2rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark }}>
+      {/* Header */}
+      <div
+        style={{
+          padding: "1.25rem 1.5rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          cursor: "pointer",
+          borderBottom: open ? "1px solid rgba(240,235,224,0.1)" : "none",
+        }}
+        onClick={() => setOpen(o => !o)}
+      >
+        <div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: cream, fontWeight: 700 }}>
+            Fairness Detection
+          </div>
+          <div style={{ fontSize: "13px", color: creamDim, marginTop: "2px" }}>
+            EU AI Act Article 10 + MAS FEAT — bias monitoring across credit score bands
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {report && (
+            <span style={{
+              fontSize: "13px",
+              border: `1px solid ${statusOk ? "rgba(29,158,117,0.4)" : "rgba(186,117,23,0.4)"}`,
+              color: statusOk ? "#7ec8a0" : "#e8c070",
+              padding: "2px 10px",
+            }}>
+              {statusOk ? "✓ PASS" : `⚠ ${flags.length} flag${flags.length !== 1 ? "s" : ""}`}
+            </span>
+          )}
+          <div style={{ fontSize: "20px", color: creamDim, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</div>
+        </div>
+      </div>
+
+      {open && (
+        <div style={{ padding: "1.5rem" }}>
+          {/* Refresh button */}
+          <div style={{ display: "flex", gap: "10px", marginBottom: "1.5rem", alignItems: "center" }}>
+            <button
+              style={{ ...styles.btnGreen, opacity: loading ? 0.6 : 1 }}
+              onClick={runAnalysis}
+              disabled={loading}
+            >
+              {loading ? "Analysing..." : "↻ Re-run analysis"}
+            </button>
+            {report && (
+              <span style={{ fontSize: "13px", color: creamDim }}>
+                Analysed {report.analysis_scope?.total_decisions_analyzed || 0} decisions
+                · {report.analysis_scope?.decisions_with_clear_outcome || 0} with clear outcome
+                · {formatDate(report.analyzed_at)}
+              </span>
+            )}
+          </div>
+
+          {error && (
+            <div style={{ background: "rgba(163,45,45,0.15)", border: `1px solid ${red}`, color: "#e08080", padding: "10px 14px", fontSize: "14px", marginBottom: "1rem" }}>
+              {error}
+            </div>
+          )}
+
+          {loading && (
+            <div style={{ fontSize: "14px", color: creamDim, fontStyle: "italic", padding: "2rem 0" }}>
+              Running fairness analysis...
+            </div>
+          )}
+
+          {report && !loading && (
+            <>
+              {/* Overall status banner */}
+              <div style={{
+                background: statusOk ? "rgba(29,158,117,0.1)" : "rgba(186,117,23,0.1)",
+                border: `1px solid ${statusOk ? "rgba(29,158,117,0.4)" : "rgba(186,117,23,0.4)"}`,
+                padding: "1rem 1.25rem",
+                marginBottom: "1.5rem",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}>
+                <div>
+                  <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
+                    Fairness status
+                  </div>
+                  <div style={{ fontSize: "18px", fontFamily: "'Playfair Display', serif", color: statusOk ? "#7ec8a0" : "#e8c070", fontWeight: 700 }}>
+                    {statusOk ? "✓ PASS — No significant bias detected" : `⚠ REVIEW REQUIRED — ${flags.length} potential bias flag${flags.length !== 1 ? "s" : ""} detected`}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: "12px", color: creamDim, marginBottom: "4px" }}>Overall approval rate</div>
+                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", color: cream }}>
+                    {report.overall?.approval_rate_pct ?? "—"}%
+                  </div>
+                  <div style={{ fontSize: "12px", color: creamDim }}>
+                    {report.overall?.approved ?? 0} approved / {report.overall?.denied ?? 0} denied
+                  </div>
+                </div>
+              </div>
+
+              {/* Regulation references */}
+              {report.regulation && (
+                <div style={{ marginBottom: "1.5rem", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  {Object.entries(report.regulation).map(([key, val]) => (
+                    <span key={key} style={{ fontSize: "12px", color: creamDim, border: "1px solid rgba(240,235,224,0.12)", padding: "3px 10px" }}>
+                      {val}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Credit score band breakdown */}
+              {report.by_credit_score_band && Object.keys(report.by_credit_score_band).length > 0 && (
+                <div style={{ marginBottom: "1.5rem" }}>
+                  <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "1rem" }}>
+                    Approval rate by credit score band
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "8px" }}>
+                    {Object.entries(report.by_credit_score_band).map(([band, stats]) => {
+                      const isFlagged = flags.some(f => f.group === band);
+                      const rate = stats.approval_rate_pct ?? 0;
+                      const deviation = stats.deviation_from_overall_pct ?? 0;
+                      return (
+                        <div key={band} style={{
+                          background: isFlagged ? "rgba(186,117,23,0.08)" : "rgba(240,235,224,0.04)",
+                          border: `1px solid ${isFlagged ? "rgba(186,117,23,0.4)" : "rgba(240,235,224,0.1)"}`,
+                          padding: "1rem",
+                        }}>
+                          <div style={{ fontSize: "12px", color: isFlagged ? "#e8c070" : creamDim, marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
+                            <span>{band}</span>
+                            {isFlagged && <span style={{ fontSize: "11px" }}>⚠ FLAG</span>}
+                          </div>
+                          {/* Bar */}
+                          <div style={{ background: "rgba(240,235,224,0.08)", height: "6px", marginBottom: "6px", position: "relative" }}>
+                            <div style={{
+                              background: isFlagged ? amber : green,
+                              height: "100%",
+                              width: `${Math.min(rate, 100)}%`,
+                              transition: "width 0.5s",
+                            }} />
+                          </div>
+                          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "24px", color: isFlagged ? "#e8c070" : cream }}>
+                            {rate}%
+                          </div>
+                          <div style={{ fontSize: "11px", color: creamDim, marginTop: "2px" }}>
+                            {stats.approved ?? 0} approved · {stats.denied ?? 0} denied
+                          </div>
+                          <div style={{ fontSize: "11px", color: deviation > 0 ? "#7ec8a0" : "#e08080", marginTop: "2px" }}>
+                            {deviation > 0 ? "+" : ""}{deviation}% vs overall
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Bias flags detail */}
+              {flags.length > 0 && (
+                <div>
+                  <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "1rem" }}>
+                    Bias flags requiring review
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {flags.map((f, i) => (
+                      <div key={i} style={{
+                        background: "rgba(186,117,23,0.08)",
+                        border: "1px solid rgba(186,117,23,0.35)",
+                        padding: "1rem 1.25rem",
+                      }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
+                          <div style={{ fontSize: "14px", color: "#e8c070", fontWeight: 600 }}>
+                            {f.group} — {f.approval_rate_pct}% approval rate
+                          </div>
+                          <span style={{ fontSize: "11px", color: "#e8c070", border: "1px solid rgba(186,117,23,0.4)", padding: "2px 8px" }}>
+                            {f.flag}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.6 }}>
+                          {f.message}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "rgba(240,235,224,0.4)", marginTop: "6px" }}>
+                          Deviation: {f.deviation_pct > 0 ? "+" : ""}{f.deviation_pct}% vs overall {f.overall_rate_pct}%
+                          · Threshold: ±{report.bias_threshold_used_pct}%
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {statusOk && flags.length === 0 && (
+                <div style={{ background: "rgba(29,158,117,0.08)", border: "1px solid rgba(29,158,117,0.3)", padding: "1rem 1.25rem", fontSize: "14px", color: "#7ec8a0" }}>
+                  ✓ No significant disparities detected across credit score bands. Approval rates are within the ±{report.bias_threshold_used_pct}% threshold.
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INCIDENT REPORTING PANEL
+// ══════════════════════════════════════════════════════════════════════════════
+function IncidentPanel({ apiKey, onStatsUpdate }) {
+  const [open, setOpen] = useState(false);
+  const [incidents, setIncidents] = useState([]);
+  const [loadingIncidents, setLoadingIncidents] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+  const [patchingId, setPatchingId] = useState(null);
+  const [form, setForm] = useState({
+    title: "",
+    severity: "medium",
+    description: "",
+    affected_audit_ids: "",
+    root_cause: "",
+    corrective_action: "",
+    jurisdiction: "SG",
+  });
+
+  const openIncidents = incidents.filter(i => i.status !== "resolved");
+
+  const fetchIncidents = useCallback(async () => {
+    setLoadingIncidents(true);
+    try {
+      const r = await fetch(`${API}/incidents`, {
+        headers: { Authorization: `Bearer ${apiKey}` }
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setIncidents(data.incidents || []);
+        if (onStatsUpdate) onStatsUpdate(data.incidents || []);
+      }
+    } catch (e) {}
+    setLoadingIncidents(false);
+  }, [apiKey]);
+
+  useEffect(() => { if (open) fetchIncidents(); }, [open, fetchIncidents]);
+
+  const handleSubmit = async () => {
+    if (!form.title.trim()) { setError("Title is required."); return; }
+    if (!form.description.trim()) { setError("Description is required."); return; }
+    setSubmitting(true); setError(""); setResult(null);
+    try {
+      const affected = form.affected_audit_ids
+        ? form.affected_audit_ids.split(",").map(s => s.trim()).filter(Boolean)
+        : [];
+      const payload = {
+        title: form.title,
+        severity: form.severity,
+        description: form.description,
+        affected_audit_ids: affected,
+        root_cause: form.root_cause || undefined,
+        corrective_action: form.corrective_action || undefined,
+        jurisdiction: form.jurisdiction || undefined,
+      };
+      const r = await fetch(`${API}/incident`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await r.json();
+      if (r.ok) {
+        setResult(data);
+        setShowForm(false);
+        setForm({ title: "", severity: "medium", description: "", affected_audit_ids: "", root_cause: "", corrective_action: "", jurisdiction: "SG" });
+        fetchIncidents();
+      } else {
+        setError(data.detail || "Something went wrong.");
+      }
+    } catch (e) { setError("Network error."); }
+    setSubmitting(false);
+  };
+
+  const handlePatch = async (incidentId, update) => {
+    setPatchingId(incidentId);
+    try {
+      const r = await fetch(`${API}/incident/${incidentId}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify(update),
+      });
+      if (r.ok) fetchIncidents();
+    } catch (e) {}
+    setPatchingId(null);
+  };
+
+  const severityColor = (s) => {
+    if (s === "critical") return { color: "#e08080", border: `1px solid ${red}`, background: "rgba(163,45,45,0.1)" };
+    if (s === "high") return { color: "#e8a060", border: "1px solid rgba(186,117,23,0.6)", background: "rgba(186,117,23,0.1)" };
+    if (s === "medium") return { color: "#e8c070", border: "1px solid rgba(186,117,23,0.3)", background: "rgba(186,117,23,0.07)" };
+    return { color: creamDim, border: "1px solid rgba(240,235,224,0.2)", background: "transparent" };
+  };
+
+  const statusColor = (s) => {
+    if (s === "resolved") return { color: "#7ec8a0", border: `1px solid ${green}` };
+    if (s === "investigating") return { color: "#e8c070", border: "1px solid rgba(186,117,23,0.4)" };
+    return { color: creamDim, border: "1px solid rgba(240,235,224,0.2)" };
+  };
+
+  const inputStyle = {
+    background: "rgba(240,235,224,0.06)", border: "1px solid rgba(240,235,224,0.2)",
+    color: cream, padding: "10px 14px", fontFamily: "'EB Garamond', serif",
+    fontSize: "14px", outline: "none", width: "100%",
+  };
+  const selectStyle = { ...inputStyle, background: navyDark, cursor: "pointer" };
+  const labelStyle = { fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "4px" };
+  const fieldStyle = { marginBottom: "1rem" };
+
+  return (
+    <div style={{
+      marginTop: "2rem",
+      border: openIncidents.length > 0 ? `1px solid rgba(186,117,23,0.5)` : "1px solid rgba(240,235,224,0.12)",
+      background: navyDark,
+    }}>
+      {/* Header */}
+      <div
+        style={{
+          padding: "1.25rem 1.5rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          cursor: "pointer",
+          borderBottom: open ? "1px solid rgba(240,235,224,0.1)" : "none",
+          background: openIncidents.length > 0 ? "rgba(186,117,23,0.06)" : "transparent",
+        }}
+        onClick={() => setOpen(o => !o)}
+      >
+        <div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: cream, fontWeight: 700 }}>
+            Incident Reporting
+            {openIncidents.length > 0 && (
+              <span style={{ marginLeft: "12px", fontSize: "13px", color: "#e8c070", border: "1px solid rgba(186,117,23,0.5)", padding: "2px 10px", fontFamily: "'EB Garamond', serif", letterSpacing: "1px" }}>
+                {openIncidents.length} open
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: "13px", color: creamDim, marginTop: "2px" }}>
+            EU AI Act Article 72 — report AI incidents to regulators within 15 days
+          </div>
+        </div>
+        <div style={{ fontSize: "20px", color: openIncidents.length > 0 ? "#e8c070" : creamDim, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</div>
+      </div>
+
+      {open && (
+        <div style={{ padding: "1.5rem" }}>
+          {/* Success */}
+          {result && (
+            <div style={{ background: "rgba(29,158,117,0.1)", border: `1px solid ${green}`, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#7ec8a0", marginBottom: "6px" }}>✓ Incident logged</div>
+              <div style={{ fontSize: "13px", color: creamDim }}>
+                Incident ID: <span style={{ fontFamily: "monospace", color: cream }}>{result.incident_id}</span>
+              </div>
+              {result.regulator_deadline && (
+                <div style={{ fontSize: "13px", color: "#e8c070", marginTop: "4px" }}>
+                  ⚠ Regulator notification deadline: <strong>{result.regulator_deadline.slice(0, 10)}</strong>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Report button */}
+          {!showForm ? (
+            <button style={{ ...styles.btnAmber, marginBottom: incidents.length > 0 ? "1.5rem" : "0" }} onClick={() => setShowForm(true)}>
+              + Report new incident
+            </button>
+          ) : (
+            <div style={{ background: "rgba(186,117,23,0.05)", border: "1px solid rgba(186,117,23,0.25)", padding: "1.25rem", marginBottom: "1.5rem" }}>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: cream, marginBottom: "4px", fontWeight: 700 }}>Report AI incident</div>
+              <div style={{ fontSize: "13px", color: "#e8c070", marginBottom: "1rem" }}>
+                High/critical severity incidents must be reported to the regulator within 15 days (EU AI Act Article 72).
+              </div>
+              {error && (
+                <div style={{ background: "rgba(163,45,45,0.15)", border: `1px solid ${red}`, color: "#e08080", padding: "8px 12px", fontSize: "13px", marginBottom: "1rem" }}>
+                  {error}
+                </div>
+              )}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div style={{ ...fieldStyle, gridColumn: "1 / -1" }}>
+                  <label style={labelStyle}>Incident title *</label>
+                  <input style={inputStyle} placeholder="e.g. Loan model incorrectly denied 12 applications" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Severity</label>
+                  <select style={selectStyle} value={form.severity} onChange={e => setForm(f => ({ ...f, severity: e.target.value }))}>
+                    <option value="low">Low — minor issue, no regulatory impact</option>
+                    <option value="medium">Medium — notable issue, monitor</option>
+                    <option value="high">High — significant harm, report within 15 days</option>
+                    <option value="critical">Critical — immediate regulatory action required</option>
+                  </select>
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Jurisdiction</label>
+                  <select style={selectStyle} value={form.jurisdiction} onChange={e => setForm(f => ({ ...f, jurisdiction: e.target.value }))}>
+                    <option value="SG">🇸🇬 Singapore (MAS)</option>
+                    <option value="ID">🇮🇩 Indonesia (OJK)</option>
+                    <option value="EU">🇪🇺 EU (EU AI Act)</option>
+                    <option value="UAE">🇦🇪 UAE (VARA)</option>
+                  </select>
+                </div>
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Description *</label>
+                <textarea style={{ ...inputStyle, height: "80px", resize: "vertical" }} placeholder="Describe what happened, when, and what AI system was involved..." value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Affected audit IDs (comma-separated, optional)</label>
+                <input style={inputStyle} placeholder="e.g. abc123, def456" value={form.affected_audit_ids} onChange={e => setForm(f => ({ ...f, affected_audit_ids: e.target.value }))} />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Root cause (optional)</label>
+                  <input style={inputStyle} placeholder="e.g. Training data bias" value={form.root_cause} onChange={e => setForm(f => ({ ...f, root_cause: e.target.value }))} />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Corrective action (optional)</label>
+                  <input style={inputStyle} placeholder="e.g. Retrained model, manual review" value={form.corrective_action} onChange={e => setForm(f => ({ ...f, corrective_action: e.target.value }))} />
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button style={{ ...styles.btnAmber, opacity: submitting ? 0.6 : 1 }} onClick={handleSubmit} disabled={submitting}>
+                  {submitting ? "Filing..." : "File incident →"}
+                </button>
+                <button style={styles.btn} onClick={() => { setShowForm(false); setError(""); }}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {/* Incidents list */}
+          {loadingIncidents ? (
+            <div style={{ fontSize: "13px", color: creamDim, fontStyle: "italic" }}>Loading incidents...</div>
+          ) : incidents.length === 0 ? (
+            <div style={{ fontSize: "13px", color: creamDim }}>No incidents reported yet.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {incidents.map((inc, i) => {
+                const sev = severityColor(inc.severity);
+                const sta = statusColor(inc.status);
+                const isPatching = patchingId === inc.incident_id;
+                return (
+                  <div key={i} style={{
+                    background: "rgba(240,235,224,0.03)",
+                    border: inc.status !== "resolved" ? `1px solid rgba(186,117,23,0.25)` : "1px solid rgba(240,235,224,0.08)",
+                    padding: "1rem 1.25rem",
+                  }}>
+                    {/* Top row */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: "15px", color: cream, fontFamily: "'Playfair Display', serif", marginBottom: "4px" }}>
+                          {inc.title}
+                        </div>
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                          <span style={{ fontSize: "11px", letterSpacing: "1px", padding: "2px 8px", ...sev }}>
+                            {inc.severity?.toUpperCase()}
+                          </span>
+                          <span style={{ fontSize: "11px", letterSpacing: "1px", padding: "2px 8px", ...sta }}>
+                            {inc.status?.toUpperCase().replace("_", " ")}
+                          </span>
+                          {inc.jurisdiction && (
+                            <span style={{ fontSize: "11px", color: creamDim, border: "1px solid rgba(240,235,224,0.15)", padding: "2px 8px" }}>
+                              {inc.jurisdiction}
+                            </span>
+                          )}
+                          {inc.reported_to_regulator && (
+                            <span style={{ fontSize: "11px", color: "#7ec8a0", border: `1px solid ${green}`, padding: "2px 8px" }}>
+                              ✓ Reported to regulator
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: "12px", color: creamDim, textAlign: "right", minWidth: "140px" }}>
+                        <div>{formatDate(inc.occurred_at || inc.reported_at)}</div>
+                        {inc.regulator_deadline && inc.status !== "resolved" && (
+                          <div style={{ color: "#e8c070", marginTop: "4px" }}>
+                            Deadline: {inc.regulator_deadline.slice(0, 10)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    {inc.description && (
+                      <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.6, marginBottom: "8px" }}>
+                        {inc.description}
+                      </div>
+                    )}
+
+                    {/* Meta */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "6px", marginBottom: "8px" }}>
+                      {inc.root_cause && (
+                        <div style={{ fontSize: "12px", color: creamDim }}>
+                          Root cause: <span style={{ color: cream }}>{inc.root_cause}</span>
+                        </div>
+                      )}
+                      {inc.corrective_action && (
+                        <div style={{ fontSize: "12px", color: creamDim }}>
+                          Corrective: <span style={{ color: cream }}>{inc.corrective_action}</span>
+                        </div>
+                      )}
+                      {inc.affected_audit_ids?.length > 0 && (
+                        <div style={{ fontSize: "12px", color: creamDim }}>
+                          Affected: <span style={{ color: cream, fontFamily: "monospace", fontSize: "11px" }}>{inc.affected_audit_ids.join(", ")}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    {inc.status !== "resolved" && (
+                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(240,235,224,0.06)" }}>
+                        {inc.status === "open" && (
+                          <button
+                            style={{ ...styles.btnAmber, fontSize: "12px", padding: "4px 12px", opacity: isPatching ? 0.6 : 1 }}
+                            onClick={() => handlePatch(inc.incident_id, { status: "investigating" })}
+                            disabled={isPatching}
+                          >
+                            Mark investigating
+                          </button>
+                        )}
+                        {!inc.reported_to_regulator && (inc.severity === "high" || inc.severity === "critical") && (
+                          <button
+                            style={{ ...styles.btn, fontSize: "12px", padding: "4px 12px", color: "#7ec8a0", borderColor: "rgba(29,158,117,0.4)", opacity: isPatching ? 0.6 : 1 }}
+                            onClick={() => handlePatch(inc.incident_id, { reported_to_regulator: true })}
+                            disabled={isPatching}
+                          >
+                            ✓ Mark reported to regulator
+                          </button>
+                        )}
+                        <button
+                          style={{ ...styles.btnGreen, fontSize: "12px", padding: "4px 12px", opacity: isPatching ? 0.6 : 1 }}
+                          onClick={() => handlePatch(inc.incident_id, { status: "resolved" })}
+                          disabled={isPatching}
+                        >
+                          Mark resolved
+                        </button>
+                      </div>
+                    )}
+
+                    <div style={{ fontSize: "11px", color: "rgba(240,235,224,0.3)", marginTop: "8px", fontFamily: "monospace" }}>
+                      {inc.incident_id}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -726,7 +1319,7 @@ function LoginScreen({ onLogin }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// DECISION MODAL — now includes Human Review Panel
+// DECISION MODAL
 // ══════════════════════════════════════════════════════════════════════════════
 function DecisionModal({ record, onClose, apiKey }) {
   if (!record) return null;
@@ -877,7 +1470,6 @@ function DecisionModal({ record, onClose, apiKey }) {
               </div>
             )}
 
-            {/* ── HUMAN OVERSIGHT PANEL ── */}
             {record.audit_id && (
               <HumanReviewPanel auditId={record.audit_id} apiKey={apiKey} />
             )}
@@ -962,7 +1554,6 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
 
   return (
     <div style={{ marginTop: "2rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark }}>
-      {/* Header */}
       <div
         style={{ padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", borderBottom: open ? "1px solid rgba(240,235,224,0.1)" : "none" }}
         onClick={() => setOpen(o => !o)}
@@ -987,7 +1578,6 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
 
       {open && (
         <div style={{ padding: "1.5rem" }}>
-          {/* Success */}
           {result && (
             <div style={{ background: "rgba(29,158,117,0.1)", border: `1px solid ${green}`, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
               <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#7ec8a0", marginBottom: "8px" }}>
@@ -1007,7 +1597,6 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
             </div>
           )}
 
-          {/* Register form toggle */}
           {!showForm ? (
             <button style={{ ...styles.btnGreen, marginBottom: models.length > 0 ? "1.5rem" : "0" }} onClick={() => setShowForm(true)}>
               + Register new model
@@ -1085,7 +1674,6 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
             </div>
           )}
 
-          {/* Models list */}
           {loadingModels ? (
             <div style={{ fontSize: "13px", color: creamDim, fontStyle: "italic" }}>Loading models...</div>
           ) : models.length === 0 ? (
@@ -1144,6 +1732,9 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
     </div>
   );
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TEST PANEL
 // ══════════════════════════════════════════════════════════════════════════════
 function TestPanel({ apiKey, onSuccess }) {
   const [open, setOpen] = useState(false);
@@ -1217,7 +1808,6 @@ function TestPanel({ apiKey, onSuccess }) {
     outline: "none",
     width: "100%",
   };
-
   const selectStyle = { ...inputStyle, background: "#1e2840", cursor: "pointer" };
   const labelStyle = { fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "6px" };
   const fieldStyle = { marginBottom: "1rem" };
@@ -1366,6 +1956,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const [selected, setSelected] = useState(null);
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
+  const [openIncidentCount, setOpenIncidentCount] = useState(0);
   const limit = 10;
 
   const fetchAll = useCallback(async () => {
@@ -1433,8 +2024,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const types = summary?.by_type?.map(b => b.type).filter(Boolean) || [];
   const jurisdictions = summary?.by_jurisdiction?.map(b => b.jurisdiction).filter(Boolean) || [];
   const chainOk = verify?.verified === true;
-
-  // Human oversight from summary
   const oversight = summary?.human_oversight;
   const oversightPct = oversight?.oversight_rate_pct ?? 0;
 
@@ -1480,7 +2069,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </div>
 
-        {/* ── STAT GRID — now 5 cards including Article 14 ── */}
+        {/* ── STAT GRID — 5 cards ── */}
         <div style={styles.statGrid}>
           <div style={styles.statCard}>
             <span style={styles.statLabel}>Total decisions</span>
@@ -1499,12 +2088,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             <span style={styles.statValue}>{loading ? "—" : (jurisdictions.length || 0)}</span>
             <div style={styles.statSub}>{jurisdictions.join(", ") || "—"}</div>
           </div>
-          <div style={styles.statCard}>
-            <span style={styles.statLabel}>Decision types</span>
-            <span style={styles.statValue}>{loading ? "—" : (types.length || 0)}</span>
-            <div style={styles.statSub}>{types.slice(0, 2).join(", ") || "—"}</div>
-          </div>
-          {/* NEW — Article 14 card */}
           <div style={{ ...styles.statCard, borderLeft: `2px solid ${oversightPct > 0 ? green : amber}` }}>
             <span style={styles.statLabel}>Article 14 coverage</span>
             <span style={{ ...styles.statValue, fontSize: "36px", color: oversightPct > 0 ? "#7ec8a0" : "#e8c070" }}>
@@ -1514,6 +2097,16 @@ function Dashboard({ apiKey, companyName, onLogout }) {
               {loading ? "" : oversightPct > 0
                 ? `${oversight?.decisions_reviewed} decision${oversight?.decisions_reviewed !== 1 ? "s" : ""} reviewed`
                 : "No human reviews yet"}
+            </div>
+          </div>
+          {/* Open incidents card */}
+          <div style={{ ...styles.statCard, borderLeft: `2px solid ${openIncidentCount > 0 ? amber : "rgba(240,235,224,0.1)"}` }}>
+            <span style={styles.statLabel}>Open incidents</span>
+            <span style={{ ...styles.statValue, fontSize: "42px", color: openIncidentCount > 0 ? "#e8c070" : cream }}>
+              {openIncidentCount}
+            </span>
+            <div style={{ ...styles.statSub, color: openIncidentCount > 0 ? "#e8c070" : creamDim }}>
+              {openIncidentCount > 0 ? "Requires attention" : "All clear"}
             </div>
           </div>
         </div>
@@ -1604,7 +2197,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         )}
 
-        {/* ── ARTICLE 14 STATUS BANNER ── */}
+        {/* ── ARTICLE 14 BANNER ── */}
         {!loading && summary && (
           <div style={{
             background: oversightPct > 0 ? "rgba(29,158,117,0.08)" : "rgba(186,117,23,0.08)",
@@ -1732,8 +2325,17 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </>
         )}
 
+        {/* ── BOTTOM PANELS ── */}
         <TestPanel apiKey={apiKey} onSuccess={() => { fetchAll(); fetchDecisions(); }} />
         <ModelRegistryPanel apiKey={apiKey} onSuccess={fetchAll} />
+        <FairnessPanel apiKey={apiKey} />
+        <IncidentPanel
+          apiKey={apiKey}
+          onStatsUpdate={(incidents) => {
+            const open = incidents.filter(i => i.status !== "resolved").length;
+            setOpenIncidentCount(open);
+          }}
+        />
 
         {summary?.by_type?.length > 0 && (
           <div style={{ marginTop: "2rem" }}>

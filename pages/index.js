@@ -786,6 +786,11 @@ function FairnessPanel({ apiKey }) {
                 </div>
               </div>
 
+              {/* Fairness disclaimer */}
+              <div style={{ fontSize: "13px", color: "rgba(240,235,224,0.45)", background: "rgba(240,235,224,0.03)", border: "1px solid rgba(240,235,224,0.08)", padding: "10px 14px", marginBottom: "1rem", lineHeight: 1.6 }}>
+                ⓘ Statistical flags for internal review only. These do not constitute a legal determination of discrimination or compliance. Consult a licensed compliance lawyer before regulatory submission.
+              </div>
+
               {/* Regulation references */}
               {report.regulation && (
                 <div style={{ marginBottom: "1.5rem", display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -1467,6 +1472,9 @@ function DecisionModal({ record, onClose, apiKey }) {
                   AI explanation — Article 13 compliant
                 </div>
                 <div style={styles.explanationBox}>{d.explanation || record.explanation}</div>
+                <div style={{ fontSize: "12px", color: "rgba(240,235,224,0.4)", marginTop: "6px", lineHeight: 1.6 }}>
+                  ⓘ AI-generated explanation. Verify against source decision data before regulatory submission.
+                </div>
               </div>
             )}
 
@@ -1905,8 +1913,13 @@ function TestPanel({ apiKey, onSuccess }) {
                 <div><span style={{ color: cream }}>Compliance:</span> <span style={{ color: result.compliance?.compliant ? "#7ec8a0" : "#e08080" }}>{result.compliance?.status || "—"}</span></div>
               </div>
               {result.explanation && (
-                <div style={{ marginTop: "10px", fontSize: "14px", color: "#b0e8cc", fontStyle: "italic", lineHeight: 1.7, borderTop: "1px solid rgba(29,158,117,0.2)", paddingTop: "10px" }}>
-                  {result.explanation}
+                <div style={{ marginTop: "10px", borderTop: "1px solid rgba(29,158,117,0.2)", paddingTop: "10px" }}>
+                  <div style={{ fontSize: "14px", color: "#b0e8cc", fontStyle: "italic", lineHeight: 1.7 }}>
+                    {result.explanation}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "rgba(240,235,224,0.4)", marginTop: "6px" }}>
+                    ⓘ AI-generated explanation. Verify against source decision data before regulatory submission.
+                  </div>
                 </div>
               )}
               {result.compliance?.missing_recommended?.length > 0 && (

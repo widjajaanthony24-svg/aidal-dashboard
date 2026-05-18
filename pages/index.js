@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 
 const API = "https://aidal-production.up.railway.app";
 
-const navy = "#2d3a5c";
+const navy = "#070809";
 const cream = "#f0ebe0";
-const creamDim = "#c8c2b0";
-const navyDark = "#1e2840";
-const navyLight = "#3d4f7a";
+const creamDim = "#a8a39a";
+const navyDark = "#0d0f12";
+const navyLight = "#111318";
 const green = "#1d9e75";
 const red = "#a32d2d";
 const amber = "#ba7517";
@@ -16,8 +16,8 @@ const styles = {
     minHeight: "100vh",
     background: navy,
     color: cream,
-    fontFamily: "'EB Garamond', Georgia, serif",
-    fontSize: "16px",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "18px",
   },
 
   loginWrap: {
@@ -65,7 +65,7 @@ const styles = {
     border: "1px solid rgba(240,235,224,0.2)",
     color: cream,
     padding: "14px 16px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "15px",
     outline: "none",
     boxSizing: "border-box",
@@ -76,7 +76,7 @@ const styles = {
     width: "100%",
     background: cream,
     border: "none",
-    color: navy,
+    color: "#070809",
     padding: "14px",
     fontFamily: "'Playfair Display', serif",
     fontSize: "16px",
@@ -108,7 +108,8 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    background: navyDark,
+    background: "rgba(7,8,9,0.97)",
+    backdropFilter: "blur(16px)",
   },
   logo: {
     fontFamily: "'Playfair Display', Georgia, serif",
@@ -172,6 +173,7 @@ const styles = {
   statCard: {
     background: navyDark,
     padding: "1.5rem",
+    borderLeft: "1px solid rgba(240,235,224,0.07)",
   },
   statLabel: {
     fontSize: "11px",
@@ -215,7 +217,7 @@ const styles = {
     border: `1px solid ${creamDim}`,
     color: cream,
     padding: "8px 20px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "14px",
     letterSpacing: "1px",
     cursor: "pointer",
@@ -226,7 +228,7 @@ const styles = {
     border: `1px solid ${cream}`,
     color: navy,
     padding: "8px 20px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "14px",
     letterSpacing: "1px",
     cursor: "pointer",
@@ -236,7 +238,7 @@ const styles = {
     border: `1px solid ${red}`,
     color: "#e08080",
     padding: "8px 20px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "13px",
     letterSpacing: "1px",
     cursor: "pointer",
@@ -246,7 +248,7 @@ const styles = {
     border: `1px solid ${green}`,
     color: "#7ec8a0",
     padding: "8px 20px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "13px",
     letterSpacing: "1px",
     cursor: "pointer",
@@ -256,7 +258,7 @@ const styles = {
     border: `1px solid ${amber}`,
     color: "#e8c070",
     padding: "8px 20px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "13px",
     letterSpacing: "1px",
     cursor: "pointer",
@@ -273,7 +275,7 @@ const styles = {
     border: "1px solid rgba(240,235,224,0.2)",
     color: cream,
     padding: "8px 14px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "14px",
     cursor: "pointer",
     outline: "none",
@@ -283,7 +285,7 @@ const styles = {
     border: "1px solid rgba(240,235,224,0.2)",
     color: cream,
     padding: "8px 14px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "14px",
     outline: "none",
     width: "280px",
@@ -291,7 +293,7 @@ const styles = {
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    background: navyDark,
+    background: "#070809",
     border: "1px solid rgba(240,235,224,0.1)",
   },
   th: {
@@ -302,7 +304,7 @@ const styles = {
     textTransform: "uppercase",
     color: creamDim,
     borderBottom: "1px solid rgba(240,235,224,0.1)",
-    background: navy,
+    background: "rgba(240,235,224,0.03)",
     fontWeight: 400,
   },
   td: {
@@ -418,12 +420,13 @@ const styles = {
     color: creamDim,
   },
   countdown: {
-    background: cream,
-    color: navy,
+    background: "rgba(29,158,117,0.1)",
+    borderBottom: "1px solid rgba(29,158,117,0.2)",
+    color: cream,
     padding: "10px 2rem",
     textAlign: "center",
-    fontSize: "14px",
-    fontFamily: "'EB Garamond', serif",
+    fontSize: "13px",
+    fontFamily: "'Inter', sans-serif",
     letterSpacing: "0.5px",
   },
   certBox: {
@@ -539,7 +542,7 @@ function HumanReviewPanel({ auditId, apiKey }) {
     border: "1px solid rgba(240,235,224,0.2)",
     color: cream,
     padding: "10px 14px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "14px",
     outline: "none",
     width: "100%",
@@ -999,7 +1002,7 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
 
   const inputStyle = {
     background: "rgba(240,235,224,0.06)", border: "1px solid rgba(240,235,224,0.2)",
-    color: cream, padding: "10px 14px", fontFamily: "'EB Garamond', serif",
+    color: cream, padding: "10px 14px", fontFamily: "'Inter', sans-serif",
     fontSize: "14px", outline: "none", width: "100%",
   };
   const selectStyle = { ...inputStyle, background: navyDark, cursor: "pointer" };
@@ -1029,7 +1032,7 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: cream, fontWeight: 700 }}>
             Incident Reporting
             {openIncidents.length > 0 && (
-              <span style={{ marginLeft: "12px", fontSize: "13px", color: "#e8c070", border: "1px solid rgba(186,117,23,0.5)", padding: "2px 10px", fontFamily: "'EB Garamond', serif", letterSpacing: "1px" }}>
+              <span style={{ marginLeft: "12px", fontSize: "13px", color: "#e8c070", border: "1px solid rgba(186,117,23,0.5)", padding: "2px 10px", fontFamily: "'Inter', sans-serif", letterSpacing: "1px" }}>
                 {openIncidents.length} open
               </span>
             )}
@@ -1291,7 +1294,7 @@ function LoginScreen({ onLogin }) {
 
   return (
     <div style={styles.loginWrap}>
-      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
       <div style={styles.loginBox}>
         <div style={styles.loginLogo}>AIDAL.</div>
         <div style={styles.loginTagline}>AI Decision Accountability Layer</div>
@@ -1553,7 +1556,7 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
 
   const inputStyle = {
     background: "rgba(240,235,224,0.06)", border: "1px solid rgba(240,235,224,0.2)",
-    color: cream, padding: "10px 14px", fontFamily: "'EB Garamond', serif",
+    color: cream, padding: "10px 14px", fontFamily: "'Inter', sans-serif",
     fontSize: "14px", outline: "none", width: "100%",
   };
   const selectStyle = { ...inputStyle, background: navyDark, cursor: "pointer" };
@@ -1811,7 +1814,7 @@ function TestPanel({ apiKey, onSuccess }) {
     border: "1px solid rgba(240,235,224,0.2)",
     color: cream,
     padding: "10px 14px",
-    fontFamily: "'EB Garamond', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: "15px",
     outline: "none",
     width: "100%",
@@ -1931,7 +1934,7 @@ function TestPanel({ apiKey, onSuccess }) {
           )}
 
           <button
-            style={{ background: cream, border: "none", color: navy, padding: "12px 32px", fontFamily: "'EB Garamond', serif", fontSize: "15px", letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", opacity: sending ? 0.6 : 1 }}
+            style={{ background: cream, border: "none", color: navy, padding: "12px 32px", fontFamily: "'Inter', sans-serif", fontSize: "15px", letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", opacity: sending ? 0.6 : 1 }}
             onClick={handleSend}
             disabled={sending}
           >
@@ -1940,7 +1943,7 @@ function TestPanel({ apiKey, onSuccess }) {
 
           {result && (
             <button
-              style={{ marginLeft: "12px", background: "transparent", border: "1px solid rgba(240,235,224,0.2)", color: creamDim, padding: "12px 24px", fontFamily: "'EB Garamond', serif", fontSize: "14px", cursor: "pointer" }}
+              style={{ marginLeft: "12px", background: "transparent", border: "1px solid rgba(240,235,224,0.2)", color: creamDim, padding: "12px 24px", fontFamily: "'Inter', sans-serif", fontSize: "14px", cursor: "pointer" }}
               onClick={() => { setResult(null); setForm({ decision_type: "loan_approval", model_used: "", credit_score: "", income: "", loan_amount: "", currency: "IDR", approved: "true", confidence: "", jurisdiction: "ID" }); }}
             >
               Log another
@@ -2042,7 +2045,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
   return (
     <div style={styles.app}>
-      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
       <div style={styles.countdown}>
         <strong>EU AI Act deadline:</strong> &nbsp;
@@ -2173,7 +2176,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                     border: "1px solid rgba(240,235,224,0.25)",
                     color: cream,
                     padding: "8px 20px",
-                    fontFamily: "'EB Garamond', serif",
+                    fontFamily: "'Inter', sans-serif",
                     fontSize: "14px",
                     letterSpacing: "1px",
                     cursor: "pointer",

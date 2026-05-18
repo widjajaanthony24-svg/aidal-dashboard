@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 
 const API = "https://aidal-production.up.railway.app";
-const navy = "#2d3a5c";
+const navy = "#070809";
 const cream = "#f0ebe0";
-const creamDim = "#c8c2b0";
-const navyDark = "#1e2840";
+const creamDim = "#a8a39a";
+const navyDark = "#0d0f12";
 const green = "#1d9e75";
 const red = "#a32d2d";
 
@@ -104,7 +104,7 @@ export default function PublicVerify() {
   const isLoading = status === "loading";
 
   return (
-    <div style={{ minHeight: "100vh", background: navy, color: cream, fontFamily: "'EB Garamond', Georgia, serif" }}>
+    <div style={{ minHeight: "100vh", background: navy, color: cream, fontFamily: "'Inter', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet" />
 
       {/* Header */}

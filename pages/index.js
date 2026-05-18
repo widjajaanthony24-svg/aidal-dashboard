@@ -1298,7 +1298,7 @@ function LoginScreen({ onLogin }) {
       <div style={styles.loginBox}>
         <div style={{ marginBottom: "0.25rem" }}>
           <div style={{ overflow:"hidden", width:"300px", height:"112px", position:"relative", margin:"0 auto" }}>
-            <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"330px", height:"330px", mixBlendMode:"screen", top:"-87px", left:"-10px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Playfair Display,serif;font-size:36px;font-weight:900;color:#f0ebe0;letter-spacing:4px">AIDAL.</span>'; }} />
+            <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"330px", height:"330px", mixBlendMode:"screen", top:"-110px", left:"-10px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Playfair Display,serif;font-size:36px;font-weight:900;color:#f0ebe0;letter-spacing:4px">AIDAL.</span>'; }} />
           </div>
         </div>
         <div style={styles.loginTagline}>AI Decision Accountability Layer</div>
@@ -2060,7 +2060,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
       <div style={styles.header}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <div style={{ overflow:"hidden", width:"160px", height:"60px", position:"relative", flexShrink:0 }}>
-            <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"175px", height:"175px", mixBlendMode:"screen", top:"-46px", left:"-5px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:#f0ebe0;letter-spacing:2px">AIDAL.</span>'; }} />
+            <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"175px", height:"175px", mixBlendMode:"screen", top:"-58px", left:"-5px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:#f0ebe0;letter-spacing:2px">AIDAL.</span>'; }} />
           </div>
         </div>
         <div style={styles.headerRight}>

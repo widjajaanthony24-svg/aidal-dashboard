@@ -1296,7 +1296,10 @@ function LoginScreen({ onLogin }) {
     <div style={styles.loginWrap}>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
       <div style={styles.loginBox}>
-        <div style={styles.loginLogo}>AIDAL.</div>
+        <div style={{ marginBottom: "0.25rem" }}>
+          <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ height: "72px", width: "auto", objectFit: "contain", mixBlendMode: "screen" }} onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "block"; }} />
+          <span style={{ ...styles.loginLogo, display: "none" }}>AIDAL.</span>
+        </div>
         <div style={styles.loginTagline}>AI Decision Accountability Layer</div>
         {error && <div style={styles.loginError}>{error}</div>}
         <label style={styles.loginLabel}>Your API key</label>
@@ -2054,7 +2057,10 @@ function Dashboard({ apiKey, companyName, onLogout }) {
       </div>
 
       <div style={styles.header}>
-        <div style={styles.logo}>AIDAL.</div>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ height: "48px", width: "auto", objectFit: "contain", mixBlendMode: "screen" }} onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "block"; }} />
+          <span style={{ ...styles.logo, display: "none" }}>AIDAL.</span>
+        </div>
         <div style={styles.headerRight}>
           <span style={styles.companyBadge}>{companyName}</span>
           <span style={styles.statusText}>
@@ -2371,7 +2377,10 @@ function Dashboard({ apiKey, companyName, onLogout }) {
       </div>
 
       <div style={{ borderTop: "1px solid rgba(240,235,224,0.1)", padding: "1.5rem 2rem", display: "flex", justifyContent: "space-between", fontSize: "13px", color: creamDim, marginTop: "2rem" }}>
-        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: cream }}>AIDAL.</span>
+        <span style={{ display: "flex", alignItems: "center" }}>
+          <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ height: "36px", width: "auto", objectFit: "contain", mixBlendMode: "screen" }} onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "inline"; }} />
+          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: cream, display: "none" }}>AIDAL.</span>
+        </span>
         <span>AI Decision Accountability Layer · {API}</span>
         <span>© 2026 AIDAL</span>
       </div>

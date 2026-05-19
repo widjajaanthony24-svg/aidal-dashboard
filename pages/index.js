@@ -2,14 +2,17 @@ import { useState, useEffect, useCallback } from "react";
 
 const API = "https://aidal-production.up.railway.app";
 
-const navy = "#070809";
-const cream = "#f0ebe0";
-const creamDim = "#a8a39a";
-const navyDark = "#0d0f12";
-const navyLight = "#111318";
-const green = "#1d9e75";
-const red = "#a32d2d";
-const amber = "#ba7517";
+const navy     = "#0A0A09";
+const cream    = "#F5F0E8";
+const creamDim = "#9C9690";
+const navyDark = "#111110";
+const navyLight= "#1A1A18";
+const green    = "#4CAF82";
+const red      = "#E05252";
+const amber    = "#D4873A";
+const bgBorder = "#242422";
+const textMuted= "#5C5850";
+const accentColor = "#C8A96E";
 
 const styles = {
   app: {
@@ -17,12 +20,15 @@ const styles = {
     background: navy,
     color: cream,
     fontFamily: "'Inter', sans-serif",
-    fontSize: "18px",
+    fontSize: "13px",
+    lineHeight: 1.6,
+    WebkitFontSmoothing: "antialiased",
+    MozOsxFontSmoothing: "grayscale",
   },
 
   loginWrap: {
     minHeight: "100vh",
-    background: navyDark,
+    background: navy,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -31,295 +37,310 @@ const styles = {
   },
   loginBox: {
     width: "100%",
-    maxWidth: 480,
-    border: "1px solid rgba(240,235,224,0.15)",
-    padding: "3rem",
-    background: navy,
+    maxWidth: 420,
+    border: `0.5px solid ${bgBorder}`,
+    padding: "2.5rem",
+    background: navyDark,
+    borderRadius: 12,
   },
   loginLogo: {
-    fontFamily: "'Playfair Display', Georgia, serif",
-    fontSize: "36px",
-    fontWeight: 900,
-    letterSpacing: "4px",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "20px",
+    fontWeight: 600,
+    letterSpacing: "-0.01em",
     color: cream,
     marginBottom: "0.25rem",
   },
   loginTagline: {
-    fontSize: "13px",
+    fontSize: "12px",
     color: creamDim,
-    letterSpacing: "2px",
-    textTransform: "uppercase",
-    marginBottom: "2.5rem",
+    letterSpacing: "0.08em",
+    marginBottom: "2rem",
   },
   loginLabel: {
     fontSize: "11px",
-    letterSpacing: "3px",
+    letterSpacing: "0.08em",
     textTransform: "uppercase",
-    color: creamDim,
+    color: textMuted,
     display: "block",
-    marginBottom: "8px",
+    marginBottom: "6px",
   },
   loginInput: {
     width: "100%",
-    background: navyDark,
-    border: "1px solid rgba(240,235,224,0.2)",
+    background: navyLight,
+    border: `0.5px solid ${bgBorder}`,
     color: cream,
-    padding: "14px 16px",
-    fontFamily: "'Inter', sans-serif",
-    fontSize: "15px",
+    padding: "10px 14px",
+    fontFamily: "'JetBrains Mono', monospace",
+    fontSize: "13px",
     outline: "none",
     boxSizing: "border-box",
-    letterSpacing: "1px",
-    marginBottom: "1.25rem",
+    marginBottom: "1rem",
+    borderRadius: 6,
+    transition: "border-color 0.15s ease",
   },
   loginBtn: {
     width: "100%",
-    background: cream,
+    background: accentColor,
     border: "none",
-    color: "#070809",
-    padding: "14px",
-    fontFamily: "'Playfair Display', serif",
-    fontSize: "16px",
-    fontWeight: 700,
-    letterSpacing: "2px",
+    color: "#0A0A09",
+    padding: "11px",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "13px",
+    fontWeight: 600,
     cursor: "pointer",
-    textTransform: "uppercase",
+    borderRadius: 6,
+    transition: "opacity 0.15s ease",
   },
   loginError: {
-    background: "rgba(163,45,45,0.15)",
-    border: `1px solid ${red}`,
-    color: "#e08080",
+    background: "rgba(224,82,82,0.1)",
+    border: `0.5px solid ${red}`,
+    color: red,
     padding: "10px 14px",
-    fontSize: "14px",
+    fontSize: "13px",
     marginBottom: "1rem",
+    borderRadius: 6,
   },
   loginHint: {
     marginTop: "1.5rem",
-    fontSize: "13px",
+    fontSize: "12px",
     color: creamDim,
-    borderTop: "1px solid rgba(240,235,224,0.1)",
+    borderTop: `0.5px solid ${bgBorder}`,
     paddingTop: "1.5rem",
     lineHeight: 1.8,
   },
 
   header: {
-    borderBottom: `1px solid rgba(240,235,224,0.1)`,
-    padding: "1.25rem 2rem",
+    borderBottom: `0.5px solid ${bgBorder}`,
+    padding: "0 2rem",
+    height: "52px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    background: "rgba(7,8,9,0.97)",
-    backdropFilter: "blur(16px)",
+    background: navy,
   },
   logo: {
-    fontFamily: "'Playfair Display', Georgia, serif",
-    fontSize: "22px",
-    fontWeight: 700,
-    letterSpacing: "2px",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "16px",
+    fontWeight: 600,
+    letterSpacing: "-0.01em",
     color: cream,
   },
   headerRight: {
     display: "flex",
     alignItems: "center",
-    gap: "1.5rem",
+    gap: "0.625rem",
   },
   companyBadge: {
-    fontSize: "13px",
+    fontSize: "12px",
     color: creamDim,
-    letterSpacing: "1px",
-    background: "rgba(240,235,224,0.07)",
-    padding: "4px 12px",
-    border: "1px solid rgba(240,235,224,0.15)",
+    background: navyLight,
+    padding: "4px 10px",
+    border: `0.5px solid ${bgBorder}`,
+    borderRadius: 6,
   },
   statusDot: (ok) => ({
-    width: 8,
-    height: 8,
+    width: 7,
+    height: 7,
     borderRadius: "50%",
     background: ok ? green : red,
     display: "inline-block",
-    marginRight: 6,
+    marginRight: 5,
+    animation: ok ? "pulse-dot 2s ease-in-out infinite" : "none",
   }),
   statusText: {
-    fontSize: "13px",
+    fontSize: "12px",
     color: creamDim,
-    letterSpacing: "1px",
+    display: "flex",
+    alignItems: "center",
   },
   main: {
     maxWidth: 1200,
     margin: "0 auto",
-    padding: "2rem",
+    padding: "1.5rem 2rem 2rem",
   },
   pageTitle: {
-    fontFamily: "'Playfair Display', serif",
-    fontSize: "36px",
-    fontWeight: 900,
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "20px",
+    fontWeight: 600,
     color: cream,
     marginBottom: "0.25rem",
+    letterSpacing: "-0.02em",
   },
   pageSubtitle: {
-    fontSize: "15px",
+    fontSize: "12px",
     color: creamDim,
-    marginBottom: "2.5rem",
-    letterSpacing: "0.5px",
+    marginBottom: "1.75rem",
   },
   statGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(5, 1fr)",
-    gap: "1px",
-    background: "rgba(240,235,224,0.1)",
-    border: "1px solid rgba(240,235,224,0.1)",
-    marginBottom: "2rem",
+    gap: "0",
+    background: bgBorder,
+    border: `0.5px solid ${bgBorder}`,
+    marginBottom: "1.5rem",
+    borderRadius: 8,
+    overflow: "hidden",
   },
   statCard: {
     background: navyDark,
-    padding: "1.5rem",
-    borderLeft: "1px solid rgba(240,235,224,0.07)",
+    padding: "1.25rem 1.5rem",
+    borderRight: `0.5px solid ${bgBorder}`,
   },
   statLabel: {
     fontSize: "11px",
-    letterSpacing: "3px",
+    letterSpacing: "0.08em",
     textTransform: "uppercase",
-    color: creamDim,
-    marginBottom: "8px",
+    color: textMuted,
+    marginBottom: "6px",
     display: "block",
   },
   statValue: {
-    fontFamily: "'Playfair Display', serif",
-    fontSize: "42px",
-    fontWeight: 700,
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "28px",
+    fontWeight: 600,
     color: cream,
     lineHeight: 1,
     display: "block",
   },
   statSub: {
-    fontSize: "12px",
+    fontSize: "11px",
     color: creamDim,
     marginTop: "4px",
   },
   verifyBanner: (valid) => ({
-    background: valid ? "rgba(29,158,117,0.15)" : "rgba(163,45,45,0.15)",
-    border: `1px solid ${valid ? green : red}`,
-    padding: "1rem 1.5rem",
-    marginBottom: "2rem",
+    background: valid ? "rgba(76,175,130,0.1)" : "rgba(224,82,82,0.1)",
+    border: `0.5px solid ${valid ? "rgba(76,175,130,0.3)" : "rgba(224,82,82,0.3)"}`,
+    padding: "0.875rem 1.25rem",
+    marginBottom: "1.5rem",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    borderRadius: 8,
   }),
   verifyText: (valid) => ({
-    fontSize: "15px",
-    color: valid ? "#7ec8a0" : "#e08080",
+    fontSize: "13px",
+    color: valid ? green : red,
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "8px",
   }),
   btn: {
     background: "transparent",
-    border: `1px solid ${creamDim}`,
-    color: cream,
-    padding: "8px 20px",
+    border: `0.5px solid ${bgBorder}`,
+    color: creamDim,
+    padding: "6px 14px",
     fontFamily: "'Inter', sans-serif",
-    fontSize: "14px",
-    letterSpacing: "1px",
+    fontSize: "13px",
     cursor: "pointer",
-    transition: "all 0.15s",
+    transition: "all 0.15s ease",
+    borderRadius: 6,
   },
   btnPrimary: {
-    background: cream,
-    border: `1px solid ${cream}`,
-    color: navy,
-    padding: "8px 20px",
+    background: accentColor,
+    border: "none",
+    color: "#0A0A09",
+    padding: "6px 14px",
     fontFamily: "'Inter', sans-serif",
-    fontSize: "14px",
-    letterSpacing: "1px",
+    fontSize: "13px",
+    fontWeight: 600,
     cursor: "pointer",
+    borderRadius: 6,
+    transition: "all 0.15s ease",
   },
   btnDanger: {
     background: "transparent",
-    border: `1px solid ${red}`,
-    color: "#e08080",
-    padding: "8px 20px",
+    border: "none",
+    color: red,
+    padding: "6px 14px",
     fontFamily: "'Inter', sans-serif",
     fontSize: "13px",
-    letterSpacing: "1px",
     cursor: "pointer",
+    transition: "all 0.15s ease",
   },
   btnGreen: {
-    background: "rgba(29,158,117,0.15)",
-    border: `1px solid ${green}`,
-    color: "#7ec8a0",
-    padding: "8px 20px",
+    background: "rgba(76,175,130,0.1)",
+    border: `0.5px solid ${green}`,
+    color: green,
+    padding: "6px 14px",
     fontFamily: "'Inter', sans-serif",
     fontSize: "13px",
-    letterSpacing: "1px",
     cursor: "pointer",
+    borderRadius: 6,
+    transition: "all 0.15s ease",
   },
   btnAmber: {
-    background: "rgba(186,117,23,0.15)",
-    border: `1px solid ${amber}`,
-    color: "#e8c070",
-    padding: "8px 20px",
+    background: "rgba(212,135,58,0.12)",
+    border: `0.5px solid ${amber}`,
+    color: amber,
+    padding: "6px 14px",
     fontFamily: "'Inter', sans-serif",
     fontSize: "13px",
-    letterSpacing: "1px",
     cursor: "pointer",
+    borderRadius: 6,
+    transition: "all 0.15s ease",
   },
   toolbar: {
     display: "flex",
-    gap: "1rem",
+    gap: "0.625rem",
     marginBottom: "1rem",
     flexWrap: "wrap",
     alignItems: "center",
   },
   select: {
     background: navyDark,
-    border: "1px solid rgba(240,235,224,0.2)",
+    border: `0.5px solid ${bgBorder}`,
     color: cream,
-    padding: "8px 14px",
+    padding: "6px 12px",
     fontFamily: "'Inter', sans-serif",
-    fontSize: "14px",
+    fontSize: "13px",
     cursor: "pointer",
     outline: "none",
+    borderRadius: 6,
   },
   input: {
     background: navyDark,
-    border: "1px solid rgba(240,235,224,0.2)",
+    border: `0.5px solid ${bgBorder}`,
     color: cream,
-    padding: "8px 14px",
+    padding: "6px 12px",
     fontFamily: "'Inter', sans-serif",
-    fontSize: "14px",
+    fontSize: "13px",
     outline: "none",
-    width: "280px",
+    width: "260px",
+    borderRadius: 6,
   },
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    background: "#070809",
-    border: "1px solid rgba(240,235,224,0.1)",
+    background: navy,
+    border: `0.5px solid ${bgBorder}`,
   },
   th: {
-    padding: "12px 16px",
+    padding: "10px 14px",
     textAlign: "left",
     fontSize: "11px",
-    letterSpacing: "2px",
+    letterSpacing: "0.08em",
     textTransform: "uppercase",
-    color: creamDim,
-    borderBottom: "1px solid rgba(240,235,224,0.1)",
-    background: "rgba(240,235,224,0.03)",
-    fontWeight: 400,
+    color: textMuted,
+    borderBottom: `0.5px solid ${bgBorder}`,
+    background: navyLight,
+    fontWeight: 500,
   },
   td: {
-    padding: "14px 16px",
-    fontSize: "14px",
+    padding: "11px 14px",
+    fontSize: "13px",
     color: creamDim,
-    borderBottom: "1px solid rgba(240,235,224,0.06)",
+    borderBottom: `0.5px solid ${bgBorder}`,
     verticalAlign: "top",
+    transition: "background 0.1s ease",
   },
   tdPrimary: {
-    padding: "14px 16px",
-    fontSize: "14px",
+    padding: "11px 14px",
+    fontSize: "13px",
     color: cream,
-    borderBottom: "1px solid rgba(240,235,224,0.06)",
-    fontFamily: "'Playfair Display', serif",
+    borderBottom: `0.5px solid ${bgBorder}`,
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 500,
   },
   outcomeBadge: (outcome) => {
     const o = (outcome || "").toLowerCase();
@@ -327,24 +348,24 @@ const styles = {
     const isBad = o.includes("den") || o.includes("flag") || o.includes("reject") || o.includes("block") || o === "false";
     return {
       display: "inline-block",
-      padding: "3px 10px",
-      fontSize: "12px",
-      letterSpacing: "1px",
-      border: `1px solid ${isGood ? green : isBad ? red : amber}`,
-      color: isGood ? "#7ec8a0" : isBad ? "#e08080" : "#e8c070",
-      background: isGood ? "rgba(29,158,117,0.1)" : isBad ? "rgba(163,45,45,0.1)" : "rgba(186,117,23,0.1)",
+      padding: "2px 8px",
+      fontSize: "11px",
+      border: `0.5px solid ${isGood ? green : isBad ? red : bgBorder}`,
+      color: isGood ? green : isBad ? red : creamDim,
+      background: isGood ? "rgba(76,175,130,0.1)" : isBad ? "rgba(224,82,82,0.1)" : navyLight,
+      borderRadius: 4,
     };
   },
   hashText: {
-    fontFamily: "monospace",
+    fontFamily: "'JetBrains Mono', monospace",
     fontSize: "11px",
-    color: creamDim,
-    letterSpacing: "0.5px",
+    color: textMuted,
+    letterSpacing: "0.03em",
   },
   modal: {
     position: "fixed",
     top: 0, left: 0, right: 0, bottom: 0,
-    background: "rgba(14,20,36,0.92)",
+    background: "rgba(0,0,0,0.72)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -352,97 +373,105 @@ const styles = {
     padding: "2rem",
   },
   modalBox: {
-    background: navyDark,
-    border: "1px solid rgba(240,235,224,0.15)",
+    background: navyLight,
+    border: `0.5px solid ${bgBorder}`,
     maxWidth: 720,
     width: "100%",
     maxHeight: "85vh",
     overflowY: "auto",
-    padding: "2.5rem",
+    padding: "2rem",
+    borderRadius: 8,
   },
   modalTitle: {
-    fontFamily: "'Playfair Display', serif",
-    fontSize: "24px",
-    fontWeight: 700,
+    fontFamily: "'Inter', sans-serif",
+    fontSize: "17px",
+    fontWeight: 600,
     color: cream,
     marginBottom: "1.5rem",
+    letterSpacing: "-0.01em",
   },
   modalRow: {
     display: "flex",
     gap: "1rem",
     marginBottom: "1rem",
-    borderBottom: "1px solid rgba(240,235,224,0.06)",
+    borderBottom: `0.5px solid ${bgBorder}`,
     paddingBottom: "1rem",
   },
   modalKey: {
     fontSize: "11px",
-    letterSpacing: "2px",
+    letterSpacing: "0.08em",
     textTransform: "uppercase",
-    color: creamDim,
+    color: textMuted,
     minWidth: "140px",
     paddingTop: "2px",
   },
   modalVal: {
-    fontSize: "15px",
+    fontSize: "13px",
     color: cream,
     lineHeight: 1.6,
     flex: 1,
   },
   explanationBox: {
-    background: "rgba(29,158,117,0.1)",
-    border: `1px solid ${green}`,
+    background: "rgba(76,175,130,0.08)",
+    border: `0.5px solid rgba(76,175,130,0.25)`,
     padding: "1rem 1.25rem",
     marginTop: "1rem",
-    fontSize: "15px",
-    color: "#b0e8cc",
+    fontSize: "13px",
+    color: green,
     lineHeight: 1.8,
-    fontStyle: "italic",
+    borderRadius: 8,
   },
   empty: {
     textAlign: "center",
     padding: "4rem",
     color: creamDim,
-    fontSize: "15px",
+    fontSize: "13px",
   },
   loading: {
     textAlign: "center",
     padding: "4rem",
     color: creamDim,
-    fontSize: "15px",
-    fontStyle: "italic",
+    fontSize: "13px",
   },
   pager: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "1rem 0",
-    fontSize: "14px",
-    color: creamDim,
+    padding: "0.875rem 0",
+    fontSize: "13px",
+    color: textMuted,
   },
   countdown: {
-    background: "rgba(29,158,117,0.1)",
-    borderBottom: "1px solid rgba(29,158,117,0.2)",
+    background: navyDark,
+    borderBottom: `0.5px solid ${bgBorder}`,
     color: cream,
-    padding: "10px 2rem",
+    padding: "0 2rem",
     textAlign: "center",
-    fontSize: "13px",
+    fontSize: "12px",
     fontFamily: "'Inter', sans-serif",
-    letterSpacing: "0.5px",
+    height: "36px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "4px",
+    fontVariantNumeric: "tabular-nums",
   },
   certBox: {
-    background: "rgba(29,158,117,0.08)",
-    border: `1px solid ${green}`,
-    padding: "1rem 1.5rem",
+    background: "rgba(76,175,130,0.08)",
+    border: `0.5px solid rgba(76,175,130,0.25)`,
+    padding: "0.875rem 1.25rem",
     marginTop: "1rem",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    borderRadius: 8,
+    marginBottom: "1.5rem",
   },
   certText: {
-    fontFamily: "monospace",
-    fontSize: "13px",
-    color: "#7ec8a0",
-    letterSpacing: "1px",
+    fontFamily: "'JetBrains Mono', monospace",
+    fontSize: "12px",
+    color: green,
+    letterSpacing: "0.03em",
   },
 };
 
@@ -538,34 +567,35 @@ function HumanReviewPanel({ auditId, apiKey }) {
   };
 
   const inputStyle = {
-    background: "rgba(240,235,224,0.06)",
-    border: "1px solid rgba(240,235,224,0.2)",
+    background: "#1A1A18",
+    border: "0.5px solid #242422",
     color: cream,
     padding: "10px 14px",
     fontFamily: "'Inter', sans-serif",
-    fontSize: "14px",
+    fontSize: "13px",
     outline: "none",
     width: "100%",
     marginBottom: "10px",
+    borderRadius: 6,
   };
-  const selectStyle = { ...inputStyle, background: navy, cursor: "pointer" };
-  const labelStyle = { fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "4px" };
+  const selectStyle = { ...inputStyle, cursor: "pointer" };
+  const labelStyle = { fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, display: "block", marginBottom: "6px" };
 
   const satisfied = reviews.length > 0 || submitResult;
 
   return (
-    <div style={{ marginTop: "1.5rem", borderTop: "1px solid rgba(240,235,224,0.1)", paddingTop: "1.5rem" }}>
+    <div style={{ marginTop: "1.5rem", borderTop: "0.5px solid #242422", paddingTop: "1.5rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
         <div>
-          <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
+          <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
             Human Oversight — EU AI Act Article 14
           </div>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: "6px",
             padding: "3px 10px", fontSize: "12px", letterSpacing: "1px",
             border: `1px solid ${satisfied ? green : amber}`,
-            color: satisfied ? "#7ec8a0" : "#e8c070",
-            background: satisfied ? "rgba(29,158,117,0.1)" : "rgba(186,117,23,0.1)",
+            color: satisfied ? "#4CAF82" : "#D4873A",
+            background: satisfied ? "rgba(76,175,130,0.1)" : "rgba(212,135,58,0.1)",
           }}>
             {satisfied ? "✓ SATISFIED" : "⚠ PENDING"}
           </div>
@@ -578,18 +608,18 @@ function HumanReviewPanel({ auditId, apiKey }) {
       </div>
 
       {submitResult && (
-        <div style={{ background: "rgba(29,158,117,0.1)", border: `1px solid ${green}`, padding: "10px 14px", fontSize: "13px", color: "#7ec8a0", marginBottom: "1rem" }}>
+        <div style={{ background: "rgba(76,175,130,0.1)", border: `1px solid ${green}`, padding: "10px 14px", fontSize: "13px", color: "#4CAF82", marginBottom: "1rem" }}>
           ✓ Review logged — Article 14 satisfied. Hash: <span style={{ fontFamily: "monospace", fontSize: "11px" }}>{submitResult.review_hash?.slice(0, 20)}...</span>
         </div>
       )}
 
       {showForm && (
-        <div style={{ background: "rgba(240,235,224,0.04)", border: "1px solid rgba(240,235,224,0.1)", padding: "1.25rem", marginBottom: "1rem" }}>
+        <div style={{ background: "#1A1A18", border: "0.5px solid #242422", padding: "1.25rem", marginBottom: "1rem" }}>
           <div style={{ fontSize: "13px", color: creamDim, marginBottom: "1rem" }}>
             This review will be cryptographically tied to the original decision hash.
           </div>
           {submitError && (
-            <div style={{ background: "rgba(163,45,45,0.15)", border: `1px solid ${red}`, color: "#e08080", padding: "8px 12px", fontSize: "13px", marginBottom: "10px" }}>
+            <div style={{ background: "rgba(224,82,82,0.1)", border: `1px solid ${red}`, color: "#E05252", padding: "8px 12px", fontSize: "13px", marginBottom: "10px" }}>
               {submitError}
             </div>
           )}
@@ -631,7 +661,7 @@ function HumanReviewPanel({ auditId, apiKey }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {reviews.map((rev, i) => (
-            <div key={i} style={{ background: "rgba(240,235,224,0.04)", border: "1px solid rgba(240,235,224,0.08)", padding: "12px 14px" }}>
+            <div key={i} style={{ background: "#1A1A18", border: "0.5px solid #242422", padding: "12px 14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
                 <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                   <span style={{ ...styles.outcomeBadge(rev.outcome === "approved" || rev.outcome === "confirmed" ? "approved" : rev.outcome === "overridden" ? "denied" : "escalated"), fontSize: "11px" }}>
@@ -642,7 +672,7 @@ function HumanReviewPanel({ auditId, apiKey }) {
                 <span style={{ fontSize: "12px", color: creamDim }}>{formatDate(rev.reviewed_at)}</span>
               </div>
               {rev.notes && <div style={{ fontSize: "13px", color: creamDim, fontStyle: "italic", marginTop: "4px" }}>{rev.notes}</div>}
-              <div style={{ fontSize: "11px", color: "rgba(240,235,224,0.3)", marginTop: "6px", fontFamily: "monospace" }}>
+              <div style={{ fontSize: "11px", color: "#5C5850", marginTop: "6px", fontFamily: "monospace" }}>
                 review_hash: {rev.review_hash?.slice(0, 24)}...
               </div>
             </div>
@@ -690,7 +720,7 @@ function FairnessPanel({ apiKey }) {
   const flags = report?.bias_flags || [];
 
   return (
-    <div style={{ marginTop: "2rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark }}>
+    <div style={{ marginTop: "2rem", border: "0.5px solid #242422", background: navyDark }}>
       {/* Header */}
       <div
         style={{
@@ -704,7 +734,7 @@ function FairnessPanel({ apiKey }) {
         onClick={() => setOpen(o => !o)}
       >
         <div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: cream, fontWeight: 700 }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "15px", color: cream, fontWeight: 600, letterSpacing: "-0.01em" }}>
             Fairness Detection
           </div>
           <div style={{ fontSize: "13px", color: creamDim, marginTop: "2px" }}>
@@ -715,8 +745,8 @@ function FairnessPanel({ apiKey }) {
           {report && (
             <span style={{
               fontSize: "13px",
-              border: `1px solid ${statusOk ? "rgba(29,158,117,0.4)" : "rgba(186,117,23,0.4)"}`,
-              color: statusOk ? "#7ec8a0" : "#e8c070",
+              border: `1px solid ${statusOk ? "rgba(76,175,130,0.35)" : "rgba(212,135,58,0.35)"}`,
+              color: statusOk ? "#4CAF82" : "#D4873A",
               padding: "2px 10px",
             }}>
               {statusOk ? "✓ PASS" : `⚠ ${flags.length} flag${flags.length !== 1 ? "s" : ""}`}
@@ -747,7 +777,7 @@ function FairnessPanel({ apiKey }) {
           </div>
 
           {error && (
-            <div style={{ background: "rgba(163,45,45,0.15)", border: `1px solid ${red}`, color: "#e08080", padding: "10px 14px", fontSize: "14px", marginBottom: "1rem" }}>
+            <div style={{ background: "rgba(224,82,82,0.1)", border: `1px solid ${red}`, color: "#E05252", padding: "10px 14px", fontSize: "14px", marginBottom: "1rem" }}>
               {error}
             </div>
           )}
@@ -762,8 +792,8 @@ function FairnessPanel({ apiKey }) {
             <>
               {/* Overall status banner */}
               <div style={{
-                background: statusOk ? "rgba(29,158,117,0.1)" : "rgba(186,117,23,0.1)",
-                border: `1px solid ${statusOk ? "rgba(29,158,117,0.4)" : "rgba(186,117,23,0.4)"}`,
+                background: statusOk ? "rgba(76,175,130,0.1)" : "rgba(212,135,58,0.1)",
+                border: `1px solid ${statusOk ? "rgba(76,175,130,0.35)" : "rgba(212,135,58,0.35)"}`,
                 padding: "1rem 1.25rem",
                 marginBottom: "1.5rem",
                 display: "flex",
@@ -771,16 +801,16 @@ function FairnessPanel({ apiKey }) {
                 alignItems: "center",
               }}>
                 <div>
-                  <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
+                  <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
                     Fairness status
                   </div>
-                  <div style={{ fontSize: "18px", fontFamily: "'Playfair Display', serif", color: statusOk ? "#7ec8a0" : "#e8c070", fontWeight: 700 }}>
+                  <div style={{ fontSize: "18px", fontFamily: "'Inter', sans-serif", color: statusOk ? "#4CAF82" : "#D4873A", fontWeight: 700 }}>
                     {statusOk ? "✓ PASS — No significant bias detected" : `⚠ REVIEW REQUIRED — ${flags.length} potential bias flag${flags.length !== 1 ? "s" : ""} detected`}
                   </div>
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <div style={{ fontSize: "12px", color: creamDim, marginBottom: "4px" }}>Overall approval rate</div>
-                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "28px", color: cream }}>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "28px", color: cream }}>
                     {report.overall?.approval_rate_pct ?? "—"}%
                   </div>
                   <div style={{ fontSize: "12px", color: creamDim }}>
@@ -790,7 +820,7 @@ function FairnessPanel({ apiKey }) {
               </div>
 
               {/* Fairness disclaimer */}
-              <div style={{ fontSize: "13px", color: "rgba(240,235,224,0.45)", background: "rgba(240,235,224,0.03)", border: "1px solid rgba(240,235,224,0.08)", padding: "10px 14px", marginBottom: "1rem", lineHeight: 1.6 }}>
+              <div style={{ fontSize: "13px", color: "#5C5850", background: "#111110", border: "0.5px solid #242422", padding: "10px 14px", marginBottom: "1rem", lineHeight: 1.6 }}>
                 ⓘ Statistical flags for internal review only. These do not constitute a legal determination of discrimination or compliance. Consult a licensed compliance lawyer before regulatory submission.
               </div>
 
@@ -798,7 +828,7 @@ function FairnessPanel({ apiKey }) {
               {report.regulation && (
                 <div style={{ marginBottom: "1.5rem", display: "flex", gap: "8px", flexWrap: "wrap" }}>
                   {Object.entries(report.regulation).map(([key, val]) => (
-                    <span key={key} style={{ fontSize: "12px", color: creamDim, border: "1px solid rgba(240,235,224,0.12)", padding: "3px 10px" }}>
+                    <span key={key} style={{ fontSize: "12px", color: creamDim, border: "0.5px solid #242422", padding: "3px 10px" }}>
                       {val}
                     </span>
                   ))}
@@ -808,7 +838,7 @@ function FairnessPanel({ apiKey }) {
               {/* Credit score band breakdown */}
               {report.by_credit_score_band && Object.keys(report.by_credit_score_band).length > 0 && (
                 <div style={{ marginBottom: "1.5rem" }}>
-                  <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "1rem" }}>
+                  <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: creamDim, marginBottom: "1rem" }}>
                     Approval rate by credit score band
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "8px" }}>
@@ -818,16 +848,16 @@ function FairnessPanel({ apiKey }) {
                       const deviation = stats.deviation_from_overall_pct ?? 0;
                       return (
                         <div key={band} style={{
-                          background: isFlagged ? "rgba(186,117,23,0.08)" : "rgba(240,235,224,0.04)",
-                          border: `1px solid ${isFlagged ? "rgba(186,117,23,0.4)" : "rgba(240,235,224,0.1)"}`,
+                          background: isFlagged ? "rgba(212,135,58,0.08)" : "rgba(240,235,224,0.04)",
+                          border: `1px solid ${isFlagged ? "rgba(212,135,58,0.35)" : "rgba(240,235,224,0.1)"}`,
                           padding: "1rem",
                         }}>
-                          <div style={{ fontSize: "12px", color: isFlagged ? "#e8c070" : creamDim, marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ fontSize: "12px", color: isFlagged ? "#D4873A" : creamDim, marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
                             <span>{band}</span>
                             {isFlagged && <span style={{ fontSize: "11px" }}>⚠ FLAG</span>}
                           </div>
                           {/* Bar */}
-                          <div style={{ background: "rgba(240,235,224,0.08)", height: "6px", marginBottom: "6px", position: "relative" }}>
+                          <div style={{ background: "#1A1A18", height: "6px", marginBottom: "6px", position: "relative" }}>
                             <div style={{
                               background: isFlagged ? amber : green,
                               height: "100%",
@@ -835,13 +865,13 @@ function FairnessPanel({ apiKey }) {
                               transition: "width 0.5s",
                             }} />
                           </div>
-                          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "24px", color: isFlagged ? "#e8c070" : cream }}>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "24px", color: isFlagged ? "#D4873A" : cream }}>
                             {rate}%
                           </div>
                           <div style={{ fontSize: "11px", color: creamDim, marginTop: "2px" }}>
                             {stats.approved ?? 0} approved · {stats.denied ?? 0} denied
                           </div>
-                          <div style={{ fontSize: "11px", color: deviation > 0 ? "#7ec8a0" : "#e08080", marginTop: "2px" }}>
+                          <div style={{ fontSize: "11px", color: deviation > 0 ? "#4CAF82" : "#E05252", marginTop: "2px" }}>
                             {deviation > 0 ? "+" : ""}{deviation}% vs overall
                           </div>
                         </div>
@@ -854,28 +884,28 @@ function FairnessPanel({ apiKey }) {
               {/* Bias flags detail */}
               {flags.length > 0 && (
                 <div>
-                  <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "1rem" }}>
+                  <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: creamDim, marginBottom: "1rem" }}>
                     Bias flags requiring review
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {flags.map((f, i) => (
                       <div key={i} style={{
-                        background: "rgba(186,117,23,0.08)",
+                        background: "rgba(212,135,58,0.08)",
                         border: "1px solid rgba(186,117,23,0.35)",
                         padding: "1rem 1.25rem",
                       }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
-                          <div style={{ fontSize: "14px", color: "#e8c070", fontWeight: 600 }}>
+                          <div style={{ fontSize: "14px", color: "#D4873A", fontWeight: 600 }}>
                             {f.group} — {f.approval_rate_pct}% approval rate
                           </div>
-                          <span style={{ fontSize: "11px", color: "#e8c070", border: "1px solid rgba(186,117,23,0.4)", padding: "2px 8px" }}>
+                          <span style={{ fontSize: "11px", color: "#D4873A", border: "1px solid rgba(186,117,23,0.4)", padding: "2px 8px" }}>
                             {f.flag}
                           </span>
                         </div>
                         <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.6 }}>
                           {f.message}
                         </div>
-                        <div style={{ fontSize: "12px", color: "rgba(240,235,224,0.4)", marginTop: "6px" }}>
+                        <div style={{ fontSize: "12px", color: "#5C5850", marginTop: "6px" }}>
                           Deviation: {f.deviation_pct > 0 ? "+" : ""}{f.deviation_pct}% vs overall {f.overall_rate_pct}%
                           · Threshold: ±{report.bias_threshold_used_pct}%
                         </div>
@@ -886,7 +916,7 @@ function FairnessPanel({ apiKey }) {
               )}
 
               {statusOk && flags.length === 0 && (
-                <div style={{ background: "rgba(29,158,117,0.08)", border: "1px solid rgba(29,158,117,0.3)", padding: "1rem 1.25rem", fontSize: "14px", color: "#7ec8a0" }}>
+                <div style={{ background: "rgba(76,175,130,0.08)", border: "1px solid rgba(29,158,117,0.3)", padding: "1rem 1.25rem", fontSize: "14px", color: "#4CAF82" }}>
                   ✓ No significant disparities detected across credit score bands. Approval rates are within the ±{report.bias_threshold_used_pct}% threshold.
                 </div>
               )}
@@ -988,25 +1018,25 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
   };
 
   const severityColor = (s) => {
-    if (s === "critical") return { color: "#e08080", border: `1px solid ${red}`, background: "rgba(163,45,45,0.1)" };
-    if (s === "high") return { color: "#e8a060", border: "1px solid rgba(186,117,23,0.6)", background: "rgba(186,117,23,0.1)" };
-    if (s === "medium") return { color: "#e8c070", border: "1px solid rgba(186,117,23,0.3)", background: "rgba(186,117,23,0.07)" };
-    return { color: creamDim, border: "1px solid rgba(240,235,224,0.2)", background: "transparent" };
+    if (s === "critical") return { color: "#E05252", border: `1px solid ${red}`, background: "rgba(224,82,82,0.1)" };
+    if (s === "high") return { color: "#D4873A", border: "1px solid rgba(186,117,23,0.6)", background: "rgba(212,135,58,0.1)" };
+    if (s === "medium") return { color: "#D4873A", border: "1px solid rgba(186,117,23,0.3)", background: "rgba(212,135,58,0.07)" };
+    return { color: creamDim, border: "0.5px solid #242422", background: "transparent" };
   };
 
   const statusColor = (s) => {
-    if (s === "resolved") return { color: "#7ec8a0", border: `1px solid ${green}` };
-    if (s === "investigating") return { color: "#e8c070", border: "1px solid rgba(186,117,23,0.4)" };
-    return { color: creamDim, border: "1px solid rgba(240,235,224,0.2)" };
+    if (s === "resolved") return { color: "#4CAF82", border: `1px solid ${green}` };
+    if (s === "investigating") return { color: "#D4873A", border: "1px solid rgba(186,117,23,0.4)" };
+    return { color: creamDim, border: "0.5px solid #242422" };
   };
 
   const inputStyle = {
-    background: "rgba(240,235,224,0.06)", border: "1px solid rgba(240,235,224,0.2)",
+    background: "#1A1A18", border: "0.5px solid #242422",
     color: cream, padding: "10px 14px", fontFamily: "'Inter', sans-serif",
-    fontSize: "14px", outline: "none", width: "100%",
+    fontSize: "13px", outline: "none", width: "100%", borderRadius: 6,
   };
-  const selectStyle = { ...inputStyle, background: navyDark, cursor: "pointer" };
-  const labelStyle = { fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "4px" };
+  const selectStyle = { ...inputStyle, cursor: "pointer" };
+  const labelStyle = { fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, display: "block", marginBottom: "6px" };
   const fieldStyle = { marginBottom: "1rem" };
 
   return (
@@ -1029,10 +1059,10 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
         onClick={() => setOpen(o => !o)}
       >
         <div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: cream, fontWeight: 700 }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "15px", color: cream, fontWeight: 600, letterSpacing: "-0.01em" }}>
             Incident Reporting
             {openIncidents.length > 0 && (
-              <span style={{ marginLeft: "12px", fontSize: "13px", color: "#e8c070", border: "1px solid rgba(186,117,23,0.5)", padding: "2px 10px", fontFamily: "'Inter', sans-serif", letterSpacing: "1px" }}>
+              <span style={{ marginLeft: "12px", fontSize: "13px", color: "#D4873A", border: "1px solid rgba(186,117,23,0.5)", padding: "2px 10px", fontFamily: "'Inter', sans-serif", letterSpacing: "1px" }}>
                 {openIncidents.length} open
               </span>
             )}
@@ -1041,20 +1071,20 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
             EU AI Act Article 72 — report AI incidents to regulators within 15 days
           </div>
         </div>
-        <div style={{ fontSize: "20px", color: openIncidents.length > 0 ? "#e8c070" : creamDim, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</div>
+        <div style={{ fontSize: "20px", color: openIncidents.length > 0 ? "#D4873A" : creamDim, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</div>
       </div>
 
       {open && (
         <div style={{ padding: "1.5rem" }}>
           {/* Success */}
           {result && (
-            <div style={{ background: "rgba(29,158,117,0.1)", border: `1px solid ${green}`, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#7ec8a0", marginBottom: "6px" }}>✓ Incident logged</div>
+            <div style={{ background: "rgba(76,175,130,0.1)", border: `1px solid ${green}`, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: "#4CAF82", marginBottom: "6px" }}>✓ Incident logged</div>
               <div style={{ fontSize: "13px", color: creamDim }}>
                 Incident ID: <span style={{ fontFamily: "monospace", color: cream }}>{result.incident_id}</span>
               </div>
               {result.regulator_deadline && (
-                <div style={{ fontSize: "13px", color: "#e8c070", marginTop: "4px" }}>
+                <div style={{ fontSize: "13px", color: "#D4873A", marginTop: "4px" }}>
                   ⚠ Regulator notification deadline: <strong>{result.regulator_deadline.slice(0, 10)}</strong>
                 </div>
               )}
@@ -1067,13 +1097,13 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
               + Report new incident
             </button>
           ) : (
-            <div style={{ background: "rgba(186,117,23,0.05)", border: "1px solid rgba(186,117,23,0.25)", padding: "1.25rem", marginBottom: "1.5rem" }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: cream, marginBottom: "4px", fontWeight: 700 }}>Report AI incident</div>
-              <div style={{ fontSize: "13px", color: "#e8c070", marginBottom: "1rem" }}>
+            <div style={{ background: "rgba(212,135,58,0.06)", border: "1px solid rgba(186,117,23,0.25)", padding: "1.25rem", marginBottom: "1.5rem" }}>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "16px", color: cream, marginBottom: "4px", fontWeight: 700 }}>Report AI incident</div>
+              <div style={{ fontSize: "13px", color: "#D4873A", marginBottom: "1rem" }}>
                 High/critical severity incidents must be reported to the regulator within 15 days (EU AI Act Article 72).
               </div>
               {error && (
-                <div style={{ background: "rgba(163,45,45,0.15)", border: `1px solid ${red}`, color: "#e08080", padding: "8px 12px", fontSize: "13px", marginBottom: "1rem" }}>
+                <div style={{ background: "rgba(224,82,82,0.1)", border: `1px solid ${red}`, color: "#E05252", padding: "8px 12px", fontSize: "13px", marginBottom: "1rem" }}>
                   {error}
                 </div>
               )}
@@ -1141,14 +1171,14 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
                 const isPatching = patchingId === inc.incident_id;
                 return (
                   <div key={i} style={{
-                    background: "rgba(240,235,224,0.03)",
+                    background: "#111110",
                     border: inc.status !== "resolved" ? `1px solid rgba(186,117,23,0.25)` : "1px solid rgba(240,235,224,0.08)",
                     padding: "1rem 1.25rem",
                   }}>
                     {/* Top row */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "15px", color: cream, fontFamily: "'Playfair Display', serif", marginBottom: "4px" }}>
+                        <div style={{ fontSize: "15px", color: cream, fontFamily: "'Inter', sans-serif", marginBottom: "4px" }}>
                           {inc.title}
                         </div>
                         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -1159,12 +1189,12 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
                             {inc.status?.toUpperCase().replace("_", " ")}
                           </span>
                           {inc.jurisdiction && (
-                            <span style={{ fontSize: "11px", color: creamDim, border: "1px solid rgba(240,235,224,0.15)", padding: "2px 8px" }}>
+                            <span style={{ fontSize: "11px", color: creamDim, border: "0.5px solid #242422", padding: "2px 8px" }}>
                               {inc.jurisdiction}
                             </span>
                           )}
                           {inc.reported_to_regulator && (
-                            <span style={{ fontSize: "11px", color: "#7ec8a0", border: `1px solid ${green}`, padding: "2px 8px" }}>
+                            <span style={{ fontSize: "11px", color: "#4CAF82", border: `1px solid ${green}`, padding: "2px 8px" }}>
                               ✓ Reported to regulator
                             </span>
                           )}
@@ -1173,7 +1203,7 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
                       <div style={{ fontSize: "12px", color: creamDim, textAlign: "right", minWidth: "140px" }}>
                         <div>{formatDate(inc.occurred_at || inc.reported_at)}</div>
                         {inc.regulator_deadline && inc.status !== "resolved" && (
-                          <div style={{ color: "#e8c070", marginTop: "4px" }}>
+                          <div style={{ color: "#D4873A", marginTop: "4px" }}>
                             Deadline: {inc.regulator_deadline.slice(0, 10)}
                           </div>
                         )}
@@ -1220,7 +1250,7 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
                         )}
                         {!inc.reported_to_regulator && (inc.severity === "high" || inc.severity === "critical") && (
                           <button
-                            style={{ ...styles.btn, fontSize: "12px", padding: "4px 12px", color: "#7ec8a0", borderColor: "rgba(29,158,117,0.4)", opacity: isPatching ? 0.6 : 1 }}
+                            style={{ ...styles.btn, fontSize: "12px", padding: "4px 12px", color: "#4CAF82", borderColor: "rgba(76,175,130,0.35)", opacity: isPatching ? 0.6 : 1 }}
                             onClick={() => handlePatch(inc.incident_id, { reported_to_regulator: true })}
                             disabled={isPatching}
                           >
@@ -1237,7 +1267,7 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
                       </div>
                     )}
 
-                    <div style={{ fontSize: "11px", color: "rgba(240,235,224,0.3)", marginTop: "8px", fontFamily: "monospace" }}>
+                    <div style={{ fontSize: "11px", color: "#5C5850", marginTop: "8px", fontFamily: "monospace" }}>
                       {inc.incident_id}
                     </div>
                   </div>
@@ -1294,7 +1324,7 @@ function LoginScreen({ onLogin }) {
 
   return (
     <div style={styles.loginWrap}>
-      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
       <div style={styles.loginBox}>
         <div style={{ marginBottom: "0.25rem" }}>
           <div style={{ overflow:"hidden", width:"300px", height:"112px", position:"relative", margin:"0 auto" }}>
@@ -1466,7 +1496,7 @@ function DecisionModal({ record, onClose, apiKey }) {
                   <div style={{ fontSize: "13px", color: creamDim, marginTop: "6px" }}>{compliance.regulator}</div>
                   <div style={{ fontSize: "12px", color: creamDim }}>Retention required: {compliance.retention_required_years} years</div>
                   {compliance.missing_required?.length > 0 && (
-                    <div style={{ fontSize: "12px", color: "#e08080", marginTop: "4px" }}>
+                    <div style={{ fontSize: "12px", color: "#E05252", marginTop: "4px" }}>
                       Missing required: {compliance.missing_required.join(", ")}
                     </div>
                   )}
@@ -1475,11 +1505,11 @@ function DecisionModal({ record, onClose, apiKey }) {
             )}
             {(d.explanation || record.explanation) && (
               <div>
-                <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "8px" }}>
+                <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: creamDim, marginBottom: "8px" }}>
                   AI explanation — Article 13 compliant
                 </div>
                 <div style={styles.explanationBox}>{d.explanation || record.explanation}</div>
-                <div style={{ fontSize: "12px", color: "rgba(240,235,224,0.4)", marginTop: "6px", lineHeight: 1.6 }}>
+                <div style={{ fontSize: "12px", color: "#5C5850", marginTop: "6px", lineHeight: 1.6 }}>
                   ⓘ AI-generated explanation. Verify against source decision data before regulatory submission.
                 </div>
               </div>
@@ -1559,22 +1589,22 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
   };
 
   const inputStyle = {
-    background: "rgba(240,235,224,0.06)", border: "1px solid rgba(240,235,224,0.2)",
+    background: "#1A1A18", border: "0.5px solid #242422",
     color: cream, padding: "10px 14px", fontFamily: "'Inter', sans-serif",
-    fontSize: "14px", outline: "none", width: "100%",
+    fontSize: "13px", outline: "none", width: "100%", borderRadius: 6,
   };
-  const selectStyle = { ...inputStyle, background: navyDark, cursor: "pointer" };
-  const labelStyle = { fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "4px" };
+  const selectStyle = { ...inputStyle, cursor: "pointer" };
+  const labelStyle = { fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, display: "block", marginBottom: "6px" };
   const fieldStyle = { marginBottom: "1rem" };
 
   return (
-    <div style={{ marginTop: "2rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark }}>
+    <div style={{ marginTop: "2rem", border: "0.5px solid #242422", background: navyDark }}>
       <div
         style={{ padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", borderBottom: open ? "1px solid rgba(240,235,224,0.1)" : "none" }}
         onClick={() => setOpen(o => !o)}
       >
         <div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: cream, fontWeight: 700 }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "15px", color: cream, fontWeight: 600, letterSpacing: "-0.01em" }}>
             Model Registry
           </div>
           <div style={{ fontSize: "13px", color: creamDim, marginTop: "2px" }}>
@@ -1583,7 +1613,7 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {models.length > 0 && (
-            <span style={{ fontSize: "13px", color: "#7ec8a0", border: "1px solid rgba(29,158,117,0.3)", padding: "2px 10px" }}>
+            <span style={{ fontSize: "13px", color: "#4CAF82", border: "1px solid rgba(29,158,117,0.3)", padding: "2px 10px" }}>
               {models.length} model{models.length !== 1 ? "s" : ""} registered
             </span>
           )}
@@ -1594,8 +1624,8 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
       {open && (
         <div style={{ padding: "1.5rem" }}>
           {result && (
-            <div style={{ background: "rgba(29,158,117,0.1)", border: `1px solid ${green}`, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
-              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#7ec8a0", marginBottom: "8px" }}>
+            <div style={{ background: "rgba(76,175,130,0.1)", border: `1px solid ${green}`, padding: "1rem 1.25rem", marginBottom: "1rem" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: "#4CAF82", marginBottom: "8px" }}>
                 ✓ Model registered — Article 9 {result.article_9_satisfied ? "satisfied" : "partially satisfied"}
               </div>
               <div style={{ fontSize: "13px", color: creamDim }}>
@@ -1605,7 +1635,7 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
                 Hash: <span style={{ fontFamily: "monospace", fontSize: "11px" }}>{result.registration_hash?.slice(0, 32)}...</span>
               </div>
               {result.article_9_missing?.length > 0 && (
-                <div style={{ fontSize: "12px", color: "#e8c070", marginTop: "6px" }}>
+                <div style={{ fontSize: "12px", color: "#D4873A", marginTop: "6px" }}>
                   To fully satisfy Article 9, add: {result.article_9_missing.join(", ")}
                 </div>
               )}
@@ -1617,12 +1647,12 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
               + Register new model
             </button>
           ) : (
-            <div style={{ background: "rgba(240,235,224,0.03)", border: "1px solid rgba(240,235,224,0.1)", padding: "1.25rem", marginBottom: "1.5rem" }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: cream, marginBottom: "1rem", fontWeight: 700 }}>
+            <div style={{ background: "#111110", border: "0.5px solid #242422", padding: "1.25rem", marginBottom: "1.5rem" }}>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "16px", color: cream, marginBottom: "1rem", fontWeight: 700 }}>
                 Register AI model
               </div>
               {error && (
-                <div style={{ background: "rgba(163,45,45,0.15)", border: `1px solid ${red}`, color: "#e08080", padding: "8px 12px", fontSize: "13px", marginBottom: "1rem" }}>
+                <div style={{ background: "rgba(224,82,82,0.1)", border: `1px solid ${red}`, color: "#E05252", padding: "8px 12px", fontSize: "13px", marginBottom: "1rem" }}>
                   {error}
                 </div>
               )}
@@ -1698,30 +1728,30 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
               {models.map((m, i) => {
                 const article9Ok = m.accuracy_metric && m.bias_test_result && m.training_data_source && m.validation_date;
                 return (
-                  <div key={i} style={{ background: "rgba(240,235,224,0.04)", border: "1px solid rgba(240,235,224,0.08)", padding: "1rem 1.25rem" }}>
+                  <div key={i} style={{ background: "#1A1A18", border: "0.5px solid #242422", padding: "1rem 1.25rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
                       <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", color: cream, fontWeight: 700 }}>
+                        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: "16px", color: cream, fontWeight: 700 }}>
                           {m.model_name}
                         </span>
-                        <span style={{ fontSize: "12px", color: creamDim, border: "1px solid rgba(240,235,224,0.15)", padding: "2px 8px" }}>
+                        <span style={{ fontSize: "12px", color: creamDim, border: "0.5px solid #242422", padding: "2px 8px" }}>
                           {m.model_version}
                         </span>
-                        <span style={{ fontSize: "12px", color: creamDim, border: "1px solid rgba(240,235,224,0.1)", padding: "2px 8px" }}>
+                        <span style={{ fontSize: "12px", color: creamDim, border: "0.5px solid #242422", padding: "2px 8px" }}>
                           {m.model_type}
                         </span>
                       </div>
                       <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                         {m.jurisdiction && (
-                          <span style={{ fontSize: "11px", color: creamDim, border: "1px solid rgba(240,235,224,0.1)", padding: "2px 8px" }}>
+                          <span style={{ fontSize: "11px", color: creamDim, border: "0.5px solid #242422", padding: "2px 8px" }}>
                             {m.jurisdiction}
                           </span>
                         )}
                         <span style={{
                           fontSize: "11px", letterSpacing: "1px", padding: "2px 10px",
-                          border: `1px solid ${article9Ok ? "rgba(29,158,117,0.4)" : "rgba(186,117,23,0.4)"}`,
-                          color: article9Ok ? "#7ec8a0" : "#e8c070",
-                          background: article9Ok ? "rgba(29,158,117,0.08)" : "rgba(186,117,23,0.08)",
+                          border: `1px solid ${article9Ok ? "rgba(76,175,130,0.35)" : "rgba(212,135,58,0.35)"}`,
+                          color: article9Ok ? "#4CAF82" : "#D4873A",
+                          background: article9Ok ? "rgba(76,175,130,0.08)" : "rgba(212,135,58,0.08)",
                         }}>
                           {article9Ok ? "✓ Art. 9 SATISFIED" : "⚠ Art. 9 INCOMPLETE"}
                         </span>
@@ -1729,12 +1759,12 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", fontSize: "12px", color: creamDim }}>
                       {m.accuracy_metric && <div>Accuracy: <span style={{ color: cream }}>{(m.accuracy_metric * 100).toFixed(1)}%</span></div>}
-                      {m.bias_test_result && <div>Bias test: <span style={{ color: m.bias_test_result === "passed" ? "#7ec8a0" : "#e08080" }}>{m.bias_test_result}</span></div>}
+                      {m.bias_test_result && <div>Bias test: <span style={{ color: m.bias_test_result === "passed" ? "#4CAF82" : "#E05252" }}>{m.bias_test_result}</span></div>}
                       {m.validation_date && <div>Validated: <span style={{ color: cream }}>{m.validation_date}</span></div>}
                       {m.training_data_source && <div>Data: <span style={{ color: cream }}>{m.training_data_source}</span></div>}
                     </div>
                     {m.notes && <div style={{ fontSize: "12px", color: creamDim, fontStyle: "italic", marginTop: "6px" }}>{m.notes}</div>}
-                    <div style={{ fontSize: "11px", color: "rgba(240,235,224,0.3)", marginTop: "6px", fontFamily: "monospace" }}>
+                    <div style={{ fontSize: "11px", color: "#5C5850", marginTop: "6px", fontFamily: "monospace" }}>
                       {m.model_id} · registered {formatDate(m.registered_at)}
                     </div>
                   </div>
@@ -1814,27 +1844,28 @@ function TestPanel({ apiKey, onSuccess }) {
   };
 
   const inputStyle = {
-    background: "rgba(240,235,224,0.06)",
-    border: "1px solid rgba(240,235,224,0.2)",
+    background: "#1A1A18",
+    border: "0.5px solid #242422",
     color: cream,
     padding: "10px 14px",
     fontFamily: "'Inter', sans-serif",
-    fontSize: "15px",
+    fontSize: "13px",
     outline: "none",
     width: "100%",
+    borderRadius: 6,
   };
-  const selectStyle = { ...inputStyle, background: "#1e2840", cursor: "pointer" };
-  const labelStyle = { fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "6px" };
+  const selectStyle = { ...inputStyle, cursor: "pointer" };
+  const labelStyle = { fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, display: "block", marginBottom: "6px" };
   const fieldStyle = { marginBottom: "1rem" };
 
   return (
-    <div style={{ marginTop: "2.5rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark }}>
+    <div style={{ marginTop: "2.5rem", border: "0.5px solid #242422", background: navyDark }}>
       <div
         style={{ padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", borderBottom: open ? "1px solid rgba(240,235,224,0.1)" : "none" }}
         onClick={() => { setOpen(o => !o); setResult(null); setError(""); }}
       >
         <div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: cream, fontWeight: 700 }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "15px", color: cream, fontWeight: 600, letterSpacing: "-0.01em" }}>
             + Log a test decision
           </div>
           <div style={{ fontSize: "13px", color: creamDim, marginTop: "2px" }}>
@@ -1907,30 +1938,30 @@ function TestPanel({ apiKey, onSuccess }) {
           </div>
 
           {error && (
-            <div style={{ background: "rgba(163,45,45,0.15)", border: "1px solid #a32d2d", color: "#e08080", padding: "10px 14px", fontSize: "14px", marginBottom: "1rem" }}>
+            <div style={{ background: "rgba(224,82,82,0.1)", border: "0.5px solid #E05252", color: "#E05252", padding: "10px 14px", fontSize: "13px", marginBottom: "1rem" }}>
               {error}
             </div>
           )}
 
           {result && (
-            <div style={{ background: "rgba(29,158,117,0.1)", border: "1px solid #1d9e75", padding: "1.25rem", marginBottom: "1rem" }}>
-              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#7ec8a0", marginBottom: "10px" }}>✓ Decision logged successfully</div>
+            <div style={{ background: "rgba(76,175,130,0.1)", border: `0.5px solid rgba(76,175,130,0.35)`, padding: "1.25rem", marginBottom: "1rem" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: "#4CAF82", marginBottom: "10px" }}>✓ Decision logged successfully</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "13px", color: creamDim }}>
                 <div><span style={{ color: cream }}>Audit ID:</span> <span style={{ fontFamily: "monospace" }}>{result.audit_id}</span></div>
-                <div><span style={{ color: cream }}>Compliance:</span> <span style={{ color: result.compliance?.compliant ? "#7ec8a0" : "#e08080" }}>{result.compliance?.status || "—"}</span></div>
+                <div><span style={{ color: cream }}>Compliance:</span> <span style={{ color: result.compliance?.compliant ? "#4CAF82" : "#E05252" }}>{result.compliance?.status || "—"}</span></div>
               </div>
               {result.explanation && (
                 <div style={{ marginTop: "10px", borderTop: "1px solid rgba(29,158,117,0.2)", paddingTop: "10px" }}>
-                  <div style={{ fontSize: "14px", color: "#b0e8cc", fontStyle: "italic", lineHeight: 1.7 }}>
+                  <div style={{ fontSize: "14px", color: "#4CAF82", fontStyle: "italic", lineHeight: 1.7 }}>
                     {result.explanation}
                   </div>
-                  <div style={{ fontSize: "12px", color: "rgba(240,235,224,0.4)", marginTop: "6px" }}>
+                  <div style={{ fontSize: "12px", color: "#5C5850", marginTop: "6px" }}>
                     ⓘ AI-generated explanation. Verify against source decision data before regulatory submission.
                   </div>
                 </div>
               )}
               {result.compliance?.missing_recommended?.length > 0 && (
-                <div style={{ marginTop: "8px", fontSize: "12px", color: "#e8c070" }}>
+                <div style={{ marginTop: "8px", fontSize: "12px", color: "#D4873A" }}>
                   Tip: Add {result.compliance.missing_recommended.slice(0,2).join(", ")} to improve compliance score.
                 </div>
               )}
@@ -1938,7 +1969,7 @@ function TestPanel({ apiKey, onSuccess }) {
           )}
 
           <button
-            style={{ background: cream, border: "none", color: navy, padding: "12px 32px", fontFamily: "'Inter', sans-serif", fontSize: "15px", letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", opacity: sending ? 0.6 : 1 }}
+            style={{ background: accentColor, border: "none", color: "#0A0A09", padding: "10px 24px", fontFamily: "'Inter', sans-serif", fontSize: "13px", fontWeight: 600, cursor: "pointer", opacity: sending ? 0.6 : 1, borderRadius: 6, transition: "all 0.15s ease" }}
             onClick={handleSend}
             disabled={sending}
           >
@@ -1947,7 +1978,7 @@ function TestPanel({ apiKey, onSuccess }) {
 
           {result && (
             <button
-              style={{ marginLeft: "12px", background: "transparent", border: "1px solid rgba(240,235,224,0.2)", color: creamDim, padding: "12px 24px", fontFamily: "'Inter', sans-serif", fontSize: "14px", cursor: "pointer" }}
+              style={{ marginLeft: "10px", background: "transparent", border: `0.5px solid ${bgBorder}`, color: creamDim, padding: "10px 20px", fontFamily: "'Inter', sans-serif", fontSize: "13px", cursor: "pointer", borderRadius: 6, transition: "all 0.15s ease" }}
               onClick={() => { setResult(null); setForm({ decision_type: "loan_approval", model_used: "", credit_score: "", income: "", loan_amount: "", currency: "IDR", approved: "true", confidence: "", jurisdiction: "ID" }); }}
             >
               Log another
@@ -2049,12 +2080,29 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
   return (
     <div style={styles.app}>
-      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+      <style>{`
+        *, *::before, *::after { box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.45; transform: scale(0.85); }
+        }
+        tr:hover td, tr:hover td * { background: inherit; }
+        table tr:hover > td { background: #1A1A18 !important; }
+        select option { background: #111110; color: #F5F0E8; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0A0A09; }
+        ::-webkit-scrollbar-thumb { background: #242422; border-radius: 3px; }
+        input::placeholder, textarea::placeholder { color: #5C5850; }
+      `}</style>
 
       <div style={styles.countdown}>
-        <strong>EU AI Act deadline:</strong> &nbsp;
-        <strong style={{ color: red }}>{countdown}</strong>
-        &nbsp;— Non-compliance fines up to €30M
+        <span style={{ color: textMuted }}>EU AI Act deadline</span>
+        <span style={{ color: bgBorder, margin: "0 8px" }}>·</span>
+        <span style={{ color: accentColor, fontFamily: "'JetBrains Mono', monospace", fontVariantNumeric: "tabular-nums" }}>{countdown}</span>
+        <span style={{ color: bgBorder, margin: "0 8px" }}>·</span>
+        <span style={{ color: textMuted }}>Non-compliance fines up to €30M</span>
       </div>
 
       <div style={styles.header}>
@@ -2071,7 +2119,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </span>
           <button style={styles.btn} onClick={fetchAll}>↻ Refresh</button>
           <a href="https://aidal-dashboard.vercel.app/verify" target="_blank" rel="noreferrer"
-            style={{ ...styles.btn, textDecoration: "none", fontSize: "13px", color: "#7ec8a0", borderColor: "rgba(29,158,117,0.4)" }}>
+            style={{ ...styles.btn, textDecoration: "none", fontSize: "13px", color: "#4CAF82", borderColor: "rgba(76,175,130,0.35)" }}>
             ✓ Public verify ↗
           </a>
           <a href="https://github.com/widjajaanthony24-svg/aidal-anchors" target="_blank" rel="noreferrer"
@@ -2102,7 +2150,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
           <div style={styles.statCard}>
             <span style={styles.statLabel}>Chain status</span>
-            <span style={{ ...styles.statValue, fontSize: "28px", color: chainOk ? "#7ec8a0" : "#e08080" }}>
+            <span style={{ ...styles.statValue, color: chainOk ? green : red }}>
               {loading ? "—" : chainOk ? "✓ Clean" : verify?.status === "no_records" ? "No data" : "⚠ Check"}
             </span>
             <div style={styles.statSub}>{verify?.records_verified ?? 0} records verified</div>
@@ -2112,9 +2160,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             <span style={styles.statValue}>{loading ? "—" : (jurisdictions.length || 0)}</span>
             <div style={styles.statSub}>{jurisdictions.join(", ") || "—"}</div>
           </div>
-          <div style={{ ...styles.statCard, borderLeft: `2px solid ${oversightPct > 0 ? green : amber}` }}>
+          <div style={{ ...styles.statCard, borderLeft: `1.5px solid ${oversightPct > 0 ? green : amber}` }}>
             <span style={styles.statLabel}>Article 14 coverage</span>
-            <span style={{ ...styles.statValue, fontSize: "36px", color: oversightPct > 0 ? "#7ec8a0" : "#e8c070" }}>
+            <span style={{ ...styles.statValue, color: oversightPct > 0 ? green : amber }}>
               {loading ? "—" : `${oversightPct}%`}
             </span>
             <div style={styles.statSub}>
@@ -2123,13 +2171,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                 : "No human reviews yet"}
             </div>
           </div>
-          {/* Open incidents card */}
-          <div style={{ ...styles.statCard, borderLeft: `2px solid ${openIncidentCount > 0 ? amber : "rgba(240,235,224,0.1)"}` }}>
+          <div style={{ ...styles.statCard, borderRight: "none", borderLeft: openIncidentCount > 0 ? `1.5px solid ${amber}` : "none" }}>
             <span style={styles.statLabel}>Open incidents</span>
-            <span style={{ ...styles.statValue, fontSize: "42px", color: openIncidentCount > 0 ? "#e8c070" : cream }}>
+            <span style={{ ...styles.statValue, color: openIncidentCount > 0 ? amber : cream }}>
               {openIncidentCount}
             </span>
-            <div style={{ ...styles.statSub, color: openIncidentCount > 0 ? "#e8c070" : creamDim }}>
+            <div style={{ ...styles.statSub, color: openIncidentCount > 0 ? amber : creamDim }}>
               {openIncidentCount > 0 ? "Requires attention" : "All clear"}
             </div>
           </div>
@@ -2152,7 +2199,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         {chainOk && verify?.certificate && (
           <div style={styles.certBox}>
             <div>
-              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
                 Compliance certificate
               </div>
               <div style={styles.certText}>{verify.certificate}</div>
@@ -2165,32 +2212,33 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
         {/* ── PDF DOWNLOAD BUTTONS ── */}
         {!loading && summary && summary.total_decisions > 0 && (
-          <div style={{ marginBottom: "2rem", border: "1px solid rgba(240,235,224,0.12)", background: navyDark, padding: "1.25rem 1.5rem" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", color: creamDim, marginBottom: "10px" }}>
-              Download compliance report PDF
+          <div style={{ marginBottom: "1.5rem", border: `0.5px solid ${bgBorder}`, background: navyDark, padding: "1rem 1.25rem", borderRadius: 8 }}>
+            <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: "0.75rem" }}>
+              Download compliance report
             </div>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {[
-                { jur: "SG", label: "MAS FEAT PDF" },
-                { jur: "ID", label: "OJK PDF" },
-                { jur: "EU", label: "EU AI Act PDF" },
-                { jur: "UAE", label: "VARA PDF" },
-                { jur: null, label: "All jurisdictions PDF" },
+                { jur: "SG", label: "MAS FEAT" },
+                { jur: "ID", label: "OJK" },
+                { jur: "EU", label: "EU AI Act" },
+                { jur: "UAE", label: "VARA" },
+                { jur: null, label: "All jurisdictions" },
               ].map(({ jur, label }) => (
                 <button
                   key={jur || "ALL"}
                   style={{
-                    background: jur ? "transparent" : "rgba(240,235,224,0.08)",
-                    border: "1px solid rgba(240,235,224,0.25)",
-                    color: cream,
-                    padding: "8px 20px",
+                    background: navyLight,
+                    border: `0.5px solid ${bgBorder}`,
+                    color: creamDim,
+                    padding: "7px 14px",
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: "14px",
-                    letterSpacing: "1px",
+                    fontSize: "12px",
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "6px",
+                    gap: "5px",
+                    borderRadius: 6,
+                    transition: "all 0.15s ease",
                   }}
                   onClick={() => {
                     const url = jur
@@ -2214,7 +2262,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                       .catch(() => alert("Download failed. Check your connection."));
                   }}
                 >
-                  ↓ {label}
+                  <span style={{ color: accentColor }}>↓</span> {label} PDF
                 </button>
               ))}
             </div>
@@ -2224,27 +2272,28 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         {/* ── ARTICLE 14 BANNER ── */}
         {!loading && summary && (
           <div style={{
-            background: oversightPct > 0 ? "rgba(29,158,117,0.08)" : "rgba(186,117,23,0.08)",
-            border: `1px solid ${oversightPct > 0 ? "rgba(29,158,117,0.3)" : "rgba(186,117,23,0.3)"}`,
-            padding: "1rem 1.5rem",
-            marginBottom: "2rem",
+            background: oversightPct > 0 ? "rgba(76,175,130,0.08)" : "rgba(212,135,58,0.08)",
+            border: `0.5px solid ${oversightPct > 0 ? "rgba(76,175,130,0.25)" : "rgba(212,135,58,0.3)"}`,
+            padding: "0.875rem 1.25rem",
+            marginBottom: "1.5rem",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            borderRadius: 8,
           }}>
             <div>
-              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, marginBottom: "4px" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: "4px" }}>
                 EU AI Act Article 14 — Human Oversight
               </div>
-              <div style={{ fontSize: "15px", color: oversightPct > 0 ? "#7ec8a0" : "#e8c070" }}>
+              <div style={{ fontSize: "13px", color: oversightPct > 0 ? green : amber }}>
                 {oversightPct > 0
                   ? `✓ ${oversight?.decisions_reviewed} of ${oversight?.total_decisions} decisions have human review (${oversightPct}% coverage)`
                   : "⚠ No human reviews logged yet — click any decision → Log review to satisfy Article 14"}
               </div>
             </div>
             {oversightPct === 0 && (
-              <div style={{ fontSize: "13px", color: creamDim, textAlign: "right", maxWidth: "260px" }}>
-                Click any decision in the table → "Log review" to add a human review and satisfy Article 14.
+              <div style={{ fontSize: "12px", color: creamDim, textAlign: "right", maxWidth: "240px" }}>
+                Click any decision → "Log review" to satisfy Article 14.
               </div>
             )}
           </div>
@@ -2326,7 +2375,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                             target="_blank"
                             rel="noreferrer"
                             onClick={e => e.stopPropagation()}
-                            style={{ ...styles.btn, padding: "4px 12px", fontSize: "11px", textDecoration: "none", color: "#7ec8a0", borderColor: "rgba(29,158,117,0.4)", letterSpacing: "0.5px" }}>
+                            style={{ ...styles.btn, padding: "4px 12px", fontSize: "11px", textDecoration: "none", color: "#4CAF82", borderColor: "rgba(76,175,130,0.35)", letterSpacing: "0.5px" }}>
                             ✓ Verify
                           </a>
                         </div>
@@ -2363,14 +2412,14 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
         {summary?.by_type?.length > 0 && (
           <div style={{ marginTop: "2rem" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", color: creamDim, marginBottom: "1rem" }}>
+            <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: "0.75rem" }}>
               Breakdown by type
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1px", background: "rgba(240,235,224,0.1)", border: "1px solid rgba(240,235,224,0.1)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "8px" }}>
               {summary.by_type.map((b, i) => (
-                <div key={i} style={{ background: navyDark, padding: "1rem" }}>
-                  <div style={{ fontSize: "12px", color: creamDim, marginBottom: "4px" }}>{b.type}</div>
-                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "32px", color: cream }}>{b.count}</div>
+                <div key={i} style={{ background: navyDark, border: `0.5px solid ${bgBorder}`, borderRadius: 8, padding: "1rem" }}>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", color: textMuted, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>{b.type}</div>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "24px", fontWeight: 600, color: cream, lineHeight: 1 }}>{b.count}</div>
                 </div>
               ))}
             </div>
@@ -2378,12 +2427,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         )}
       </div>
 
-      <div style={{ borderTop: "1px solid rgba(240,235,224,0.1)", padding: "1.5rem 2rem", display: "flex", justifyContent: "space-between", fontSize: "13px", color: creamDim, marginTop: "2rem" }}>
+      <div style={{ borderTop: `0.5px solid ${bgBorder}`, padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: textMuted, marginTop: "2rem" }}>
         <span style={{ display: "flex", alignItems: "center" }}>
-          <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ height: "40px", width: "auto", mixBlendMode: "screen", display: "block" }} onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "inline"; }} />
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: 700, color: cream, letterSpacing: "2px", display: "none" }}>AIDAL.</span>
+          <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ height: "32px", width: "auto", mixBlendMode: "screen", display: "block" }} onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "inline"; }} />
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: "13px", fontWeight: 600, color: creamDim, letterSpacing: "-0.01em", display: "none" }}>AIDAL.</span>
         </span>
-        <span>AI Decision Accountability Layer · {API}</span>
+        <span>AI Decision Accountability Layer</span>
         <span>© 2026 AIDAL</span>
       </div>
 

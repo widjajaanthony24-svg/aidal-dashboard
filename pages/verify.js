@@ -1,15 +1,21 @@
 import { useState, useEffect } from "react";
 
 const API = "https://aidal-production.up.railway.app";
-const navy = "#070809";
-const cream = "#f0ebe0";
-const creamDim = "#a8a39a";
-const navyDark = "#0d0f12";
-const green = "#1d9e75";
-const red = "#a32d2d";
 
+// ── Palette (mirrors index.js) ──────────────────────────────────────────────
+const navy      = "#0A0A09";
+const cream     = "#F5F0E8";
+const creamDim  = "#9C9690";
+const navyDark  = "#111110";
+const navyLight = "#1A1A18";
+const green     = "#4CAF82";
+const red       = "#E05252";
+const bgBorder  = "#242422";
+const textMuted = "#5C5850";
+const accentColor = "#C8A96E";
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
 function hashString(str) {
-  // Simple display hash — the real verification is done server-side
   return str.length > 20 ? str.slice(0, 8) + "..." + str.slice(-8) : str;
 }
 
@@ -17,24 +23,22 @@ function formatDate(str) {
   if (!str) return "—";
   return new Date(str).toLocaleString("en-GB", {
     day: "2-digit", month: "short", year: "numeric",
-    hour: "2-digit", minute: "2-digit", second: "2-digit"
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
   });
 }
 
 export default function PublicVerify() {
   const [auditId, setAuditId] = useState("");
-  const [result, setResult] = useState(null);
-  const [status, setStatus] = useState(null);
-  const [steps, setSteps] = useState([]);
+  const [result, setResult]   = useState(null);
+  const [status, setStatus]   = useState(null);
+  const [steps, setSteps]     = useState([]);
 
   // Pre-fill from URL query param ?id=aud_xxxx
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const id = params.get("id");
-      if (id) {
-        setAuditId(id);
-      }
+      if (id) setAuditId(id);
     }
   }, []);
 
@@ -46,7 +50,6 @@ export default function PublicVerify() {
     setSteps([]);
     setStatus("loading");
 
-    // Animate steps one by one
     const addStep = (text, delay) =>
       new Promise(r => setTimeout(() => { setSteps(s => [...s, text]); r(); }, delay));
 
@@ -56,9 +59,7 @@ export default function PublicVerify() {
     await addStep("Comparing computed hash against stored hash...", 1500);
 
     try {
-      // Call the public verify endpoint
       const res = await fetch(`${API}/verify/public/${id}`);
-
       await addStep("Checking hash chain integrity...", 1900);
 
       if (res.status === 404) {
@@ -66,7 +67,6 @@ export default function PublicVerify() {
         setSteps(s => [...s, "✗ Audit ID not found in ledger."]);
         return;
       }
-
       if (!res.ok) {
         setStatus("error");
         setSteps(s => [...s, "✗ Verification service error. Try again."]);
@@ -77,65 +77,141 @@ export default function PublicVerify() {
       await addStep("Verification complete.", 2200);
       setResult(data);
       setStatus(data.verified ? "verified" : "tampered");
-
     } catch (e) {
       setStatus("error");
       setSteps(s => [...s, "✗ Could not reach AIDAL API. Check your connection."]);
     }
   };
 
+  const isVerified  = status === "verified";
+  const isTampered  = status === "tampered";
+  const isNotFound  = status === "notfound";
+  const isLoading   = status === "loading";
+
+  // ── Shared input / label styles ────────────────────────────────────────────
   const inputStyle = {
     width: "100%",
-    background: navyDark,
-    border: "1px solid rgba(240,235,224,0.2)",
+    background: navyLight,
+    border: `0.5px solid ${bgBorder}`,
     color: cream,
-    padding: "14px 16px",
-    fontFamily: "monospace",
-    fontSize: "14px",
+    padding: "10px 14px",
+    fontFamily: "'JetBrains Mono', monospace",
+    fontSize: "13px",
     outline: "none",
     boxSizing: "border-box",
-    letterSpacing: "1px",
-    marginBottom: "1rem",
+    letterSpacing: "0.04em",
+    borderRadius: 6,
+    transition: "border-color 0.15s ease, box-shadow 0.15s ease",
   };
 
-  const isVerified = status === "verified";
-  const isTampered = status === "tampered";
-  const isNotFound = status === "notfound";
-  const isLoading = status === "loading";
+  const labelStyle = {
+    fontSize: "11px",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: textMuted,
+    display: "block",
+    marginBottom: "6px",
+    fontFamily: "'Inter', sans-serif",
+  };
 
   return (
-    <div style={{ minHeight: "100vh", background: navy, color: cream, fontFamily: "'Inter', sans-serif" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet" />
+    <div style={{ minHeight: "100vh", background: navy, color: cream, fontFamily: "'Inter', sans-serif", fontSize: "13px", lineHeight: 1.6, WebkitFontSmoothing: "antialiased" }}>
 
-      {/* Header */}
-      <div style={{ borderBottom: "1px solid rgba(240,235,224,0.1)", padding: "1.25rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", background: navyDark }}>
-        <a href="https://tryaidal.github.io/landing_page_aidal" style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", fontWeight: 700, letterSpacing: "2px", color: cream, textDecoration: "none" }}>AIDAL.</a>
+      {/* Fonts */}
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+
+      {/* Global styles */}
+      <style>{`
+        *, *::before, *::after { box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.45; transform: scale(0.85); }
+        }
+        input::placeholder { color: #5C5850; font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0A0A09; }
+        ::-webkit-scrollbar-thumb { background: #242422; border-radius: 3px; }
+        .verify-input:focus { border-color: ${accentColor} !important; box-shadow: 0 0 0 3px rgba(200,169,110,0.10) !important; }
+        .verify-btn:hover:not(:disabled) { opacity: 0.88; }
+        .nav-link:hover { color: ${cream} !important; }
+        .how-card:hover { background: ${navyLight} !important; }
+      `}</style>
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div style={{
+        borderBottom: `0.5px solid ${bgBorder}`,
+        padding: "0 2rem",
+        height: "52px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        background: navy,
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+      }}>
+        <a
+          href="https://tryaidal.github.io/landing_page_aidal"
+          style={{ fontFamily: "'Inter', sans-serif", fontSize: "15px", fontWeight: 600, letterSpacing: "0.12em", color: cream, textDecoration: "none", textTransform: "uppercase" }}
+        >
+          AIDAL.
+        </a>
         <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-          <a href="https://aidal-dashboard.vercel.app" style={{ fontSize: "13px", color: creamDim, textDecoration: "none", letterSpacing: "1px" }}>Dashboard →</a>
-          <a href="https://tryaidal.github.io/landing_page_aidal#get-key" style={{ fontSize: "13px", color: creamDim, textDecoration: "none", border: "1px solid rgba(240,235,224,0.2)", padding: "6px 16px", letterSpacing: "1px" }}>Get API Key</a>
+          <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={{ fontSize: "12px", color: creamDim, textDecoration: "none", letterSpacing: "0.06em", transition: "color 0.15s ease" }}>
+            Dashboard →
+          </a>
+          <a
+            href="https://tryaidal.github.io/landing_page_aidal#get-key"
+            className="nav-link"
+            style={{
+              fontSize: "12px",
+              color: creamDim,
+              textDecoration: "none",
+              border: `0.5px solid ${bgBorder}`,
+              padding: "5px 14px",
+              borderRadius: 6,
+              letterSpacing: "0.06em",
+              transition: "all 0.15s ease",
+            }}
+          >
+            Get API Key
+          </a>
         </div>
       </div>
 
-      {/* Main */}
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "5rem 2rem" }}>
+      {/* ── Main content ───────────────────────────────────────────────────── */}
+      <div style={{ maxWidth: 680, margin: "0 auto", padding: "5rem 2rem 6rem" }}>
 
-        {/* Title */}
-        <div style={{ fontSize: "12px", letterSpacing: "4px", textTransform: "uppercase", color: creamDim, marginBottom: "1.5rem" }}>
+        {/* Label */}
+        <div style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: textMuted, marginBottom: "1.25rem", fontWeight: 500 }}>
           Public Verification
         </div>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(36px, 6vw, 64px)", fontWeight: 900, lineHeight: 1.05, color: cream, marginBottom: "1rem" }}>
-          Verify any<br /><em style={{ fontStyle: "italic", color: creamDim }}>AI decision record.</em>
+
+        {/* Heading */}
+        <h1 style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: "clamp(32px, 5.5vw, 52px)",
+          fontWeight: 600,
+          lineHeight: 1.1,
+          color: cream,
+          marginBottom: "1rem",
+          letterSpacing: "-0.02em",
+        }}>
+          Verify any<br />
+          <span style={{ color: creamDim, fontWeight: 400 }}>AI decision record.</span>
         </h1>
-        <p style={{ fontSize: "18px", color: creamDim, lineHeight: 1.7, marginBottom: "3rem", maxWidth: 560 }}>
+
+        <p style={{ fontSize: "15px", color: creamDim, lineHeight: 1.75, marginBottom: "3rem", maxWidth: 520 }}>
           Paste an audit ID below. AIDAL will recompute the cryptographic hash and confirm whether the record is untampered — without revealing any sensitive data.
         </p>
 
-        {/* Input */}
-        <div style={{ marginBottom: "1rem" }}>
-          <label style={{ fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", color: creamDim, display: "block", marginBottom: "8px" }}>
-            Audit ID
-          </label>
+        {/* ── Input ──────────────────────────────────────────────────────── */}
+        <div style={{ marginBottom: "12px" }}>
+          <label style={labelStyle}>Audit ID</label>
           <input
+            className="verify-input"
             style={inputStyle}
             placeholder="aud_a7f3c9b2d1e8..."
             value={auditId}
@@ -144,139 +220,239 @@ export default function PublicVerify() {
           />
         </div>
 
+        {/* ── Button ─────────────────────────────────────────────────────── */}
         <button
+          className="verify-btn"
           onClick={runVerification}
           disabled={isLoading || !auditId.trim()}
           style={{
-            background: isLoading ? "transparent" : cream,
-            border: `1px solid ${isLoading ? "rgba(240,235,224,0.3)" : cream}`,
-            color: isLoading ? creamDim : navy,
-            padding: "14px 40px",
-            fontFamily: "'Playfair Display', serif",
-            fontSize: "16px",
-            fontWeight: 700,
-            letterSpacing: "2px",
+            background: isLoading ? "transparent" : accentColor,
+            border: `0.5px solid ${isLoading ? bgBorder : accentColor}`,
+            color: isLoading ? textMuted : "#0A0A09",
+            padding: "10px 28px",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "13px",
+            fontWeight: 600,
+            letterSpacing: "0.06em",
             textTransform: "uppercase",
             cursor: isLoading ? "not-allowed" : "pointer",
-            transition: "all 0.2s",
+            transition: "all 0.15s ease",
+            borderRadius: 6,
             marginBottom: "2.5rem",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
           }}
         >
-          {isLoading ? "Verifying..." : "Verify Record →"}
+          {isLoading ? (
+            <>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: textMuted, display: "inline-block", animation: "pulse-dot 1.2s ease-in-out infinite" }} />
+              Verifying...
+            </>
+          ) : (
+            "Verify Record →"
+          )}
         </button>
 
-        {/* Steps animation */}
+        {/* ── Verification log ───────────────────────────────────────────── */}
         {steps.length > 0 && (
-          <div style={{ background: navyDark, border: "1px solid rgba(240,235,224,0.1)", padding: "1.5rem", marginBottom: "2rem" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", color: creamDim, marginBottom: "1rem" }}>
+          <div style={{
+            background: navyDark,
+            border: `0.5px solid ${bgBorder}`,
+            borderRadius: 8,
+            padding: "1.25rem 1.5rem",
+            marginBottom: "2rem",
+            animation: "fadeIn 0.25s ease",
+          }}>
+            <div style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: textMuted, marginBottom: "1rem", fontWeight: 500 }}>
               Verification log
             </div>
             {steps.map((s, i) => (
-              <div key={i} style={{ fontFamily: "monospace", fontSize: "13px", color: s.startsWith("✗") ? "#e08080" : creamDim, marginBottom: "6px", lineHeight: 1.6, opacity: 1, animation: "fadeIn 0.3s ease" }}>
-                <span style={{ color: "rgba(240,235,224,0.3)", marginRight: "12px" }}>{String(i + 1).padStart(2, "0")}</span>
-                {s}
+              <div
+                key={i}
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "12px",
+                  color: s.startsWith("✗") ? red : creamDim,
+                  marginBottom: "5px",
+                  lineHeight: 1.6,
+                  animation: "fadeIn 0.3s ease",
+                  display: "flex",
+                  gap: "12px",
+                }}
+              >
+                <span style={{ color: bgBorder, minWidth: "18px", fontVariantNumeric: "tabular-nums" }}>{String(i + 1).padStart(2, "0")}</span>
+                <span>{s}</span>
               </div>
             ))}
             {isLoading && (
-              <div style={{ fontFamily: "monospace", fontSize: "13px", color: creamDim, marginTop: "6px" }}>
-                <span style={{ color: "rgba(240,235,224,0.3)", marginRight: "12px" }}>··</span>
-                <span style={{ opacity: 0.6 }}>Running...</span>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: textMuted, marginTop: "5px", display: "flex", gap: "12px", alignItems: "center" }}>
+                <span style={{ color: bgBorder, minWidth: "18px" }}>··</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: textMuted, display: "inline-block", animation: "pulse-dot 1.2s ease-in-out infinite" }} />
+                  Running...
+                </span>
               </div>
             )}
           </div>
         )}
 
-        {/* Result — VERIFIED */}
+        {/* ── Result: VERIFIED ───────────────────────────────────────────── */}
         {isVerified && result && (
-          <div style={{ background: "rgba(29,158,117,0.12)", border: `1px solid ${green}`, padding: "2rem" }}>
+          <div style={{
+            background: "rgba(76,175,130,0.07)",
+            border: `0.5px solid rgba(76,175,130,0.35)`,
+            borderRadius: 8,
+            padding: "1.75rem",
+            animation: "fadeIn 0.3s ease",
+          }}>
+            {/* Badge row */}
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "1.5rem" }}>
-              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(29,158,117,0.2)", border: `1px solid ${green}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#7ec8a0" }}>✓</div>
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(76,175,130,0.15)",
+                border: `0.5px solid rgba(76,175,130,0.4)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "16px", color: green,
+              }}>✓</div>
               <div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", color: "#7ec8a0", fontWeight: 700 }}>Record Verified — Untampered</div>
-                <div style={{ fontSize: "13px", color: creamDim, marginTop: "2px" }}>This record has not been altered since it was first logged.</div>
+                <div style={{ fontSize: "15px", fontWeight: 600, color: green, letterSpacing: "-0.01em" }}>Record Verified — Untampered</div>
+                <div style={{ fontSize: "12px", color: textMuted, marginTop: "2px" }}>This record has not been altered since it was first logged.</div>
               </div>
             </div>
 
+            {/* Data rows */}
             {[
-              ["Audit ID", result.audit_id],
-              ["Decision type", result.decision_type || "—"],
-              ["Jurisdiction", result.jurisdiction || "—"],
-              ["Logged at", formatDate(result.logged_at)],
-              ["Hash", result.hash ? hashString(result.hash) : "—"],
-              ["Previous hash", result.prev_hash ? hashString(result.prev_hash) : "GENESIS (first record)"],
-              ["Compliance status", result.compliance_status || "—"],
-              ["Regulator", result.regulator || "—"],
-            ].map(([k, v]) => (
-              <div key={k} style={{ display: "flex", gap: "1rem", padding: "10px 0", borderBottom: "1px solid rgba(29,158,117,0.15)" }}>
-                <span style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: creamDim, minWidth: "140px", paddingTop: "2px" }}>{k}</span>
-                <span style={{ fontSize: "14px", color: cream, fontFamily: k === "Hash" || k === "Previous hash" || k === "Audit ID" ? "monospace" : "inherit" }}>{v}</span>
+              ["Audit ID",          result.audit_id,                                            true],
+              ["Decision type",     result.decision_type || "—",                                false],
+              ["Jurisdiction",      result.jurisdiction || "—",                                 false],
+              ["Logged at",         formatDate(result.logged_at),                               false],
+              ["Hash",              result.hash ? hashString(result.hash) : "—",                true],
+              ["Previous hash",     result.prev_hash ? hashString(result.prev_hash) : "GENESIS (first record)", true],
+              ["Compliance status", result.compliance_status || "—",                            false],
+              ["Regulator",         result.regulator || "—",                                    false],
+            ].map(([k, v, mono]) => (
+              <div key={k} style={{
+                display: "flex",
+                gap: "1rem",
+                padding: "9px 0",
+                borderBottom: `0.5px solid rgba(76,175,130,0.12)`,
+                alignItems: "flex-start",
+              }}>
+                <span style={{ fontSize: "11px", letterSpacing: "0.07em", textTransform: "uppercase", color: textMuted, minWidth: "140px", paddingTop: "1px", fontWeight: 500 }}>{k}</span>
+                <span style={{
+                  fontSize: "13px",
+                  color: cream,
+                  fontFamily: mono ? "'JetBrains Mono', monospace" : "'Inter', sans-serif",
+                  letterSpacing: mono ? "0.02em" : "normal",
+                  wordBreak: "break-all",
+                }}>{v}</span>
               </div>
             ))}
 
-            <div style={{ marginTop: "1.5rem", padding: "1rem", background: "rgba(29,158,117,0.08)", border: "1px solid rgba(29,158,117,0.2)" }}>
-              <div style={{ fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color: "#7ec8a0", marginBottom: "6px" }}>How this was verified</div>
-              <div style={{ fontSize: "14px", color: creamDim, lineHeight: 1.7 }}>
+            {/* How it was verified */}
+            <div style={{
+              marginTop: "1.25rem",
+              padding: "1rem 1.25rem",
+              background: "rgba(76,175,130,0.06)",
+              border: `0.5px solid rgba(76,175,130,0.18)`,
+              borderRadius: 6,
+            }}>
+              <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: green, marginBottom: "6px", fontWeight: 500 }}>How this was verified</div>
+              <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75 }}>
                 AIDAL retrieved the stored decision data, recomputed the SHA-256 hash from scratch, and confirmed it matches the hash stored at log time. The previous record's hash was also verified, confirming chain integrity.
               </div>
             </div>
           </div>
         )}
 
-        {/* Result — TAMPERED */}
+        {/* ── Result: TAMPERED ───────────────────────────────────────────── */}
         {isTampered && (
-          <div style={{ background: "rgba(163,45,45,0.12)", border: `1px solid ${red}`, padding: "2rem" }}>
+          <div style={{
+            background: "rgba(224,82,82,0.07)",
+            border: `0.5px solid rgba(224,82,82,0.35)`,
+            borderRadius: 8,
+            padding: "1.75rem",
+            animation: "fadeIn 0.3s ease",
+          }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "1rem" }}>
-              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(163,45,45,0.2)", border: `1px solid ${red}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#e08080" }}>⚠</div>
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(224,82,82,0.15)",
+                border: `0.5px solid rgba(224,82,82,0.4)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "16px", color: red,
+              }}>⚠</div>
               <div>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "22px", color: "#e08080", fontWeight: 700 }}>Tampering Detected</div>
-                <div style={{ fontSize: "13px", color: creamDim, marginTop: "2px" }}>The computed hash does not match the stored hash. This record may have been altered.</div>
+                <div style={{ fontSize: "15px", fontWeight: 600, color: red, letterSpacing: "-0.01em" }}>Tampering Detected</div>
+                <div style={{ fontSize: "12px", color: textMuted, marginTop: "2px" }}>The computed hash does not match the stored hash. This record may have been altered.</div>
               </div>
             </div>
-            <div style={{ fontSize: "14px", color: creamDim, lineHeight: 1.7 }}>
-              This is a serious integrity violation. If you believe this is an error, contact the company that provided this audit ID and email try.aidal@gmail.com immediately.
+            <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75 }}>
+              This is a serious integrity violation. If you believe this is an error, contact the company that provided this audit ID and email{" "}
+              <span style={{ color: cream, fontFamily: "'JetBrains Mono', monospace", fontSize: "12px" }}>try.aidal@gmail.com</span> immediately.
             </div>
           </div>
         )}
 
-        {/* Result — NOT FOUND */}
+        {/* ── Result: NOT FOUND ──────────────────────────────────────────── */}
         {isNotFound && (
-          <div style={{ background: "rgba(240,235,224,0.04)", border: "1px solid rgba(240,235,224,0.15)", padding: "2rem" }}>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", color: cream, marginBottom: "0.5rem" }}>Audit ID not found</div>
-            <div style={{ fontSize: "14px", color: creamDim, lineHeight: 1.7 }}>
+          <div style={{
+            background: "rgba(255,255,255,0.03)",
+            border: `0.5px solid ${bgBorder}`,
+            borderRadius: 8,
+            padding: "1.75rem",
+            animation: "fadeIn 0.3s ease",
+          }}>
+            <div style={{ fontSize: "14px", fontWeight: 500, color: cream, marginBottom: "0.5rem" }}>Audit ID not found</div>
+            <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75 }}>
               This audit ID does not exist in AIDAL's ledger. Check the ID is correct and try again. If you believe this is an error, contact the company that issued it.
             </div>
           </div>
         )}
 
-        {/* How it works explainer */}
+        {/* ── How it works (only shown before first attempt) ─────────────── */}
         {!status && (
-          <div style={{ marginTop: "4rem", borderTop: "1px solid rgba(240,235,224,0.1)", paddingTop: "3rem" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "4px", textTransform: "uppercase", color: creamDim, marginBottom: "2rem" }}>How verification works</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+          <div style={{ marginTop: "4rem", borderTop: `0.5px solid ${bgBorder}`, paddingTop: "3rem" }}>
+            <div style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: textMuted, marginBottom: "1.75rem", fontWeight: 500 }}>
+              How verification works
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: bgBorder, borderRadius: 8, overflow: "hidden" }}>
               {[
-                ["No login required", "Anyone with an audit ID can verify it. No account. No API key. No asking AIDAL for permission."],
-                ["No sensitive data shown", "Verification only confirms whether a record is untampered. It does not reveal the underlying decision data."],
+                ["No login required",     "Anyone with an audit ID can verify it. No account. No API key. No asking AIDAL for permission."],
+                ["No sensitive data",     "Verification only confirms whether a record is untampered. It does not reveal the underlying decision data."],
                 ["Mathematically proven", "AIDAL recomputes the SHA-256 hash from the stored data and compares it to the original. If they match, the record is untampered."],
-                ["Who uses this", "Regulators, auditors, customers, and courts — anyone who receives an audit ID and needs independent proof the record is genuine."],
+                ["Who uses this",         "Regulators, auditors, customers, and courts — anyone who receives an audit ID and needs independent proof the record is genuine."],
               ].map(([title, desc]) => (
-                <div key={title} style={{ borderTop: "1px solid rgba(240,235,224,0.15)", paddingTop: "1rem" }}>
-                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "17px", color: cream, fontWeight: 700, marginBottom: "0.5rem" }}>{title}</div>
-                  <div style={{ fontSize: "15px", color: creamDim, lineHeight: 1.7 }}>{desc}</div>
+                <div
+                  key={title}
+                  className="how-card"
+                  style={{
+                    background: navyDark,
+                    padding: "1.5rem",
+                    transition: "background 0.15s ease",
+                  }}
+                >
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: cream, marginBottom: "6px", letterSpacing: "-0.01em" }}>{title}</div>
+                  <div style={{ fontSize: "12px", color: creamDim, lineHeight: 1.75 }}>{desc}</div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Footer note */}
-        <div style={{ marginTop: "4rem", paddingTop: "2rem", borderTop: "1px solid rgba(240,235,224,0.08)", fontSize: "13px", color: "rgba(240,235,224,0.3)", lineHeight: 1.7 }}>
+        {/* ── Footer note ────────────────────────────────────────────────── */}
+        <div style={{
+          marginTop: "4rem",
+          paddingTop: "2rem",
+          borderTop: `0.5px solid ${bgBorder}`,
+          fontSize: "12px",
+          color: textMuted,
+          lineHeight: 1.75,
+        }}>
           AIDAL public verification does not require authentication. Audit IDs are provided by the company that logged the decision — AIDAL does not expose audit IDs publicly. This page verifies integrity only — it does not reveal any personal data or decision content.
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
     </div>
   );
 }

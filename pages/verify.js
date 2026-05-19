@@ -152,11 +152,15 @@ export default function PublicVerify() {
         top: 0,
         zIndex: 100,
       }}>
-        <a
-          href="https://tryaidal.github.io/landing_page_aidal"
-          style={{ fontFamily: "'Inter', sans-serif", fontSize: "15px", fontWeight: 600, letterSpacing: "0.12em", color: cream, textDecoration: "none", textTransform: "uppercase" }}
-        >
-          AIDAL.
+        <a href="https://tryaidal.github.io/landing_page_aidal" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
+          <div style={{ overflow: "hidden", width: "160px", height: "60px", position: "relative", flexShrink: 0 }}>
+            <img
+              src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png"
+              alt="AIDAL."
+              style={{ position: "absolute", width: "175px", height: "175px", mixBlendMode: "screen", top: "-58px", left: "-5px" }}
+              onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#F5F0E8;letter-spacing:0.12em;text-transform:uppercase">AIDAL.</span>'; }}
+            />
+          </div>
         </a>
         <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
           <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={{ fontSize: "12px", color: creamDim, textDecoration: "none", letterSpacing: "0.06em", transition: "color 0.15s ease" }}>

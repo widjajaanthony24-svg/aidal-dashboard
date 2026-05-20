@@ -2428,9 +2428,8 @@ function Dashboard({ apiKey, companyName, onLogout }) {
       </div>
 
       <div style={{ borderTop: `0.5px solid ${bgBorder}`, padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: textMuted, marginTop: "2rem" }}>
-        <span style={{ display: "flex", alignItems: "center" }}>
-          <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ height: "32px", width: "auto", mixBlendMode: "screen", display: "block" }} onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "inline"; }} />
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: "13px", fontWeight: 600, color: creamDim, letterSpacing: "-0.01em", display: "none" }}>AIDAL.</span>
+        <span style={{ display: "inline-block", overflow: "hidden", width: "120px", height: "45px", position: "relative", flexShrink: 0 }}>
+          <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position: "absolute", width: "132px", height: "132px", mixBlendMode: "screen", top: "-44px", left: "-4px", display: "block" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#9C9690;letter-spacing:0.06em">AIDAL.</span>'; }} />
         </span>
         <span>AI Decision Accountability Layer</span>
         <span>© 2026 AIDAL</span>

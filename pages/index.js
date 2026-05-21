@@ -14,6 +14,21 @@ const bgBorder = "#242422";
 const textMuted= "#5C5850";
 const accentColor = "#C8A96E";
 
+const jurColors = {
+  SG:  { bg: "rgba(59,130,246,0.1)",  border: "rgba(59,130,246,0.3)",  color: "#60A5FA" },
+  EU:  { bg: "rgba(200,169,110,0.1)", border: "rgba(200,169,110,0.3)", color: "#C8A96E" },
+  ID:  { bg: "rgba(76,175,130,0.1)",  border: "rgba(76,175,130,0.3)",  color: "#4CAF82" },
+  UAE: { bg: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.3)", color: "#A78BFA" },
+};
+const typeTagPalette = [
+  { bg: "rgba(76,175,130,0.1)",  color: "#4CAF82" },
+  { bg: "rgba(59,130,246,0.1)",  color: "#60A5FA" },
+  { bg: "rgba(200,169,110,0.1)", color: "#C8A96E" },
+  { bg: "rgba(167,139,250,0.1)", color: "#A78BFA" },
+  { bg: "rgba(212,135,58,0.1)",  color: "#D4873A" },
+  { bg: "rgba(236,72,153,0.1)",  color: "#EC4899" },
+];
+
 const styles = {
   app: {
     minHeight: "100vh",
@@ -188,25 +203,28 @@ const styles = {
     borderRight: `0.5px solid ${bgBorder}`,
   },
   statLabel: {
-    fontSize: "11px",
-    letterSpacing: "0.08em",
+    fontSize: "10px",
+    letterSpacing: "0.1em",
     textTransform: "uppercase",
     color: textMuted,
-    marginBottom: "6px",
+    marginBottom: "8px",
     display: "block",
+    fontWeight: 500,
   },
   statValue: {
     fontFamily: "'Inter', sans-serif",
-    fontSize: "28px",
-    fontWeight: 600,
+    fontSize: "36px",
+    fontWeight: 700,
     color: cream,
     lineHeight: 1,
     display: "block",
+    letterSpacing: "-0.025em",
   },
   statSub: {
     fontSize: "11px",
     color: creamDim,
-    marginTop: "4px",
+    marginTop: "6px",
+    lineHeight: 1.4,
   },
   verifyBanner: (valid) => ({
     background: valid ? "rgba(76,175,130,0.1)" : "rgba(224,82,82,0.1)",
@@ -348,12 +366,29 @@ const styles = {
     const isBad = o.includes("den") || o.includes("flag") || o.includes("reject") || o.includes("block") || o === "false";
     return {
       display: "inline-block",
-      padding: "2px 8px",
+      padding: "3px 10px",
       fontSize: "11px",
-      border: `0.5px solid ${isGood ? green : isBad ? red : bgBorder}`,
+      fontWeight: 600,
+      letterSpacing: "0.03em",
+      border: `1px solid ${isGood ? "rgba(76,175,130,0.35)" : isBad ? "rgba(224,82,82,0.35)" : bgBorder}`,
       color: isGood ? green : isBad ? red : creamDim,
       background: isGood ? "rgba(76,175,130,0.1)" : isBad ? "rgba(224,82,82,0.1)" : navyLight,
-      borderRadius: 4,
+      borderRadius: 100,
+    };
+  },
+  jurBadge: (jur) => {
+    const c = jurColors[jur] || { bg: "rgba(240,235,224,0.06)", border: "rgba(240,235,224,0.15)", color: creamDim };
+    return {
+      display: "inline-block",
+      padding: "2px 8px",
+      fontSize: "10px",
+      fontWeight: 700,
+      letterSpacing: "0.06em",
+      background: c.bg,
+      border: `1px solid ${c.border}`,
+      color: c.color,
+      borderRadius: 100,
+      fontFamily: "'JetBrains Mono', monospace",
     };
   },
   hashText: {
@@ -472,6 +507,50 @@ const styles = {
     fontSize: "12px",
     color: green,
     letterSpacing: "0.03em",
+  },
+  sidebar: {
+    width: "220px",
+    flexShrink: 0,
+    background: navyDark,
+    borderRight: `0.5px solid ${bgBorder}`,
+    paddingTop: "1.25rem",
+    display: "flex",
+    flexDirection: "column",
+    position: "sticky",
+    top: "88px",
+    height: "calc(100vh - 88px)",
+    overflowY: "auto",
+  },
+  sidebarSection: {
+    fontSize: "10px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: textMuted,
+    padding: "16px 20px 6px",
+    fontWeight: 600,
+    display: "block",
+  },
+  sidebarItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "9px 20px",
+    fontSize: "13px",
+    color: creamDim,
+    textDecoration: "none",
+    cursor: "pointer",
+    borderLeft: "2px solid transparent",
+    background: "transparent",
+    border: "none",
+    width: "100%",
+    textAlign: "left",
+    fontFamily: "'Inter', sans-serif",
+    lineHeight: 1,
+  },
+  sidebarDivider: {
+    height: "0.5px",
+    background: bgBorder,
+    margin: "10px 16px",
   },
 };
 
@@ -851,6 +930,8 @@ function FairnessPanel({ apiKey }) {
                           background: isFlagged ? "rgba(212,135,58,0.08)" : "rgba(240,235,224,0.04)",
                           border: `1px solid ${isFlagged ? "rgba(212,135,58,0.35)" : "rgba(240,235,224,0.1)"}`,
                           padding: "1rem",
+                          borderRadius: 8,
+                          borderTop: `3px solid ${isFlagged ? amber : green}`,
                         }}>
                           <div style={{ fontSize: "12px", color: isFlagged ? "#D4873A" : creamDim, marginBottom: "6px", display: "flex", justifyContent: "space-between" }}>
                             <span>{band}</span>
@@ -898,7 +979,7 @@ function FairnessPanel({ apiKey }) {
                           <div style={{ fontSize: "14px", color: "#D4873A", fontWeight: 600 }}>
                             {f.group} — {f.approval_rate_pct}% approval rate
                           </div>
-                          <span style={{ fontSize: "11px", color: "#D4873A", border: "1px solid rgba(186,117,23,0.4)", padding: "2px 8px" }}>
+                          <span className={f.flag === "SIGNIFICANT_DISPARITY" ? "bias-flag-badge" : ""} style={{ fontSize: "11px", color: "#D4873A", border: "1px solid rgba(186,117,23,0.4)", padding: "2px 10px", borderRadius: 100, fontWeight: 700, letterSpacing: "0.04em" }}>
                             {f.flag}
                           </span>
                         </div>
@@ -2088,13 +2169,31 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.45; transform: scale(0.85); }
         }
+        @keyframes bias-pulse {
+          0%, 100% { opacity: 1; box-shadow: none; }
+          50% { opacity: 0.7; box-shadow: 0 0 10px rgba(212,135,58,0.45); }
+        }
         tr:hover td, tr:hover td * { background: inherit; }
         table tr:hover > td { background: #1A1A18 !important; }
+        table tbody tr:nth-child(even) > td { background: rgba(26,26,24,0.55) !important; }
+        table tbody tr:nth-child(even):hover > td { background: #1A1A18 !important; }
         select option { background: #111110; color: #F5F0E8; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0A0A09; }
         ::-webkit-scrollbar-thumb { background: #242422; border-radius: 3px; }
         input::placeholder, textarea::placeholder { color: #5C5850; }
+        input:focus, select:focus, textarea:focus {
+          border-color: rgba(76,175,130,0.5) !important;
+          box-shadow: 0 0 0 2.5px rgba(76,175,130,0.1) !important;
+          outline: none;
+        }
+        .sidebar-item { transition: background 0.12s ease, color 0.12s ease; }
+        .sidebar-item:hover { background: rgba(240,235,224,0.05) !important; color: #F5F0E8 !important; }
+        .bias-flag-badge { animation: bias-pulse 2.2s ease-in-out infinite; }
+        .stat-card { transition: background 0.15s ease; }
+        .stat-card:hover { background: #181816 !important; }
+        .panel-card { transition: background 0.15s ease; border-radius: 8px; }
+        .panel-card:hover { background: #181816 !important; }
       `}</style>
 
       <div style={styles.countdown}>
@@ -2105,36 +2204,73 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         <span style={{ color: textMuted }}>Non-compliance fines up to €30M</span>
       </div>
 
-      <div style={styles.header}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ overflow:"hidden", width:"160px", height:"60px", position:"relative", flexShrink:0 }}>
-            <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"175px", height:"175px", mixBlendMode:"screen", top:"-58px", left:"-5px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Playfair Display,serif;font-size:22px;font-weight:700;color:#f0ebe0;letter-spacing:2px">AIDAL.</span>'; }} />
+      <div style={{ ...styles.header, position: "sticky", top: "36px", zIndex: 100 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ overflow:"hidden", width:"120px", height:"44px", position:"relative", flexShrink:0 }}>
+            <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"132px", height:"132px", mixBlendMode:"screen", top:"-44px", left:"-4px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Playfair Display,serif;font-size:18px;font-weight:700;color:#f0ebe0;letter-spacing:2px">AIDAL.</span>'; }} />
           </div>
+          <span style={{ fontSize: "12px", color: bgBorder, marginLeft: "4px" }}>|</span>
+          <span style={{ fontSize: "12px", color: creamDim, letterSpacing: "0.02em" }}>{companyName}</span>
         </div>
         <div style={styles.headerRight}>
-          <span style={styles.companyBadge}>{companyName}</span>
           <span style={styles.statusText}>
             <span style={styles.statusDot(apiOk)} />
             {apiOk ? "API online" : "API offline"}
           </span>
           <button style={styles.btn} onClick={fetchAll}>↻ Refresh</button>
-          <a href="https://aidal-dashboard.vercel.app/verify" target="_blank" rel="noreferrer"
-            style={{ ...styles.btn, textDecoration: "none", fontSize: "13px", color: "#4CAF82", borderColor: "rgba(76,175,130,0.35)" }}>
-            ✓ Public verify ↗
-          </a>
-          <a href="https://github.com/widjajaanthony24-svg/aidal-anchors" target="_blank" rel="noreferrer"
-            style={{ ...styles.btn, textDecoration: "none", fontSize: "13px" }}>
-            Anchor log ↗
-          </a>
-          <a href="https://aidal-production.up.railway.app/docs" target="_blank" rel="noreferrer"
-            style={{ ...styles.btn, textDecoration: "none", fontSize: "13px" }}>
-            API docs ↗
-          </a>
           <button style={styles.btnDanger} onClick={onLogout}>Sign out</button>
         </div>
       </div>
 
-      <div style={styles.main}>
+      <div style={{ display: "flex" }}>
+        {/* ── SIDEBAR ── */}
+        <aside style={styles.sidebar}>
+          <span style={styles.sidebarSection}>Overview</span>
+          <a href="#top" className="sidebar-item" style={styles.sidebarItem}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </a>
+          <a href="#audit-log" className="sidebar-item" style={styles.sidebarItem}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            Audit Log
+          </a>
+          <div style={styles.sidebarDivider} />
+          <span style={styles.sidebarSection}>Tools</span>
+          <a href="#log-decision" className="sidebar-item" style={styles.sidebarItem}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Log a Decision
+          </a>
+          <a href="#model-registry" className="sidebar-item" style={styles.sidebarItem}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            Model Registry
+          </a>
+          <a href="#fairness" className="sidebar-item" style={styles.sidebarItem}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Fairness Detection
+          </a>
+          <a href="#incidents" className="sidebar-item" style={styles.sidebarItem}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Incident Reporting
+          </a>
+          <div style={styles.sidebarDivider} />
+          <span style={styles.sidebarSection}>Resources</span>
+          <a href="https://aidal-dashboard.vercel.app/verify" target="_blank" rel="noreferrer" className="sidebar-item" style={{ ...styles.sidebarItem, color: "#4CAF82" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Public Verify ↗
+          </a>
+          <a href="https://github.com/widjajaanthony24-svg/aidal-anchors" target="_blank" rel="noreferrer" className="sidebar-item" style={styles.sidebarItem}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            Anchor Log ↗
+          </a>
+          <a href="https://aidal-production.up.railway.app/docs" target="_blank" rel="noreferrer" className="sidebar-item" style={styles.sidebarItem}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            API Docs ↗
+          </a>
+        </aside>
+
+        {/* ── MAIN + FOOTER ── */}
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <div id="top" style={styles.main}>
         <div style={styles.pageTitle}>Compliance Dashboard</div>
         <div style={styles.pageSubtitle}>
           {companyName} · AI decisions logged, explained, and cryptographically verified ·{" "}
@@ -2143,24 +2279,33 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
         {/* ── STAT GRID — 5 cards ── */}
         <div style={styles.statGrid}>
-          <div style={styles.statCard}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid ${accentColor}` }}>
             <span style={styles.statLabel}>Total decisions</span>
             <span style={styles.statValue}>{loading ? "—" : (summary?.total_decisions ?? 0)}</span>
             <div style={styles.statSub}>All time</div>
           </div>
-          <div style={styles.statCard}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid ${chainOk ? green : red}` }}>
             <span style={styles.statLabel}>Chain status</span>
-            <span style={{ ...styles.statValue, color: chainOk ? green : red }}>
-              {loading ? "—" : chainOk ? "✓ Clean" : verify?.status === "no_records" ? "No data" : "⚠ Check"}
-            </span>
+            {loading ? (
+              <span style={styles.statValue}>—</span>
+            ) : chainOk ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+                <span style={{ ...styles.statValue, color: green, fontSize: "22px" }}>✓ Clean</span>
+                <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", background: "rgba(76,175,130,0.12)", border: "1px solid rgba(76,175,130,0.3)", color: green, padding: "3px 10px", borderRadius: 100 }}>VERIFIED</span>
+              </div>
+            ) : (
+              <span style={{ ...styles.statValue, color: red, fontSize: "22px" }}>
+                {verify?.status === "no_records" ? "No data" : "⚠ Check"}
+              </span>
+            )}
             <div style={styles.statSub}>{verify?.records_verified ?? 0} records verified</div>
           </div>
-          <div style={styles.statCard}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid rgba(200,169,110,0.5)` }}>
             <span style={styles.statLabel}>Jurisdictions</span>
             <span style={styles.statValue}>{loading ? "—" : (jurisdictions.length || 0)}</span>
             <div style={styles.statSub}>{jurisdictions.join(", ") || "—"}</div>
           </div>
-          <div style={{ ...styles.statCard, borderLeft: `1.5px solid ${oversightPct > 0 ? green : amber}` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid ${oversightPct > 0 ? green : amber}` }}>
             <span style={styles.statLabel}>Article 14 coverage</span>
             <span style={{ ...styles.statValue, color: oversightPct > 0 ? green : amber }}>
               {loading ? "—" : `${oversightPct}%`}
@@ -2171,7 +2316,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                 : "No human reviews yet"}
             </div>
           </div>
-          <div style={{ ...styles.statCard, borderRight: "none", borderLeft: openIncidentCount > 0 ? `1.5px solid ${amber}` : "none" }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderRight: "none", borderTop: `3px solid ${openIncidentCount > 0 ? amber : "rgba(240,235,224,0.1)"}` }}>
             <span style={styles.statLabel}>Open incidents</span>
             <span style={{ ...styles.statValue, color: openIncidentCount > 0 ? amber : cream }}>
               {openIncidentCount}
@@ -2299,7 +2444,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         )}
 
-        <div style={{ ...styles.toolbar, marginTop: "2rem" }}>
+        <div id="audit-log" style={{ ...styles.toolbar, marginTop: "2rem" }}>
           <select style={styles.select} value={filterType} onChange={e => { setFilterType(e.target.value); setOffset(0); }}>
             <option value="">All decision types</option>
             {types.map(t => <option key={t} value={t}>{t}</option>)}
@@ -2354,7 +2499,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                       <td style={styles.td}>
                         <span style={styles.outcomeBadge(outcome)}>{outcome}</span>
                       </td>
-                      <td style={styles.td}>{r.jurisdiction || "—"}</td>
+                      <td style={styles.td}>
+                        {r.jurisdiction ? <span style={styles.jurBadge(r.jurisdiction)}>{r.jurisdiction}</span> : "—"}
+                      </td>
                       <td style={{ ...styles.td, maxWidth: "300px" }}>
                         <span style={{ fontSize: "13px", fontStyle: "italic", color: creamDim }}>
                           {r.explanation ? r.explanation.slice(0, 80) + "..." : "—"}
@@ -2399,41 +2546,57 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         )}
 
         {/* ── BOTTOM PANELS ── */}
-        <TestPanel apiKey={apiKey} onSuccess={() => { fetchAll(); fetchDecisions(); }} />
-        <ModelRegistryPanel apiKey={apiKey} onSuccess={fetchAll} />
-        <FairnessPanel apiKey={apiKey} />
-        <IncidentPanel
+        <div id="log-decision"><TestPanel apiKey={apiKey} onSuccess={() => { fetchAll(); fetchDecisions(); }} /></div>
+        <div id="model-registry"><ModelRegistryPanel apiKey={apiKey} onSuccess={fetchAll} /></div>
+        <div id="fairness"><FairnessPanel apiKey={apiKey} /></div>
+        <div id="incidents"><IncidentPanel
           apiKey={apiKey}
           onStatsUpdate={(incidents) => {
             const open = incidents.filter(i => i.status !== "resolved").length;
             setOpenIncidentCount(open);
           }}
-        />
+        /></div>
 
-        {summary?.by_type?.length > 0 && (
-          <div style={{ marginTop: "2rem" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: "0.75rem" }}>
-              Breakdown by type
+        {summary?.by_type?.length > 0 && (() => {
+          const total = summary.by_type.reduce((s, b) => s + (b.count || 0), 0);
+          return (
+            <div style={{ marginTop: "2.5rem" }}>
+              <div style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: textMuted, marginBottom: "1rem", fontWeight: 600 }}>
+                Breakdown by type
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px" }}>
+                {summary.by_type.map((b, i) => {
+                  const tag = typeTagPalette[i % typeTagPalette.length];
+                  const pct = total > 0 ? Math.round((b.count / total) * 100) : 0;
+                  return (
+                    <div key={i} className="panel-card" style={{ background: navyDark, border: `0.5px solid ${bgBorder}`, borderRadius: 8, padding: "1.125rem 1.25rem", borderTop: `2px solid ${tag.color}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "10px", color: tag.color, textTransform: "uppercase", letterSpacing: "0.08em", background: tag.bg, padding: "2px 8px", borderRadius: 100 }}>{b.type}</div>
+                        <div style={{ fontSize: "11px", color: creamDim }}>{pct}%</div>
+                      </div>
+                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "28px", fontWeight: 700, color: cream, lineHeight: 1, marginBottom: "10px", letterSpacing: "-0.02em" }}>{b.count}</div>
+                      <div style={{ background: "#1A1A18", height: "4px", borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ background: tag.color, height: "100%", width: `${pct}%`, borderRadius: 2, transition: "width 0.5s ease" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "8px" }}>
-              {summary.by_type.map((b, i) => (
-                <div key={i} style={{ background: navyDark, border: `0.5px solid ${bgBorder}`, borderRadius: 8, padding: "1rem" }}>
-                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", color: textMuted, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>{b.type}</div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: "24px", fontWeight: 600, color: cream, lineHeight: 1 }}>{b.count}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+          );
+        })()}
 
-      <div style={{ borderTop: `0.5px solid ${bgBorder}`, padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: textMuted, marginTop: "2rem" }}>
-        <span style={{ display: "inline-block", overflow: "hidden", width: "120px", height: "45px", position: "relative", flexShrink: 0 }}>
-          <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position: "absolute", width: "132px", height: "132px", mixBlendMode: "screen", top: "-44px", left: "-4px", display: "block" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#9C9690;letter-spacing:0.06em">AIDAL.</span>'; }} />
-        </span>
-        <span>AI Decision Accountability Layer</span>
-        <span>© 2026 AIDAL</span>
-      </div>
+        </div>{/* end styles.main */}
+
+        <div style={{ borderTop: `0.5px solid ${bgBorder}`, padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: textMuted }}>
+          <span style={{ display: "inline-block", overflow: "hidden", width: "120px", height: "45px", position: "relative", flexShrink: 0 }}>
+            <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position: "absolute", width: "132px", height: "132px", mixBlendMode: "screen", top: "-44px", left: "-4px", display: "block" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#9C9690;letter-spacing:0.06em">AIDAL.</span>'; }} />
+          </span>
+          <span>AI Decision Accountability Layer</span>
+          <span>© 2026 AIDAL</span>
+        </div>
+        </div>{/* end flex:1 content wrapper */}
+      </div>{/* end sidebar+main flex row */}
 
       {selected && <DecisionModal record={selected} onClose={() => setSelected(null)} apiKey={apiKey} />}
     </div>

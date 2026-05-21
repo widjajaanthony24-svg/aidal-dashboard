@@ -2089,6 +2089,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
   const [openIncidentCount, setOpenIncidentCount] = useState(0);
+  const [section, setSection] = useState("dashboard");
   const limit = 10;
 
   const fetchAll = useCallback(async () => {
@@ -2159,6 +2160,22 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const oversight = summary?.human_oversight;
   const oversightPct = oversight?.oversight_rate_pct ?? 0;
 
+  // Section visibility: display:none + fade-in animation on the active section
+  const secStyle = (name) => ({
+    display: section === name ? "block" : "none",
+    animation: section === name ? "sectionIn 0.28s ease both" : "none",
+  });
+  // Sidebar active item style helper
+  const sidebarBtn = (names) => ({
+    ...styles.sidebarItem,
+    color: names.includes(section) ? cream : undefined,
+    background: names.includes(section) ? "rgba(240,235,224,0.05)" : "transparent",
+    borderLeft: names.includes(section) ? `2px solid ${accentColor}` : "2px solid transparent",
+    cursor: "pointer",
+    border: "none",
+    WebkitAppearance: "none",
+  });
+
   return (
     <div style={styles.app}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
@@ -2172,6 +2189,10 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         @keyframes bias-pulse {
           0%, 100% { opacity: 1; box-shadow: none; }
           50% { opacity: 0.7; box-shadow: 0 0 10px rgba(212,135,58,0.45); }
+        }
+        @keyframes sectionIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         tr:hover td, tr:hover td * { background: inherit; }
         table tr:hover > td { background: #1A1A18 !important; }
@@ -2226,32 +2247,32 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         {/* ── SIDEBAR ── */}
         <aside style={styles.sidebar}>
           <span style={styles.sidebarSection}>Overview</span>
-          <a href="#top" className="sidebar-item" style={styles.sidebarItem}>
+          <button className="sidebar-item" style={sidebarBtn(["dashboard"])} onClick={() => setSection("dashboard")}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             Dashboard
-          </a>
-          <a href="#audit-log" className="sidebar-item" style={styles.sidebarItem}>
+          </button>
+          <button className="sidebar-item" style={sidebarBtn(["dashboard"])} onClick={() => setSection("dashboard")}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
             Audit Log
-          </a>
+          </button>
           <div style={styles.sidebarDivider} />
           <span style={styles.sidebarSection}>Tools</span>
-          <a href="#log-decision" className="sidebar-item" style={styles.sidebarItem}>
+          <button className="sidebar-item" style={sidebarBtn(["log-decision"])} onClick={() => setSection("log-decision")}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
             Log a Decision
-          </a>
-          <a href="#model-registry" className="sidebar-item" style={styles.sidebarItem}>
+          </button>
+          <button className="sidebar-item" style={sidebarBtn(["model-registry"])} onClick={() => setSection("model-registry")}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
             Model Registry
-          </a>
-          <a href="#fairness" className="sidebar-item" style={styles.sidebarItem}>
+          </button>
+          <button className="sidebar-item" style={sidebarBtn(["fairness"])} onClick={() => setSection("fairness")}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             Fairness Detection
-          </a>
-          <a href="#incidents" className="sidebar-item" style={styles.sidebarItem}>
+          </button>
+          <button className="sidebar-item" style={sidebarBtn(["incidents"])} onClick={() => setSection("incidents")}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             Incident Reporting
-          </a>
+          </button>
           <div style={styles.sidebarDivider} />
           <span style={styles.sidebarSection}>Resources</span>
           <a href="https://aidal-dashboard.vercel.app/verify" target="_blank" rel="noreferrer" className="sidebar-item" style={{ ...styles.sidebarItem, color: "#4CAF82" }}>
@@ -2270,7 +2291,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
         {/* ── MAIN + FOOTER ── */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        <div id="top" style={styles.main}>
+        <div style={styles.main}>
+        {/* ══ SECTION: DASHBOARD ══ */}
+        <div key={section === "dashboard" ? "dash-active" : "dash"} style={secStyle("dashboard")}>
         <div style={styles.pageTitle}>Compliance Dashboard</div>
         <div style={styles.pageSubtitle}>
           {companyName} · AI decisions logged, explained, and cryptographically verified ·{" "}
@@ -2444,7 +2467,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         )}
 
-        <div id="audit-log" style={{ ...styles.toolbar, marginTop: "2rem" }}>
+        <div style={{ ...styles.toolbar, marginTop: "2rem" }}>
           <select style={styles.select} value={filterType} onChange={e => { setFilterType(e.target.value); setOffset(0); }}>
             <option value="">All decision types</option>
             {types.map(t => <option key={t} value={t}>{t}</option>)}
@@ -2545,18 +2568,6 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </>
         )}
 
-        {/* ── BOTTOM PANELS ── */}
-        <div id="log-decision"><TestPanel apiKey={apiKey} onSuccess={() => { fetchAll(); fetchDecisions(); }} /></div>
-        <div id="model-registry"><ModelRegistryPanel apiKey={apiKey} onSuccess={fetchAll} /></div>
-        <div id="fairness"><FairnessPanel apiKey={apiKey} /></div>
-        <div id="incidents"><IncidentPanel
-          apiKey={apiKey}
-          onStatsUpdate={(incidents) => {
-            const open = incidents.filter(i => i.status !== "resolved").length;
-            setOpenIncidentCount(open);
-          }}
-        /></div>
-
         {summary?.by_type?.length > 0 && (() => {
           const total = summary.by_type.reduce((s, b) => s + (b.count || 0), 0);
           return (
@@ -2585,6 +2596,42 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             </div>
           );
         })()}
+
+        </div>{/* end dashboard section */}
+
+        {/* ══ SECTION: LOG A DECISION ══ */}
+        <div key={section === "log-decision" ? "ld-active" : "ld"} style={secStyle("log-decision")}>
+          <div style={{ ...styles.pageTitle, marginBottom: "0.25rem" }}>Log a Decision</div>
+          <div style={{ ...styles.pageSubtitle, marginBottom: "1.5rem" }}>Send a real AI decision to your account — no code required</div>
+          <TestPanel apiKey={apiKey} onSuccess={() => { fetchAll(); fetchDecisions(); }} />
+        </div>
+
+        {/* ══ SECTION: MODEL REGISTRY ══ */}
+        <div key={section === "model-registry" ? "mr-active" : "mr"} style={secStyle("model-registry")}>
+          <div style={{ ...styles.pageTitle, marginBottom: "0.25rem" }}>Model Registry</div>
+          <div style={{ ...styles.pageSubtitle, marginBottom: "1.5rem" }}>EU AI Act Article 9 — register AI models before deployment</div>
+          <ModelRegistryPanel apiKey={apiKey} onSuccess={fetchAll} />
+        </div>
+
+        {/* ══ SECTION: FAIRNESS DETECTION ══ */}
+        <div key={section === "fairness" ? "fd-active" : "fd"} style={secStyle("fairness")}>
+          <div style={{ ...styles.pageTitle, marginBottom: "0.25rem" }}>Fairness Detection</div>
+          <div style={{ ...styles.pageSubtitle, marginBottom: "1.5rem" }}>EU AI Act Article 10 + MAS FEAT — bias monitoring across credit score bands</div>
+          <FairnessPanel apiKey={apiKey} />
+        </div>
+
+        {/* ══ SECTION: INCIDENT REPORTING ══ */}
+        <div key={section === "incidents" ? "ir-active" : "ir"} style={secStyle("incidents")}>
+          <div style={{ ...styles.pageTitle, marginBottom: "0.25rem" }}>Incident Reporting</div>
+          <div style={{ ...styles.pageSubtitle, marginBottom: "1.5rem" }}>EU AI Act Article 72 — report AI incidents to regulators within 15 days</div>
+          <IncidentPanel
+            apiKey={apiKey}
+            onStatsUpdate={(incidents) => {
+              const open = incidents.filter(i => i.status !== "resolved").length;
+              setOpenIncidentCount(open);
+            }}
+          />
+        </div>
 
         </div>{/* end styles.main */}
 

@@ -181,14 +181,14 @@ const styles = {
   pageTitle: {
     fontFamily: "'IBM Plex Sans', sans-serif",
     fontSize: "18px",
-    fontWeight: 600,
-    color: cream,
+    fontWeight: 700,
+    color: "#F0F4F8",
     marginBottom: "0.25rem",
-    letterSpacing: "0",
+    letterSpacing: "-0.02em",
   },
   pageSubtitle: {
-    fontSize: "11px",
-    color: creamDim,
+    fontSize: "12px",
+    color: "#6B7A8D",
     marginBottom: "1.75rem",
     fontFamily: "'IBM Plex Mono', monospace",
     letterSpacing: "0.04em",
@@ -366,11 +366,13 @@ const styles = {
   },
   tdPrimary: {
     padding: "11px 14px",
-    fontSize: "12px",
+    fontSize: "11px",
     color: cream,
     borderBottom: `1px solid ${bgBorder}`,
-    fontFamily: "'IBM Plex Sans', sans-serif",
+    fontFamily: "'IBM Plex Mono', monospace",
     fontWeight: 500,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
   },
   outcomeBadge: (outcome) => {
     const o = (outcome || "").toLowerCase();
@@ -950,12 +952,11 @@ function FairnessPanel({ apiKey }) {
                       const deviation = stats.deviation_from_overall_pct ?? 0;
                       return (
                         <div key={band} style={{
-                          background: isFlagged ? "rgba(245,158,11,0.07)" : "rgba(240,244,248,0.03)",
-                          border: `1px solid ${isFlagged ? "rgba(245,158,11,0.3)" : bgBorder}`,
-                          borderLeft: isFlagged ? `3px solid ${amber}` : `1px solid ${bgBorder}`,
+                          background: "#111827",
+                          border: `1px solid ${isFlagged ? amber : bgBorder}`,
+                          borderTop: `2px solid ${isFlagged ? amber : bgBorder}`,
                           padding: "1rem",
-                          borderRadius: 8,
-                          borderTop: `3px solid ${isFlagged ? amber : green}`,
+                          borderRadius: 0,
                         }}>
                           <div style={{ fontSize: "11px", color: isFlagged ? amber : creamDim, marginBottom: "6px", display: "flex", justifyContent: "space-between", fontFamily: "'IBM Plex Mono', monospace" }}>
                             <span>{band}</span>
@@ -2077,7 +2078,7 @@ function TestPanel({ apiKey, onSuccess }) {
           )}
 
           <button
-            style={{ background: accentColor, border: "none", color: "#0A0F1E", padding: "10px 24px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "13px", fontWeight: 600, cursor: "pointer", opacity: sending ? 0.6 : 1, borderRadius: 0, transition: "all 0.15s ease" }}
+            style={{ background: "#F59E0B", border: "none", color: "#0A0F1E", padding: "10px 24px", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: "12px", fontWeight: 600, cursor: "pointer", opacity: sending ? 0.6 : 1, borderRadius: 0, transition: "all 0.15s ease", letterSpacing: "2px", textTransform: "uppercase" }}
             onClick={handleSend}
             disabled={sending}
           >
@@ -2340,9 +2341,8 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             {loading ? (
               <span style={styles.statValue}>—</span>
             ) : chainOk ? (
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                <span style={{ ...styles.statValue, color: green, fontSize: "22px" }}>✓ Clean</span>
-                <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", background: "rgba(0,211,127,0.08)", border: "1px solid rgba(0,211,127,0.25)", color: green, padding: "3px 10px", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace" }}>VERIFIED</span>
+              <div style={{ marginBottom: "6px" }}>
+                <span style={{ ...styles.statValue, color: green, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.04em", fontSize: "16px", lineHeight: 1.3 }}>CHAIN INTEGRITY:<br/>VERIFIED</span>
               </div>
             ) : (
               <span style={{ ...styles.statValue, color: red, fontSize: "22px" }}>
@@ -2351,12 +2351,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             )}
             <div style={styles.statSub}>{verify?.records_verified ?? 0} records verified</div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid rgba(200,169,110,0.5)` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid #6B7A8D` }}>
             <span style={styles.statLabel}>Jurisdictions</span>
             <span style={styles.statValue}>{loading ? "—" : (jurisdictions.length || 0)}</span>
             <div style={styles.statSub}>{jurisdictions.join(", ") || "—"}</div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid ${oversightPct > 0 ? green : amber}` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid ${amber}` }}>
             <span style={styles.statLabel}>Article 14 coverage</span>
             <span style={{ ...styles.statValue, color: oversightPct > 0 ? green : amber }}>
               {loading ? "—" : `${oversightPct}%`}
@@ -2367,7 +2367,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                 : "No human reviews yet"}
             </div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderRight: "none", borderTop: `3px solid ${openIncidentCount > 0 ? amber : "rgba(240,235,224,0.1)"}` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderRight: "none", borderTop: `3px solid ${red}` }}>
             <span style={styles.statLabel}>Open incidents</span>
             <span style={{ ...styles.statValue, color: openIncidentCount > 0 ? amber : cream }}>
               {openIncidentCount}
@@ -2388,7 +2388,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                   : `Tampered record detected at ${verify.first_tampered_audit_id}`}
               </span>
             </div>
-            <button style={styles.btn} onClick={runVerify}>Run verification</button>
+            <button style={{ background: "transparent", border: `1px solid ${green}`, color: green, padding: "6px 16px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace" }} onClick={runVerify}>Run verification</button>
           </div>
         )}
 
@@ -2406,9 +2406,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         )}
 
+        {/* ── SECTION DIVIDER ── */}
+        <div style={{ height: "1px", background: "#1E2A3A", margin: "0 0 1.5rem 0" }} />
+
         {/* ── PDF DOWNLOAD BUTTONS ── */}
         {!loading && summary && summary.total_decisions > 0 && (
-          <div style={{ marginBottom: "1.5rem", border: `0.5px solid ${bgBorder}`, background: navyDark, padding: "1rem 1.25rem", borderRadius: 8 }}>
+          <div style={{ marginBottom: "1.5rem", border: `1px solid ${bgBorder}`, background: navyDark, padding: "1rem 1.25rem", borderRadius: 0 }}>
             <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: "0.75rem" }}>
               Download compliance report
             </div>
@@ -2469,13 +2472,13 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         {!loading && summary && (
           <div style={{
             background: oversightPct > 0 ? "rgba(76,175,130,0.08)" : "rgba(212,135,58,0.08)",
-            border: `0.5px solid ${oversightPct > 0 ? "rgba(76,175,130,0.25)" : "rgba(212,135,58,0.3)"}`,
+            border: `1px solid ${oversightPct > 0 ? "rgba(76,175,130,0.25)" : "rgba(212,135,58,0.3)"}`,
             padding: "0.875rem 1.25rem",
             marginBottom: "1.5rem",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            borderRadius: 8,
+            borderRadius: 0,
           }}>
             <div>
               <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: "4px" }}>
@@ -2495,7 +2498,10 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         )}
 
-        <div style={{ ...styles.toolbar, marginTop: "2rem" }}>
+        {/* ── SECTION DIVIDER ── */}
+        <div style={{ height: "1px", background: "#1E2A3A", margin: "1.5rem 0" }} />
+
+        <div style={{ ...styles.toolbar, marginTop: "0" }}>
           <select style={styles.select} value={filterType} onChange={e => { setFilterType(e.target.value); setOffset(0); }}>
             <option value="">All decision types</option>
             {types.map(t => <option key={t} value={t}>{t}</option>)}
@@ -2548,7 +2554,11 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                     <tr key={r.audit_id || i} style={{ cursor: "pointer" }} onClick={() => setSelected(r)}>
                       <td style={styles.tdPrimary}>{r.decision_type || "—"}</td>
                       <td style={styles.td}>
-                        <span style={styles.outcomeBadge(outcome)}>{outcome}</span>
+                        <span style={outcome === "—"
+                          ? { display: "inline-block", padding: "2px 9px", fontSize: "10px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", border: "1px solid rgba(245,158,11,0.3)", color: amber, background: "rgba(245,158,11,0.07)", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace" }
+                          : styles.outcomeBadge(outcome)}>
+                          {outcome === "—" ? "PENDING" : outcome}
+                        </span>
                       </td>
                       <td style={styles.td}>
                         {r.jurisdiction ? <span style={styles.jurBadge(r.jurisdiction)}>{r.jurisdiction}</span> : "—"}
@@ -2608,14 +2618,14 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                   const tag = typeTagPalette[i % typeTagPalette.length];
                   const pct = total > 0 ? Math.round((b.count / total) * 100) : 0;
                   return (
-                    <div key={i} className="panel-card" style={{ background: navyDark, border: `0.5px solid ${bgBorder}`, borderRadius: 8, padding: "1.125rem 1.25rem", borderTop: `2px solid ${tag.color}` }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "10px", color: tag.color, textTransform: "uppercase", letterSpacing: "0.08em", background: tag.bg, padding: "2px 8px", borderRadius: 0 }}>{b.type}</div>
-                        <div style={{ fontSize: "11px", color: creamDim }}>{pct}%</div>
+                    <div key={i} className="panel-card" style={{ background: navyDark, border: `1px solid ${bgBorder}`, borderRadius: 0, padding: "1.125rem 1.25rem", borderTop: `2px solid ${tag.color}` }}>
+                      <div style={{ marginBottom: "10px" }}>
+                        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "10px", color: tag.color, textTransform: "uppercase", letterSpacing: "0.08em", background: tag.bg, padding: "2px 8px", borderRadius: 0, display: "inline-block" }}>{b.type}</div>
                       </div>
-                      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "28px", fontWeight: 500, color: cream, lineHeight: 1, marginBottom: "10px", letterSpacing: "-0.02em" }}>{b.count}</div>
-                      <div style={{ background: bgBorder, height: "3px", overflow: "hidden" }}>
+                      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "28px", fontWeight: 500, color: cream, lineHeight: 1, marginBottom: "14px", letterSpacing: "-0.02em" }}>{b.count}</div>
+                      <div style={{ position: "relative", background: bgBorder, height: "6px" }}>
                         <div style={{ background: tag.color, height: "100%", width: `${pct}%`, transition: "width 0.5s ease" }} />
+                        <span style={{ position: "absolute", right: 0, bottom: "8px", fontSize: "10px", color: creamDim, fontFamily: "'IBM Plex Mono', monospace", lineHeight: 1 }}>{b.count}</span>
                       </div>
                     </div>
                   );

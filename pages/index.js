@@ -2557,7 +2557,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                         <span style={outcome === "—"
                           ? { display: "inline-block", padding: "2px 9px", fontSize: "10px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", border: "1px solid rgba(245,158,11,0.3)", color: amber, background: "rgba(245,158,11,0.07)", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace" }
                           : styles.outcomeBadge(outcome)}>
-                          {outcome === "—" ? "PENDING" : outcome}
+                          {outcome === "—" ? "—" : outcome}
                         </span>
                       </td>
                       <td style={styles.td}>

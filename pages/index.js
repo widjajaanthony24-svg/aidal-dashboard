@@ -98,7 +98,7 @@ const styles = {
   },
   loginBtn: {
     width: "100%",
-    background: "#2D6BE4",
+    background: "#1A2B4A",
     border: "none",
     color: "#FFFFFF",
     padding: "11px",
@@ -2140,8 +2140,8 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const [openIncidentCount, setOpenIncidentCount] = useState(0);
   const [section, setSection] = useState("dashboard");
   const [bannerDismissed, setBannerDismissed] = useState(() => {
-    if (typeof sessionStorage !== "undefined") {
-      return sessionStorage.getItem("aidal_banner_dismissed") === "1";
+    if (typeof localStorage !== "undefined") {
+      return localStorage.getItem("aidal_banner_dismissed") === "1";
     }
     return false;
   });
@@ -2149,7 +2149,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
   const dismissBanner = () => {
     setBannerDismissed(true);
-    sessionStorage.setItem("aidal_banner_dismissed", "1");
+    localStorage.setItem("aidal_banner_dismissed", "1");
   };
 
   const fetchAll = useCallback(async () => {

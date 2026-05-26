@@ -12,7 +12,7 @@ const red      = "#EF4444";
 const amber    = "#F59E0B";
 const bgBorder = "rgba(255,255,255,0.08)";
 const textMuted= "#8B92A5";
-const accentColor = "#2D6BE4";
+const accentColor = "#C8A96E";
 
 const jurColors = {
   SG:  { bg: "rgba(16,185,129,0.08)",  border: "rgba(16,185,129,0.25)",  color: "#10B981" },
@@ -266,9 +266,9 @@ const styles = {
     borderRadius: 0,
   },
   btnPrimary: {
-    background: "#2D6BE4",
+    background: "#C8A96E",
     border: "none",
-    color: "#FFFFFF",
+    color: "#0A0A0A",
     padding: "6px 14px",
     fontFamily: "'IBM Plex Sans', sans-serif",
     fontSize: "12px",
@@ -2229,7 +2229,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const sidebarBtn = (names) => ({
     ...styles.sidebarItem,
     color: names.includes(section) ? cream : undefined,
-    background: names.includes(section) ? "rgba(45,107,228,0.08)" : "transparent",
+    background: names.includes(section) ? "rgba(200,169,110,0.10)" : "transparent",
     borderLeft: names.includes(section) ? `2px solid ${accentColor}` : "2px solid transparent",
     cursor: "pointer",
     border: "none",
@@ -2256,21 +2256,21 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           to   { opacity: 1; transform: translateY(0); }
         }
         tr:hover td, tr:hover td * { background: inherit; }
-        table tr:hover > td { background: rgba(45,107,228,0.04) !important; }
+        table tr:hover > td { background: rgba(200,169,110,0.05) !important; }
         table tbody tr:nth-child(even) > td { background: rgba(26,29,39,0.6) !important; }
-        table tbody tr:nth-child(even):hover > td { background: rgba(45,107,228,0.04) !important; }
+        table tbody tr:nth-child(even):hover > td { background: rgba(200,169,110,0.05) !important; }
         select option { background: #1A1D27; color: #F0F2F5; }
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #0F1117; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 0; }
         input::placeholder, textarea::placeholder { color: #8B92A5; }
         input:focus, select:focus, textarea:focus {
-          border-color: rgba(45,107,228,0.5) !important;
-          box-shadow: 0 0 0 2px rgba(45,107,228,0.08) !important;
+          border-color: rgba(200,169,110,0.55) !important;
+          box-shadow: 0 0 0 2px rgba(200,169,110,0.08) !important;
           outline: none;
         }
         .sidebar-item { transition: background 0.12s ease, color 0.12s ease; }
-        .sidebar-item:hover { background: rgba(255,255,255,0.04) !important; color: #F0F2F5 !important; }
+        .sidebar-item:hover { background: rgba(200,169,110,0.06) !important; color: #F0F2F5 !important; }
         .bias-flag-badge { animation: bias-pulse 2.2s ease-in-out infinite; }
         .stat-card { transition: background 0.15s ease; }
         .stat-card:hover { background: #22263A !important; }
@@ -2281,7 +2281,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
       {!bannerDismissed && (
         <div style={styles.countdownBanner}>
           <span style={{ flex: 1 }}>
-            <span style={{ color: "#2D6BE4", fontWeight: 600, letterSpacing: "0.06em" }}>EU AI Act deadline</span>
+            <span style={{ color: "#C8A96E", fontWeight: 600, letterSpacing: "0.06em" }}>EU AI Act deadline</span>
             <span style={{ color: bgBorder, margin: "0 10px" }}>·</span>
             <span style={{ color: cream, fontFamily: "'IBM Plex Mono', monospace" }}>{countdown} remaining</span>
             <span style={{ color: bgBorder, margin: "0 10px" }}>·</span>
@@ -2402,12 +2402,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
         {/* ── STAT GRID — 5 cards ── */}
         <div style={styles.statGrid}>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid ${accentColor}` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
             <span style={styles.statLabel}>Total decisions</span>
             <span style={styles.statValue}>{loading ? "—" : (summary?.total_decisions ?? 0)}</span>
             <div style={styles.statSub}>All time</div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid ${chainOk ? green : red}` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
             <span style={styles.statLabel}>Chain status</span>
             {loading ? (
               <span style={{ ...styles.statValue, fontSize: "18px" }}>—</span>
@@ -2415,9 +2415,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
               <div style={{ marginTop: "4px", marginBottom: "8px" }}>
                 <span style={{
                   display: "inline-flex", alignItems: "center", gap: "5px",
-                  background: "rgba(16,185,129,0.10)",
-                  border: "1px solid rgba(16,185,129,0.25)",
-                  color: green,
+                  background: "rgba(200,169,110,0.10)",
+                  border: "1px solid rgba(200,169,110,0.4)",
+                  color: accentColor,
                   fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em",
                   fontFamily: "'IBM Plex Mono', monospace",
                   padding: "4px 10px", borderRadius: "2px",
@@ -2440,12 +2440,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             )}
             <div style={styles.statSub}>{verify?.records_verified ?? 0} records verified</div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid #6B7A8D` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
             <span style={styles.statLabel}>Jurisdictions</span>
             <span style={styles.statValue}>{loading ? "—" : (jurisdictions.length || 0)}</span>
             <div style={styles.statSub}>{jurisdictions.join(", ") || "—"}</div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid ${amber}` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
             <span style={styles.statLabel}>Article 14 coverage</span>
             <span style={{ ...styles.statValue, color: oversightPct > 0 ? green : amber }}>
               {loading ? "—" : `${oversightPct}%`}
@@ -2456,7 +2456,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                 : "No human reviews yet"}
             </div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: `3px solid ${red}` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
             <span style={styles.statLabel}>Open incidents</span>
             <span style={{ ...styles.statValue, color: openIncidentCount > 0 ? amber : cream }}>
               {openIncidentCount}
@@ -2465,7 +2465,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
               {openIncidentCount > 0 ? "Requires attention" : "All clear"}
             </div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderRight: "none", borderTop: `3px solid ${textMuted}` }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderRight: "none", borderTop: "2px solid #C8A96E" }}>
             <span style={styles.statLabel}>Last audit submitted</span>
             <span style={{ ...styles.statValue, fontSize: "15px", letterSpacing: "0", marginTop: "6px" }}>
               {loading ? "—" : decisions.length > 0 ? formatDate(decisions[0]?.logged_at).split(",")[0] : "—"}
@@ -2486,7 +2486,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                   : `Tampered record detected at ${verify.first_tampered_audit_id}`}
               </span>
             </div>
-            <button style={{ background: "transparent", border: `1px solid ${green}`, color: green, padding: "6px 16px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace" }} onClick={runVerify}>Run verification</button>
+            <button style={{ background: "transparent", border: `1px solid ${accentColor}`, color: accentColor, padding: "6px 16px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace" }} onClick={runVerify}>Run verification</button>
           </div>
         )}
 
@@ -2498,9 +2498,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
               </div>
               <span style={{
                 display: "inline-flex", alignItems: "center", gap: "5px",
-                background: "rgba(16,185,129,0.10)",
-                border: "1px solid rgba(16,185,129,0.25)",
-                color: green,
+                background: "rgba(200,169,110,0.10)",
+                border: "1px solid rgba(200,169,110,0.4)",
+                color: accentColor,
                 fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em",
                 fontFamily: "'IBM Plex Mono', monospace",
                 padding: "3px 10px", borderRadius: "2px",
@@ -2582,9 +2582,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <button
                       style={{
-                        background: "rgba(45,107,228,0.08)",
-                        border: `1px solid rgba(45,107,228,0.25)`,
-                        color: "#2D6BE4",
+                        background: "rgba(200,169,110,0.10)",
+                        border: "1px solid rgba(200,169,110,0.35)",
+                        color: "#C8A96E",
                         padding: "5px 12px",
                         fontFamily: "'IBM Plex Sans', sans-serif",
                         fontSize: "11px",
@@ -2739,8 +2739,8 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                             style={{
                               display: "inline-flex", alignItems: "center", gap: "4px",
                               padding: "4px 12px", fontSize: "11px", textDecoration: "none",
-                              color: green, border: `1px solid rgba(16,185,129,0.35)`,
-                              background: "rgba(16,185,129,0.06)",
+                              color: accentColor, border: `1px solid rgba(200,169,110,0.45)`,
+                              background: "rgba(200,169,110,0.08)",
                               fontFamily: "'IBM Plex Mono', monospace",
                               letterSpacing: "0.04em", fontWeight: 600,
                               borderRadius: 0, cursor: "pointer",
@@ -2779,13 +2779,13 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                   const tag = typeTagPalette[i % typeTagPalette.length];
                   const pct = total > 0 ? Math.round((b.count / total) * 100) : 0;
                   return (
-                    <div key={i} className="panel-card" style={{ background: navyDark, border: `1px solid ${bgBorder}`, borderRadius: 0, padding: "1.125rem 1.25rem", borderTop: `2px solid ${tag.color}` }}>
+                    <div key={i} className="panel-card" style={{ background: navyDark, border: `1px solid ${bgBorder}`, borderRadius: 0, padding: "1.125rem 1.25rem", borderTop: "2px solid #C8A96E" }}>
                       <div style={{ marginBottom: "10px" }}>
                         <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "10px", color: tag.color, textTransform: "uppercase", letterSpacing: "0.08em", background: tag.bg, padding: "2px 8px", borderRadius: 0, display: "inline-block" }}>{b.type}</div>
                       </div>
                       <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "28px", fontWeight: 500, color: cream, lineHeight: 1, marginBottom: "14px", letterSpacing: "-0.02em" }}>{b.count}</div>
                       <div style={{ position: "relative", background: bgBorder, height: "6px" }}>
-                        <div style={{ background: tag.color, height: "100%", width: `${pct}%`, transition: "width 0.5s ease" }} />
+                        <div style={{ background: "#C8A96E", height: "100%", width: `${pct}%`, transition: "width 0.5s ease" }} />
                         <span style={{ position: "absolute", right: 0, bottom: "8px", fontSize: "10px", color: creamDim, fontFamily: "'IBM Plex Mono', monospace", lineHeight: 1 }}>{b.count}</span>
                       </div>
                     </div>

@@ -552,16 +552,18 @@ const styles = {
     letterSpacing: "0.16em",
     textTransform: "uppercase",
     color: textMuted,
-    padding: "16px 20px 6px",
-    fontWeight: 500,
+    padding: "12px 20px 4px",
+    fontWeight: 600,
     display: "block",
     fontFamily: "'IBM Plex Mono', monospace",
+    borderTop: `1px solid ${bgBorder}`,
+    marginTop: "4px",
   },
   sidebarItem: {
     display: "flex",
     alignItems: "center",
     gap: "10px",
-    padding: "9px 20px",
+    padding: "13px 20px",
     fontSize: "12px",
     color: creamDim,
     textDecoration: "none",
@@ -577,7 +579,7 @@ const styles = {
   sidebarDivider: {
     height: "1px",
     background: bgBorder,
-    margin: "10px 16px",
+    margin: "16px 16px 8px",
   },
   sidebarSubItem: {
     display: "flex",
@@ -2255,6 +2257,10 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes statCardIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         tr:hover td, tr:hover td * { background: inherit; }
         table tr:hover > td { background: rgba(200,169,110,0.05) !important; }
         table tbody tr:nth-child(even) > td { background: rgba(26,29,39,0.6) !important; }
@@ -2402,12 +2408,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
         {/* ── STAT GRID — 5 cards ── */}
         <div style={styles.statGrid}>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "0ms" }}>
             <span style={styles.statLabel}>Total decisions</span>
             <span style={styles.statValue}>{loading ? "—" : (summary?.total_decisions ?? 0)}</span>
             <div style={styles.statSub}>All time</div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "80ms" }}>
             <span style={styles.statLabel}>Chain status</span>
             {loading ? (
               <span style={{ ...styles.statValue, fontSize: "18px" }}>—</span>
@@ -2440,12 +2446,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             )}
             <div style={styles.statSub}>{verify?.records_verified ?? 0} records verified</div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "160ms" }}>
             <span style={styles.statLabel}>Jurisdictions</span>
             <span style={styles.statValue}>{loading ? "—" : (jurisdictions.length || 0)}</span>
             <div style={styles.statSub}>{jurisdictions.join(", ") || "—"}</div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "240ms" }}>
             <span style={styles.statLabel}>Article 14 coverage</span>
             <span style={{ ...styles.statValue, color: oversightPct > 0 ? green : amber }}>
               {loading ? "—" : `${oversightPct}%`}
@@ -2455,8 +2461,18 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                 ? `${oversight?.decisions_reviewed} decision${oversight?.decisions_reviewed !== 1 ? "s" : ""} reviewed`
                 : "No human reviews yet"}
             </div>
+            {!loading && (
+              <>
+                <div style={{ marginTop: "10px", background: bgBorder, height: "3px", borderRadius: "2px", overflow: "hidden" }}>
+                  <div style={{ background: amber, height: "100%", width: `${Math.min(oversightPct, 100)}%`, transition: "width 0.6s ease" }} />
+                </div>
+                <div style={{ marginTop: "5px", fontSize: "10px", color: textMuted, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.04em" }}>
+                  Target: 25% minimum
+                </div>
+              </>
+            )}
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E" }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "320ms" }}>
             <span style={styles.statLabel}>Open incidents</span>
             <span style={{ ...styles.statValue, color: openIncidentCount > 0 ? amber : cream }}>
               {openIncidentCount}
@@ -2465,7 +2481,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
               {openIncidentCount > 0 ? "Requires attention" : "All clear"}
             </div>
           </div>
-          <div className="stat-card" style={{ ...styles.statCard, borderRight: "none", borderTop: "2px solid #C8A96E" }}>
+          <div className="stat-card" style={{ ...styles.statCard, borderRight: "none", borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "400ms" }}>
             <span style={styles.statLabel}>Last audit submitted</span>
             <span style={{ ...styles.statValue, fontSize: "15px", letterSpacing: "0", marginTop: "6px" }}>
               {loading ? "—" : decisions.length > 0 ? formatDate(decisions[0]?.logged_at).split(",")[0] : "—"}

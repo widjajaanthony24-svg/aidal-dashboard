@@ -43,7 +43,7 @@ const styles = {
 
   loginWrap: {
     minHeight: "100vh",
-    background: navy,
+    background: "#FAF3EB",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -53,9 +53,9 @@ const styles = {
   loginBox: {
     width: "100%",
     maxWidth: 420,
-    border: `1px solid ${bgBorder}`,
+    border: "1px solid #D8CFC4",
     padding: "2.5rem",
-    background: navyDark,
+    background: "#F0E6D6",
     borderRadius: 0,
   },
   loginLogo: {
@@ -63,12 +63,12 @@ const styles = {
     fontSize: "20px",
     fontWeight: 600,
     letterSpacing: "0.5px",
-    color: cream,
+    color: "#0A0A0A",
     marginBottom: "0.25rem",
   },
   loginTagline: {
     fontSize: "11px",
-    color: creamDim,
+    color: "#6B6560",
     letterSpacing: "0.1em",
     textTransform: "uppercase",
     marginBottom: "2rem",
@@ -77,16 +77,16 @@ const styles = {
     fontSize: "10px",
     letterSpacing: "0.1em",
     textTransform: "uppercase",
-    color: textMuted,
+    color: "#6B6560",
     display: "block",
     marginBottom: "6px",
     fontFamily: "'IBM Plex Mono', monospace",
   },
   loginInput: {
     width: "100%",
-    background: navyLight,
-    border: `1px solid ${bgBorder}`,
-    color: cream,
+    background: "#FFFFFF",
+    border: "1px solid #D8CFC4",
+    color: "#0A0A0A",
     padding: "10px 14px",
     fontFamily: "'IBM Plex Mono', monospace",
     fontSize: "13px",
@@ -98,9 +98,9 @@ const styles = {
   },
   loginBtn: {
     width: "100%",
-    background: "#1A2B4A",
+    background: "#0A0A0A",
     border: "none",
-    color: "#FFFFFF",
+    color: "#FAF3EB",
     padding: "11px",
     fontFamily: "'IBM Plex Sans', sans-serif",
     fontSize: "13px",
@@ -121,8 +121,8 @@ const styles = {
   loginHint: {
     marginTop: "1.5rem",
     fontSize: "12px",
-    color: creamDim,
-    borderTop: `1px solid ${bgBorder}`,
+    color: "#6B6560",
+    borderTop: "1px solid #D8CFC4",
     paddingTop: "1.5rem",
     lineHeight: 1.8,
   },
@@ -1454,7 +1454,7 @@ function LoginScreen({ onLogin }) {
       <div style={styles.loginBox}>
         <div style={{ marginBottom: "0.25rem" }}>
           <div style={{ overflow:"hidden", width:"300px", height:"112px", position:"relative", margin:"0 auto" }}>
-            <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"330px", height:"330px", mixBlendMode:"screen", top:"-110px", left:"-10px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:IBM Plex Sans,sans-serif;font-size:32px;font-weight:600;color:#F0F4F8;letter-spacing:2px">AIDAL.</span>'; }} />
+            <img src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"330px", height:"330px", mixBlendMode:"multiply", filter:"invert(1)", top:"-110px", left:"-10px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:IBM Plex Sans,sans-serif;font-size:32px;font-weight:600;color:#0A0A0A;letter-spacing:2px">AIDAL.</span>'; }} />
           </div>
         </div>
         <div style={styles.loginTagline}>AI Decision Accountability Layer</div>
@@ -1478,9 +1478,9 @@ function LoginScreen({ onLogin }) {
         </button>
         <div style={styles.loginHint}>
           Don't have an API key? Sign up at{" "}
-          <a href="https://tryaidal.com" target="_blank" rel="noreferrer" style={{ color: "#2D6BE4", textDecoration: "none" }}>tryaidal.com</a>
+          <a href="https://tryaidal.com" target="_blank" rel="noreferrer" style={{ color: "#C8A96E", textDecoration: "none" }}>tryaidal.com</a>
           {" "}— takes 30 seconds.
-          <div style={{ marginTop: "0.75rem", fontSize: "11px", color: textMuted, background: "rgba(255,255,255,0.03)", border: `1px solid ${bgBorder}`, padding: "8px 12px", fontFamily: "'IBM Plex Mono', monospace" }}>
+          <div style={{ marginTop: "0.75rem", fontSize: "11px", color: "#6B6560", background: "#FFFFFF", border: "1px solid #D8CFC4", padding: "8px 12px", fontFamily: "'IBM Plex Mono', monospace" }}>
             Your key is never stored server-side. Session only.
           </div>
         </div>

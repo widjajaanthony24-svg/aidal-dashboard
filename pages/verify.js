@@ -2,16 +2,16 @@ import { useState, useEffect } from "react";
 
 const API = "https://aidal-production.up.railway.app";
 
-// ── Palette (mirrors index.js) ──────────────────────────────────────────────
-const navy      = "#0A0A09";
-const cream     = "#F5F0E8";
-const creamDim  = "#9C9690";
-const navyDark  = "#111110";
-const navyLight = "#1A1A18";
+// ── Palette — black & cream ──────────────────────────────────────────────────
+const navy      = "#FAF3EB";   // page bg
+const cream     = "#0A0A0A";   // primary text
+const creamDim  = "#6B6560";   // muted text
+const navyDark  = "#F0E6D6";   // card / panel bg
+const navyLight = "#FFFFFF";   // input bg
 const green     = "#4CAF82";
 const red       = "#E05252";
-const bgBorder  = "#242422";
-const textMuted = "#5C5850";
+const bgBorder  = "#D8CFC4";
+const textMuted = "#6B6560";
 const accentColor = "#C8A96E";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ export default function PublicVerify() {
     <div style={{ minHeight: "100vh", background: navy, color: cream, fontFamily: "'Inter', sans-serif", fontSize: "13px", lineHeight: 1.6, WebkitFontSmoothing: "antialiased" }}>
 
       {/* Fonts */}
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
 
       {/* Global styles */}
       <style>{`
@@ -129,10 +129,10 @@ export default function PublicVerify() {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.45; transform: scale(0.85); }
         }
-        input::placeholder { color: #5C5850; font-family: 'JetBrains Mono', monospace; }
+        input::placeholder { color: #6B6560; font-family: 'JetBrains Mono', monospace; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0A0A09; }
-        ::-webkit-scrollbar-thumb { background: #242422; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #FAF3EB; }
+        ::-webkit-scrollbar-thumb { background: #D8CFC4; border-radius: 3px; }
         .verify-input:focus { border-color: ${accentColor} !important; box-shadow: 0 0 0 3px rgba(200,169,110,0.10) !important; }
         .verify-btn:hover:not(:disabled) { opacity: 0.88; }
         .nav-link:hover { color: ${cream} !important; }
@@ -157,13 +157,13 @@ export default function PublicVerify() {
             <img
               src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png"
               alt="AIDAL."
-              style={{ position: "absolute", width: "175px", height: "175px", mixBlendMode: "screen", top: "-58px", left: "-5px" }}
-              onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#F5F0E8;letter-spacing:0.12em;text-transform:uppercase">AIDAL.</span>'; }}
+              style={{ position: "absolute", width: "175px", height: "175px", mixBlendMode: "multiply", filter: "invert(1)", top: "-58px", left: "-5px" }}
+              onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0A0A0A;letter-spacing:0.12em;text-transform:uppercase">AIDAL.</span>'; }}
             />
           </div>
         </a>
         <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-          <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={{ fontSize: "12px", color: creamDim, textDecoration: "none", letterSpacing: "0.06em", transition: "color 0.15s ease" }}>
+          <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={{ fontSize: "12px", color: cream, textDecoration: "none", letterSpacing: "0.06em", transition: "color 0.15s ease" }}>
             Dashboard →
           </a>
           <a
@@ -171,9 +171,10 @@ export default function PublicVerify() {
             className="nav-link"
             style={{
               fontSize: "12px",
-              color: creamDim,
+              color: "#FAF3EB",
               textDecoration: "none",
-              border: `0.5px solid ${bgBorder}`,
+              background: "#0A0A0A",
+              border: "none",
               padding: "5px 14px",
               borderRadius: 6,
               letterSpacing: "0.06em",
@@ -195,13 +196,13 @@ export default function PublicVerify() {
 
         {/* Heading */}
         <h1 style={{
-          fontFamily: "'Inter', sans-serif",
+          fontFamily: "'Playfair Display', Georgia, serif",
           fontSize: "clamp(32px, 5.5vw, 52px)",
-          fontWeight: 600,
+          fontWeight: 700,
           lineHeight: 1.1,
           color: cream,
           marginBottom: "1rem",
-          letterSpacing: "-0.02em",
+          letterSpacing: "-0.01em",
         }}>
           Verify any<br />
           <span style={{ color: creamDim, fontWeight: 400 }}>AI decision record.</span>
@@ -402,7 +403,7 @@ export default function PublicVerify() {
         {/* ── Result: NOT FOUND ──────────────────────────────────────────── */}
         {isNotFound && (
           <div style={{
-            background: "rgba(255,255,255,0.03)",
+            background: navyDark,
             border: `0.5px solid ${bgBorder}`,
             borderRadius: 8,
             padding: "1.75rem",

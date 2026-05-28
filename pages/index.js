@@ -543,8 +543,8 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     position: "sticky",
-    top: "88px",
-    height: "calc(100vh - 88px)",
+    top: 0,
+    height: "100%",
     overflowY: "auto",
   },
   sidebarSection: {
@@ -2319,9 +2319,9 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         </div>
       </div>
 
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", height: bannerDismissed ? "calc(100vh - 52px)" : "calc(100vh - 88px)", overflow: "hidden" }}>
         {/* ── SIDEBAR ── */}
-        <aside style={{ ...styles.sidebar, top: bannerDismissed ? "52px" : "88px", height: bannerDismissed ? "calc(100vh - 52px)" : "calc(100vh - 88px)" }}>
+        <aside style={styles.sidebar}>
           <span style={styles.sidebarSection}>Overview</span>
           <button className="sidebar-item" style={sidebarBtn(["dashboard"])} onClick={() => setSection("dashboard")}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -2396,7 +2396,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         </aside>
 
         {/* ── MAIN + FOOTER ── */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflowY: "auto", height: "100%" }}>
         <div style={styles.main}>
         {/* ══ SECTION: DASHBOARD ══ */}
         <div key={section === "dashboard" ? "dash-active" : "dash"} style={secStyle("dashboard")}>

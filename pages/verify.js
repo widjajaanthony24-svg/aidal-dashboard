@@ -155,7 +155,7 @@ export default function PublicVerify() {
         <a href="https://tryaidal.github.io/landing_page_aidal" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
           <div style={{ overflow: "hidden", width: "160px", height: "60px", position: "relative", flexShrink: 0 }}>
             <img
-              src="https://raw.githubusercontent.com/tryaidal/landing_page_aidal/main/Copy_of_AIDAL.png"
+              src="https://tryaidal.com/Copy_of_AIDAL.png"
               alt="AIDAL."
               style={{ position: "absolute", width: "175px", height: "175px", mixBlendMode: "multiply", filter: "invert(1)", top: "-58px", left: "-5px" }}
               onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0A0A0A;letter-spacing:0.12em;text-transform:uppercase">AIDAL.</span>'; }}

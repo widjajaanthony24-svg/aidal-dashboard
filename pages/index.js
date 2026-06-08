@@ -1423,6 +1423,36 @@ function LoginScreen({ onLogin }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Key recovery flow
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [recoveryResult, setRecoveryResult] = useState(null);
+  const [recoveryError, setRecoveryError] = useState("");
+
+  const handleRecovery = async () => {
+    if (!recoveryEmail.trim() || !recoveryEmail.includes("@")) {
+      setRecoveryError("Please enter a valid email address.");
+      return;
+    }
+    setRecoveryLoading(true);
+    setRecoveryError("");
+    setRecoveryResult(null);
+    try {
+      const r = await fetch(`${API}/recover-key`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: recoveryEmail.trim().toLowerCase() }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || "Recovery failed.");
+      setRecoveryResult(data);
+    } catch (e) {
+      setRecoveryError(e.message || "Recovery failed. Email anthony@tryaidal.com.");
+    }
+    setRecoveryLoading(false);
+  };
+
   const handleLogin = async () => {
     const trimmed = key.trim();
     if (!trimmed) { setError("Please enter your API key."); return; }
@@ -1491,6 +1521,68 @@ function LoginScreen({ onLogin }) {
           <div style={{ marginTop: "0.75rem", fontSize: "11px", color: "#6B6560", background: "#FFFFFF", border: "1px solid #D8CFC4", padding: "8px 12px", fontFamily: "'IBM Plex Mono', monospace" }}>
             Your key is never stored server-side. Session only.
           </div>
+
+          {/* ── KEY RECOVERY ── */}
+          <button
+            onClick={() => { setShowRecovery(!showRecovery); setRecoveryResult(null); setRecoveryError(""); }}
+            style={{ marginTop: "1rem", background: "none", border: "none", color: "#2d3a5c", fontSize: "12px", cursor: "pointer", padding: 0, textDecoration: "underline", fontFamily: "'IBM Plex Sans', sans-serif" }}
+          >
+            {showRecovery ? "← Back to login" : "Lost your API key? Recover it →"}
+          </button>
+
+          {showRecovery && !recoveryResult && (
+            <div style={{ marginTop: "0.875rem" }}>
+              <div style={{ fontSize: "11px", color: "#6B6560", marginBottom: "0.5rem" }}>
+                Enter your registered email. A new key will be issued and your old one invalidated.
+              </div>
+              {recoveryError && (
+                <div style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.25)", color: "#b91c1c", padding: "8px 12px", fontSize: "12px", marginBottom: "0.5rem", borderRadius: 0 }}>
+                  {recoveryError}
+                </div>
+              )}
+              <input
+                style={{ ...styles.loginInput, marginBottom: "0.5rem" }}
+                type="email"
+                placeholder="your@company.com"
+                value={recoveryEmail}
+                onChange={e => setRecoveryEmail(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleRecovery()}
+              />
+              <button
+                style={{ ...styles.loginBtn, opacity: recoveryLoading ? 0.6 : 1 }}
+                onClick={handleRecovery}
+                disabled={recoveryLoading}
+              >
+                {recoveryLoading ? "Issuing new key..." : "Issue New API Key"}
+              </button>
+            </div>
+          )}
+
+          {recoveryResult && recoveryResult.new_api_key && (
+            <div style={{ marginTop: "0.875rem", background: "#F0F8F4", border: "1px solid rgba(16,185,129,0.3)", padding: "1rem", borderRadius: 0 }}>
+              <div style={{ fontSize: "11px", color: "#0A6E4F", fontWeight: 600, marginBottom: "0.5rem" }}>
+                ✓ New key issued for {recoveryResult.company_name}
+              </div>
+              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "12px", color: "#0A0A0A", wordBreak: "break-all", background: "#FFFFFF", border: "1px solid #D8CFC4", padding: "8px 12px", marginBottom: "0.5rem" }}>
+                {recoveryResult.new_api_key}
+              </div>
+              <div style={{ fontSize: "11px", color: "#b91c1c", marginBottom: "0.75rem" }}>
+                ⚠ Save this now — it will not be shown again. Your old key is invalid.
+              </div>
+              <button
+                style={{ ...styles.loginBtn }}
+                onClick={() => { setKey(recoveryResult.new_api_key); setShowRecovery(false); setRecoveryResult(null); }}
+              >
+                Log in with new key →
+              </button>
+            </div>
+          )}
+
+          {recoveryResult && !recoveryResult.new_api_key && (
+            <div style={{ marginTop: "0.875rem", fontSize: "12px", color: "#6B6560", background: "#FFFFFF", border: "1px solid #D8CFC4", padding: "10px 12px" }}>
+              {recoveryResult.message}
+            </div>
+          )}
         </div>
       </div>
     </div>

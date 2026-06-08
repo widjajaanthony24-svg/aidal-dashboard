@@ -19,6 +19,9 @@ const jurColors = {
   EU:  { bg: "rgba(245,158,11,0.08)",  border: "rgba(245,158,11,0.25)",  color: "#F59E0B" },
   ID:  { bg: "rgba(96,165,250,0.08)",  border: "rgba(96,165,250,0.25)",  color: "#60A5FA" },
   UAE: { bg: "rgba(167,139,250,0.08)", border: "rgba(167,139,250,0.25)", color: "#A78BFA" },
+  UK:  { bg: "rgba(99,102,241,0.08)",  border: "rgba(99,102,241,0.25)",  color: "#6366F1" },
+  US:  { bg: "rgba(239,68,68,0.08)",   border: "rgba(239,68,68,0.25)",   color: "#EF4444" },
+  AU:  { bg: "rgba(251,146,60,0.08)",  border: "rgba(251,146,60,0.25)",  color: "#FB923C" },
 };
 const typeTagPalette = [
   { bg: "rgba(45,107,228,0.10)",  color: "#2D6BE4" },
@@ -1255,6 +1258,9 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
                     <option value="ID">🇮🇩 Indonesia (OJK)</option>
                     <option value="EU">🇪🇺 EU (EU AI Act)</option>
                     <option value="UAE">🇦🇪 UAE (VARA)</option>
+                    <option value="UK">🇬🇧 UK (FCA)</option>
+                    <option value="US">🇺🇸 US (CFPB)</option>
+                    <option value="AU">🇦🇺 Australia (APRA)</option>
                   </select>
                 </div>
               </div>
@@ -1814,6 +1820,9 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
                     <option value="ID">🇮🇩 Indonesia (OJK)</option>
                     <option value="EU">🇪🇺 EU (EU AI Act)</option>
                     <option value="UAE">🇦🇪 UAE (VARA)</option>
+                    <option value="UK">🇬🇧 UK (FCA)</option>
+                    <option value="US">🇺🇸 US (CFPB)</option>
+                    <option value="AU">🇦🇺 Australia (APRA)</option>
                   </select>
                 </div>
                 <div style={fieldStyle}>
@@ -2028,6 +2037,9 @@ function TestPanel({ apiKey, onSuccess }) {
                 <option value="SG">🇸🇬 Singapore (MAS FEAT)</option>
                 <option value="EU">🇪🇺 European Union (EU AI Act)</option>
                 <option value="UAE">🇦🇪 UAE (VARA)</option>
+                <option value="UK">🇬🇧 United Kingdom (FCA)</option>
+                <option value="US">🇺🇸 United States (CFPB)</option>
+                <option value="AU">🇦🇺 Australia (APRA)</option>
               </select>
             </div>
             <div style={fieldStyle}>
@@ -2592,11 +2604,14 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "8px" }}>
               {[
-                { jur: "SG",  label: "MAS FEAT",         ref: "MAS Notice on FEAT",        flag: "🇸🇬" },
-                { jur: "ID",  label: "OJK Indonesia",    ref: "POJK No. 11/2022",          flag: "🇮🇩" },
-                { jur: "EU",  label: "EU AI Act",        ref: "Regulation (EU) 2024/1689",  flag: "🇪🇺" },
-                { jur: "UAE", label: "VARA UAE",         ref: "VARA AI Governance 2024",    flag: "🇦🇪" },
-                { jur: null,  label: "All jurisdictions",ref: "Combined audit report",       flag: "🌐" },
+                { jur: "SG",  label: "MAS FEAT",         ref: "MAS Notice on FEAT",          flag: "🇸🇬" },
+                { jur: "ID",  label: "OJK Indonesia",    ref: "POJK No. 11/2022",            flag: "🇮🇩" },
+                { jur: "EU",  label: "EU AI Act",        ref: "Regulation (EU) 2024/1689",   flag: "🇪🇺" },
+                { jur: "UAE", label: "VARA UAE",         ref: "VARA AI Governance 2024",     flag: "🇦🇪" },
+                { jur: "UK",  label: "UK FCA",           ref: "SYSC 3 / SM&CR / PS 22/3",    flag: "🇬🇧" },
+                { jur: "US",  label: "US CFPB",          ref: "ECOA Reg B / Circular 2023-03", flag: "🇺🇸" },
+                { jur: "AU",  label: "AU APRA",          ref: "CPS 234 / CPS 230",           flag: "🇦🇺" },
+                { jur: null,  label: "All jurisdictions",ref: "Combined audit report",        flag: "🌐" },
               ].map(({ jur, label, ref, flag }) => (
                 <div
                   key={jur || "ALL"}

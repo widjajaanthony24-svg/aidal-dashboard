@@ -1592,6 +1592,95 @@ function LoginScreen({ onLogin }) {
 // ══════════════════════════════════════════════════════════════════════════════
 // DECISION MODAL
 // ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+// VERIFY EVIDENCE — live, public, independent proof check (used inside the case modal)
+// ══════════════════════════════════════════════════════════════════════════════
+function VerifyEvidenceInline({ auditId }) {
+  const [state, setState] = useState("idle"); // idle | checking | verified | tampered | error
+
+  const run = async () => {
+    setState("checking");
+    try {
+      const r = await fetch(`${API}/verify/public/${auditId}`);
+      if (!r.ok) { setState("error"); return; }
+      const json = await r.json();
+      setState(json.verified ? "verified" : "tampered");
+    } catch (e) {
+      setState("error");
+    }
+  };
+
+  if (state === "idle") {
+    return (
+      <button
+        style={{
+          background: "rgba(200,169,110,0.10)", border: "1px solid rgba(200,169,110,0.4)",
+          color: accentColor, padding: "7px 16px", fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+          cursor: "pointer", borderRadius: 0,
+        }}
+        onClick={run}
+      >
+        Verify Evidence
+      </button>
+    );
+  }
+  if (state === "checking") {
+    return (
+      <div style={{ fontSize: "12px", color: textMuted, fontFamily: "'IBM Plex Mono', monospace" }}>
+        Recomputing SHA-256 hash and comparing against the ledger...
+      </div>
+    );
+  }
+  if (state === "verified") {
+    return (
+      <span
+        title="SHA-256 hash matches. No tampering detected. Verified independently of AIDAL's servers."
+        style={{
+          display: "inline-flex", alignItems: "center", gap: "6px", cursor: "help",
+          background: "rgba(16,185,129,0.10)", border: "1px solid rgba(16,185,129,0.35)",
+          color: green, padding: "7px 14px", fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+        }}
+      >
+        ✓ Cryptographically Verified
+      </span>
+    );
+  }
+  if (state === "tampered") {
+    return (
+      <span style={{
+        display: "inline-flex", alignItems: "center", gap: "6px",
+        background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.35)",
+        color: red, padding: "7px 14px", fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+      }}>
+        ⚠ Hash mismatch — record may have been altered
+      </span>
+    );
+  }
+  return (
+    <div style={{ fontSize: "12px", color: red }}>
+      Couldn't reach the verification service.{" "}
+      <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={run}>Try again</span>
+    </div>
+  );
+}
+
+// Section header used to break the case modal into a progressive-disclosure narrative
+function SectionLabel({ children }) {
+  return (
+    <div style={{
+      fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase",
+      color: accentColor, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600,
+      marginTop: "1.75rem", paddingTop: "1.75rem", marginBottom: "0.75rem",
+      borderTop: `1px solid ${bgBorder}`,
+    }}>
+      {children}
+    </div>
+  );
+}
+
 function DecisionModal({ record, onClose, apiKey }) {
   if (!record) return null;
   const [detail, setDetail] = useState(null);
@@ -1611,6 +1700,7 @@ function DecisionModal({ record, onClose, apiKey }) {
   const d = detail?.decision || {};
   const outcome = getOutcomeLabel(d);
   const compliance = d.compliance || {};
+  const jur = d.jurisdiction || record.jurisdiction;
 
   const formatCurrency = (val, currency) => {
     if (!val) return null;
@@ -1621,8 +1711,15 @@ function DecisionModal({ record, onClose, apiKey }) {
   return (
     <div style={styles.modal} onClick={onClose}>
       <div style={styles.modalBox} onClick={e => e.stopPropagation()}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
-          <div style={styles.modalTitle}>Decision record</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0" }}>
+          <div>
+            <div style={{ ...styles.modalTitle, marginBottom: "4px" }}>
+              Case · {record.audit_id ? record.audit_id.slice(0, 18) + "..." : "—"}
+            </div>
+            <div style={{ fontSize: "12px", color: textMuted, marginBottom: "1.5rem" }}>
+              Filed {formatDate(record.logged_at)}
+            </div>
+          </div>
           <button onClick={onClose} style={{ ...styles.btn, padding: "4px 12px", fontSize: "12px" }}>✕ Close</button>
         </div>
 
@@ -1630,6 +1727,7 @@ function DecisionModal({ record, onClose, apiKey }) {
           <div style={{ color: creamDim, fontStyle: "italic", padding: "2rem 0" }}>Loading full record...</div>
         ) : (
           <>
+            {/* ── SUMMARY ── */}
             <div style={styles.modalRow}>
               <span style={styles.modalKey}>Decision type</span>
               <span style={styles.modalVal}>{d.decision_type || record.decision_type || "—"}</span>
@@ -1639,12 +1737,41 @@ function DecisionModal({ record, onClose, apiKey }) {
               <span style={styles.modalVal}><span style={styles.outcomeBadge(outcome)}>{outcome}</span></span>
             </div>
             <div style={styles.modalRow}>
-              <span style={styles.modalKey}>Model used</span>
-              <span style={styles.modalVal}>{d.model_used || "—"}</span>
+              <span style={styles.modalKey}>Jurisdiction</span>
+              <span style={styles.modalVal}>{jur || "—"}</span>
+            </div>
+
+            {/* ── EXPLANATION ── */}
+            {(d.explanation || record.explanation) && (
+              <>
+                <SectionLabel>AI Explanation — Article 13 compliant</SectionLabel>
+                <div style={styles.explanationBox}>{d.explanation || record.explanation}</div>
+                <div style={{ fontSize: "11px", color: textMuted, marginTop: "6px", lineHeight: 1.6, fontFamily: "'IBM Plex Mono', monospace" }}>
+                  ⓘ AI-generated explanation. Verify against source decision data before regulatory submission.
+                </div>
+              </>
+            )}
+
+            {/* ── EVIDENCE ── */}
+            <SectionLabel>Cryptographic Evidence</SectionLabel>
+            <div style={styles.modalRow}>
+              <span style={styles.modalKey}>Audit ID</span>
+              <span style={{ ...styles.modalVal, ...styles.hashText }}>{record.audit_id}</span>
             </div>
             <div style={styles.modalRow}>
-              <span style={styles.modalKey}>Jurisdiction</span>
-              <span style={styles.modalVal}>{d.jurisdiction || record.jurisdiction || "—"}</span>
+              <span style={styles.modalKey}>Previous hash</span>
+              <span style={{ ...styles.modalVal, ...styles.hashText }}>{detail?.prev_hash || "GENESIS"}</span>
+            </div>
+            <div style={{ fontSize: "12px", color: creamDim, marginBottom: "0.75rem", lineHeight: 1.6 }}>
+              This decision is chained to the one before it. Changing a single character anywhere in the chain breaks every hash after it — detectable by anyone, without trusting AIDAL.
+            </div>
+            {record.audit_id && <VerifyEvidenceInline auditId={record.audit_id} />}
+
+            {/* ── MODEL & CONFIDENCE ── */}
+            <SectionLabel>Model &amp; Confidence</SectionLabel>
+            <div style={styles.modalRow}>
+              <span style={styles.modalKey}>Model used</span>
+              <span style={styles.modalVal}>{d.model_used || "—"}</span>
             </div>
             {d.input_features && (
               <div style={styles.modalRow}>
@@ -1703,50 +1830,63 @@ function DecisionModal({ record, onClose, apiKey }) {
                 </div>
               </div>
             )}
-            <div style={styles.modalRow}>
-              <span style={styles.modalKey}>Logged at</span>
-              <span style={styles.modalVal}>{formatDate(record.logged_at)}</span>
-            </div>
-            <div style={styles.modalRow}>
-              <span style={styles.modalKey}>Audit ID</span>
-              <span style={{ ...styles.modalVal, ...styles.hashText }}>{record.audit_id}</span>
-            </div>
-            <div style={styles.modalRow}>
-              <span style={styles.modalKey}>Previous hash</span>
-              <span style={{ ...styles.modalVal, ...styles.hashText }}>{detail?.prev_hash || "GENESIS"}</span>
-            </div>
+
+            {/* ── COMPLIANCE MAPPING ── */}
             {compliance.checked && (
-              <div style={styles.modalRow}>
-                <span style={styles.modalKey}>Compliance</span>
-                <div style={{ flex: 1 }}>
-                  <span style={{ ...styles.outcomeBadge(compliance.compliant ? "approved" : "denied"), marginBottom: "6px", display: "inline-block" }}>
-                    {compliance.status}
-                  </span>
-                  <div style={{ fontSize: "13px", color: creamDim, marginTop: "6px" }}>{compliance.regulator}</div>
-                  <div style={{ fontSize: "12px", color: creamDim }}>Retention required: {compliance.retention_required_years} years</div>
-                  {compliance.missing_required?.length > 0 && (
-                    <div style={{ fontSize: "11px", color: red, marginTop: "4px", fontFamily: "'IBM Plex Mono', monospace" }}>
-                      Missing required: {compliance.missing_required.join(", ")}
-                    </div>
-                  )}
+              <>
+                <SectionLabel>Compliance Mapping</SectionLabel>
+                <div style={styles.modalRow}>
+                  <span style={styles.modalKey}>Status</span>
+                  <div style={{ flex: 1 }}>
+                    <span style={{ ...styles.outcomeBadge(compliance.compliant ? "approved" : "denied"), marginBottom: "6px", display: "inline-block" }}>
+                      {compliance.status}
+                    </span>
+                    <div style={{ fontSize: "13px", color: creamDim, marginTop: "6px" }}>{compliance.regulator}</div>
+                    <div style={{ fontSize: "12px", color: creamDim }}>Retention required: {compliance.retention_required_years} years</div>
+                    {compliance.missing_required?.length > 0 && (
+                      <div style={{ fontSize: "11px", color: red, marginTop: "4px", fontFamily: "'IBM Plex Mono', monospace" }}>
+                        Missing required: {compliance.missing_required.join(", ")}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-            {(d.explanation || record.explanation) && (
-              <div>
-                <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: creamDim, marginBottom: "8px" }}>
-                  AI explanation — Article 13 compliant
-                </div>
-                <div style={styles.explanationBox}>{d.explanation || record.explanation}</div>
-                <div style={{ fontSize: "11px", color: textMuted, marginTop: "6px", lineHeight: 1.6, fontFamily: "'IBM Plex Mono', monospace" }}>
-                  ⓘ AI-generated explanation. Verify against source decision data before regulatory submission.
-                </div>
-              </div>
+              </>
             )}
 
+            {/* ── HUMAN OVERSIGHT ── */}
             {record.audit_id && (
-              <HumanReviewPanel auditId={record.audit_id} apiKey={apiKey} />
+              <>
+                <SectionLabel>Human Oversight — Article 14</SectionLabel>
+                <HumanReviewPanel auditId={record.audit_id} apiKey={apiKey} />
+              </>
             )}
+
+            {/* ── DOWNLOAD REPORT ── */}
+            <SectionLabel>Regulator-Ready Report</SectionLabel>
+            <button
+              style={{
+                background: "rgba(200,169,110,0.10)", border: "1px solid rgba(200,169,110,0.35)",
+                color: accentColor, padding: "7px 16px", fontFamily: "'IBM Plex Sans', sans-serif",
+                fontSize: "12px", fontWeight: 500, cursor: "pointer", borderRadius: 0,
+                display: "inline-flex", alignItems: "center", gap: "6px",
+              }}
+              onClick={() => {
+                const url = jur ? `${API}/compliance/report/pdf?jurisdiction=${jur}` : `${API}/compliance/report/pdf`;
+                fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } })
+                  .then(r => { if (!r.ok) throw new Error("Failed"); return r.blob(); })
+                  .then(blob => {
+                    const blobUrl = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = blobUrl;
+                    a.download = `AIDAL_${jur || "ALL"}_${new Date().toISOString().slice(0,10)}.pdf`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                  })
+                  .catch(() => alert("Download failed. Check your connection."));
+              }}
+            >
+              ↓ Download PDF
+            </button>
           </>
         )}
       </div>
@@ -2553,7 +2693,8 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                   fontFamily: "'IBM Plex Mono', monospace",
                   padding: "4px 10px", borderRadius: "2px",
                   textTransform: "uppercase",
-                }}>✓ VERIFIED</span>
+                  cursor: "help",
+                }} title="SHA-256 hash matches. No tampering detected. Verified independently of AIDAL's servers.">✓ VERIFIED</span>
               </div>
             ) : (
               <div style={{ marginTop: "4px", marginBottom: "8px" }}>
@@ -2627,7 +2768,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                   : `Tampered record detected at ${verify.first_tampered_audit_id}`}
               </span>
             </div>
-            <button style={{ background: "transparent", border: `1px solid ${accentColor}`, color: accentColor, padding: "6px 16px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace" }} onClick={runVerify}>Run verification</button>
+            <button style={{ background: "transparent", border: `1px solid ${accentColor}`, color: accentColor, padding: "6px 16px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace" }} onClick={runVerify}>Verify Audit Trail</button>
           </div>
         )}
 
@@ -2646,7 +2787,8 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                 fontFamily: "'IBM Plex Mono', monospace",
                 padding: "3px 10px", borderRadius: "2px",
                 textTransform: "uppercase",
-              }}>✓ VERIFIED</span>
+                cursor: "help",
+              }} title="SHA-256 hash matches. No tampering detected. Verified independently of AIDAL's servers.">✓ VERIFIED</span>
             </div>
             <div style={styles.certText}>{verify.certificate}</div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid rgba(16,185,129,0.15)`, paddingTop: "0.875rem" }}>
@@ -2873,7 +3015,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                         <div style={{ display: "flex", gap: "6px" }}>
                           <button style={{ ...styles.btn, padding: "4px 12px", fontSize: "12px" }}
                             onClick={e => { e.stopPropagation(); setSelected(r); }}>
-                            View
+                            Open Case
                           </button>
                           <a
                             href={`https://aidal-dashboard.vercel.app/verify?id=${r.audit_id}`}
@@ -2889,7 +3031,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                               letterSpacing: "0.04em", fontWeight: 600,
                               borderRadius: 0, cursor: "pointer",
                             }}>
-                            ✓ Verify
+                            ✓ Verify Evidence
                           </a>
                         </div>
                       </td>

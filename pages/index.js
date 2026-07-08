@@ -648,6 +648,11 @@ function useCountUp(target, active) {
   return val;
 }
 
+// Small shimmer placeholder — width/height in px, used wherever real data hasn't loaded yet.
+function Skel({ w, h }) {
+  return <span className="skeleton" style={{ width: w || 60, height: h || 14 }} />;
+}
+
 function formatDate(str) {
   if (!str) return "—";
   return new Date(str).toLocaleString("en-GB", {
@@ -2540,6 +2545,10 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           from { opacity: 0; transform: translateY(12px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes rowIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         tr:hover td, tr:hover td * { background: inherit; }
         table tr:hover > td { background: rgba(200,169,110,0.05) !important; }
         table tbody tr:nth-child(even) > td { background: rgba(26,29,39,0.6) !important; }
@@ -2567,6 +2576,18 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           to   { opacity: 1; transform: translateX(0); }
         }
         .toast-item { animation: toastIn 0.22s ease both; }
+        @keyframes skeletonShimmer {
+          0% { background-position: -300px 0; }
+          100% { background-position: 300px 0; }
+        }
+        .skeleton {
+          display: inline-block;
+          background: linear-gradient(90deg, rgba(255,255,255,0.045) 25%, rgba(255,255,255,0.10) 37%, rgba(255,255,255,0.045) 63%);
+          background-size: 600px 100%;
+          animation: skeletonShimmer 1.4s ease-in-out infinite;
+          border-radius: 2px;
+          vertical-align: middle;
+        }
       `}</style>
 
       <div style={{ ...styles.header, position: "sticky", top: "0", zIndex: 100 }}>
@@ -2699,7 +2720,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         <div style={styles.statGrid}>
           <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "0ms" }}>
             <span style={styles.statLabel}>Total decisions</span>
-            <span style={styles.statValue}>{loading ? "—" : totalDecisionsAnimated}</span>
+            <span style={styles.statValue}>{loading ? <Skel w={48} h={30} /> : totalDecisionsAnimated}</span>
             <div style={styles.statSub}>All time</div>
           </div>
           <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "80ms" }}>
@@ -2749,13 +2770,13 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
           <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "160ms" }}>
             <span style={styles.statLabel}>Jurisdictions</span>
-            <span style={styles.statValue}>{loading ? "—" : (jurisdictions.length || 0)}</span>
+            <span style={styles.statValue}>{loading ? <Skel w={30} h={30} /> : (jurisdictions.length || 0)}</span>
             <div style={styles.statSub}>{jurisdictions.join(", ") || "—"}</div>
           </div>
           <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "240ms" }}>
             <span style={styles.statLabel}>Article 14 coverage</span>
             <span style={{ ...styles.statValue, color: oversightPct > 0 ? green : amber }}>
-              {loading ? "—" : `${oversightPct}%`}
+              {loading ? <Skel w={56} h={30} /> : `${oversightPct}%`}
             </span>
             <div style={styles.statSub}>
               {loading ? "" : oversightPct > 0
@@ -2785,7 +2806,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           <div className="stat-card" style={{ ...styles.statCard, borderRight: "none", borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "400ms" }}>
             <span style={styles.statLabel}>Last audit submitted</span>
             <span style={{ ...styles.statValue, fontSize: "15px", letterSpacing: "0", marginTop: "6px" }}>
-              {loading ? "—" : decisions.length > 0 ? formatDate(decisions[0]?.logged_at).split(",")[0] : "—"}
+              {loading ? <Skel w={90} h={18} /> : decisions.length > 0 ? formatDate(decisions[0]?.logged_at).split(",")[0] : "—"}
             </span>
             <div style={styles.statSub}>
               {loading ? "" : decisions.length > 0 ? formatDate(decisions[0]?.logged_at).split(",")[1]?.trim() ?? "" : "No records yet"}
@@ -3008,7 +3029,32 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         </div>
 
         {loadingDecisions ? (
-          <div style={styles.loading}>Loading decisions...</div>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Type</th>
+                <th style={styles.th}>Outcome</th>
+                <th style={styles.th}>Jurisdiction</th>
+                <th style={styles.th}>Explanation</th>
+                <th style={styles.th}>Logged at</th>
+                <th style={styles.th}>Audit ID</th>
+                <th style={styles.th}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <tr key={i}>
+                  <td style={styles.tdPrimary}><Skel w={95} h={12} /></td>
+                  <td style={styles.td}><Skel w={64} h={18} /></td>
+                  <td style={styles.td}><Skel w={38} h={18} /></td>
+                  <td style={{ ...styles.td, maxWidth: "300px" }}><Skel w={220} h={12} /></td>
+                  <td style={styles.td}><Skel w={110} h={12} /></td>
+                  <td style={styles.td}><Skel w={120} h={12} /></td>
+                  <td style={styles.td}><Skel w={80} h={22} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         ) : decisions.length === 0 ? (
           <div style={styles.empty}>
             {total === 0
@@ -3033,7 +3079,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                 {decisions.map((r, i) => {
                   const outcome = getOutcomeLabel(r);
                   return (
-                    <tr key={r.audit_id || i} style={{ cursor: "pointer" }} onClick={() => setSelected(r)}>
+                    <tr key={r.audit_id || i} style={{ cursor: "pointer", animation: "rowIn 0.25s ease both", animationDelay: `${Math.min(i, 10) * 25}ms` }} onClick={() => setSelected(r)}>
                       <td style={styles.tdPrimary}>{r.decision_type || "—"}</td>
                       <td style={styles.td}>
                         <span style={outcome === "—"

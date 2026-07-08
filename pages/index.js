@@ -14,6 +14,50 @@ const bgBorder = "rgba(255,255,255,0.08)";
 const textMuted= "#8B92A5";
 const accentColor = "#C8A96E";
 
+// ══════════════════════════════════════════════════════════════════════════════
+// TOAST NOTIFICATIONS — replaces native alert() popups everywhere in the app.
+// Module-level pub/sub so any component (deeply nested modals included) can
+// call showToast(...) without prop-drilling. <ToastHost/> is mounted once.
+// ══════════════════════════════════════════════════════════════════════════════
+let _toastListeners = [];
+function showToast(message, tone) {
+  const toast = { id: Date.now() + Math.random(), message, tone: tone || "error" };
+  _toastListeners.forEach(fn => fn(toast));
+}
+function ToastHost() {
+  const [toasts, setToasts] = useState([]);
+  useEffect(() => {
+    const listener = (t) => {
+      setToasts(prev => [...prev, t]);
+      setTimeout(() => setToasts(prev => prev.filter(x => x.id !== t.id)), 4500);
+    };
+    _toastListeners.push(listener);
+    return () => { _toastListeners = _toastListeners.filter(l => l !== listener); };
+  }, []);
+  const toneStyle = {
+    error:   { border: "rgba(239,68,68,0.35)",  bg: "rgba(239,68,68,0.08)",  color: "#F0F2F5", icon: "⚠" },
+    success: { border: "rgba(16,185,129,0.35)", bg: "rgba(16,185,129,0.08)", color: "#F0F2F5", icon: "✓" },
+    info:    { border: "rgba(200,169,110,0.35)",bg: "rgba(200,169,110,0.08)",color: "#F0F2F5", icon: "ⓘ" },
+  };
+  return (
+    <div style={{ position: "fixed", bottom: "20px", right: "20px", zIndex: 9999, display: "flex", flexDirection: "column-reverse", gap: "8px", maxWidth: "360px" }}>
+      {toasts.map(t => {
+        const s = toneStyle[t.tone] || toneStyle.error;
+        return (
+          <div key={t.id} className="toast-item" style={{
+            background: "#1A1D27", border: `1px solid ${s.border}`, borderLeft: `3px solid ${s.border.replace("0.35","0.9")}`,
+            color: s.color, padding: "12px 14px", fontSize: "13px", fontFamily: "'IBM Plex Sans', sans-serif",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.4)", display: "flex", alignItems: "flex-start", gap: "10px",
+          }}>
+            <span style={{ flexShrink: 0 }}>{s.icon}</span>
+            <span>{t.message}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const jurColors = {
   SG:  { bg: "rgba(16,185,129,0.08)",  border: "rgba(16,185,129,0.25)",  color: "#10B981" },
   EU:  { bg: "rgba(245,158,11,0.08)",  border: "rgba(245,158,11,0.25)",  color: "#F59E0B" },
@@ -1127,8 +1171,8 @@ function IncidentPanel({ apiKey, onStatsUpdate }) {
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify(update),
       });
-      if (r.ok) fetchIncidents();
-    } catch (e) {}
+      if (r.ok) { fetchIncidents(); } else { showToast("Couldn't update the incident. Try again.", "error"); }
+    } catch (e) { showToast("Couldn't update the incident. Check your connection.", "error"); }
     setPatchingId(null);
   };
 
@@ -1865,9 +1909,10 @@ function DecisionModal({ record, onClose, apiKey }) {
                     a.href = blobUrl;
                     a.download = `AIDAL_${jur || "ALL"}_${new Date().toISOString().slice(0,10)}.pdf`;
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    showToast("Report downloaded.", "success");
                     setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
                   })
-                  .catch(() => alert("Download failed. Check your connection."));
+                  .catch(() => showToast("Download failed. Check your connection and try again.", "error"));
               }}
             >
               ↓ Download PDF
@@ -2418,10 +2463,10 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         const data = await r.json();
         setSelected(data);
       } else {
-        alert("Decision not found.");
+        showToast("No decision found for that audit ID.", "error");
       }
     } catch (e) {
-      alert("Search failed.");
+      showToast("Search failed. Check your connection and try again.", "error");
     }
   };
 
@@ -2517,6 +2562,11 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         .stat-card:hover { background: #22263A !important; }
         .panel-card { transition: background 0.15s ease; border-radius: 0 !important; }
         .panel-card:hover { background: #22263A !important; }
+        @keyframes toastIn {
+          from { opacity: 0; transform: translateX(16px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .toast-item { animation: toastIn 0.22s ease both; }
       `}</style>
 
       <div style={{ ...styles.header, position: "sticky", top: "0", zIndex: 100 }}>
@@ -2571,49 +2621,49 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           <span style={styles.sidebarSection}>Compliance Reports</span>
           <button className="sidebar-item" style={{ ...styles.sidebarSubItem }} onClick={() => {
             const url = `${API}/compliance/report/pdf?jurisdiction=SG`;
-            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.blob()).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_MAS_FEAT_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); }).catch(() => {});
+            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => { if (!r.ok) throw new Error("download failed"); return r.blob(); }).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_MAS_FEAT_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); showToast("Report downloaded.", "success"); }).catch(() => showToast("Download failed. Check your connection and try again.", "error"));
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             MAS FEAT
           </button>
           <button className="sidebar-item" style={{ ...styles.sidebarSubItem }} onClick={() => {
             const url = `${API}/compliance/report/pdf?jurisdiction=ID`;
-            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.blob()).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_OJK_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); }).catch(() => {});
+            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => { if (!r.ok) throw new Error("download failed"); return r.blob(); }).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_OJK_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); showToast("Report downloaded.", "success"); }).catch(() => showToast("Download failed. Check your connection and try again.", "error"));
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             OJK Indonesia
           </button>
           <button className="sidebar-item" style={{ ...styles.sidebarSubItem }} onClick={() => {
             const url = `${API}/compliance/report/pdf?jurisdiction=EU`;
-            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.blob()).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_EU_AI_Act_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); }).catch(() => {});
+            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => { if (!r.ok) throw new Error("download failed"); return r.blob(); }).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_EU_AI_Act_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); showToast("Report downloaded.", "success"); }).catch(() => showToast("Download failed. Check your connection and try again.", "error"));
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             EU AI Act
           </button>
           <button className="sidebar-item" style={{ ...styles.sidebarSubItem }} onClick={() => {
             const url = `${API}/compliance/report/pdf?jurisdiction=UAE`;
-            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.blob()).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_VARA_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); }).catch(() => {});
+            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => { if (!r.ok) throw new Error("download failed"); return r.blob(); }).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_VARA_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); showToast("Report downloaded.", "success"); }).catch(() => showToast("Download failed. Check your connection and try again.", "error"));
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             VARA UAE
           </button>
           <button className="sidebar-item" style={{ ...styles.sidebarSubItem }} onClick={() => {
             const url = `${API}/compliance/report/pdf?jurisdiction=UK`;
-            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.blob()).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_FCA_UK_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); }).catch(() => {});
+            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => { if (!r.ok) throw new Error("download failed"); return r.blob(); }).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_FCA_UK_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); showToast("Report downloaded.", "success"); }).catch(() => showToast("Download failed. Check your connection and try again.", "error"));
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             UK FCA
           </button>
           <button className="sidebar-item" style={{ ...styles.sidebarSubItem }} onClick={() => {
             const url = `${API}/compliance/report/pdf?jurisdiction=US`;
-            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.blob()).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_CFPB_US_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); }).catch(() => {});
+            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => { if (!r.ok) throw new Error("download failed"); return r.blob(); }).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_CFPB_US_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); showToast("Report downloaded.", "success"); }).catch(() => showToast("Download failed. Check your connection and try again.", "error"));
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             US CFPB
           </button>
           <button className="sidebar-item" style={{ ...styles.sidebarSubItem }} onClick={() => {
             const url = `${API}/compliance/report/pdf?jurisdiction=AU`;
-            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.blob()).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_APRA_AU_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); }).catch(() => {});
+            fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => { if (!r.ok) throw new Error("download failed"); return r.blob(); }).then(blob => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `AIDAL_APRA_AU_${new Date().toISOString().slice(0,10)}.pdf`; a.click(); showToast("Report downloaded.", "success"); }).catch(() => showToast("Download failed. Check your connection and try again.", "error"));
           }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             AU APRA
@@ -2799,14 +2849,15 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                 onClick={() => {
                   const url = `${API}/compliance/report/pdf`;
                   fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } })
-                    .then(r => r.blob())
+                    .then(r => { if (!r.ok) throw new Error("download failed"); return r.blob(); })
                     .then(blob => {
                       const a = document.createElement("a");
                       a.href = URL.createObjectURL(blob);
                       a.download = `AIDAL_Certificate_${new Date().toISOString().slice(0,10)}.pdf`;
                       a.click();
+                      showToast("Certificate downloaded.", "success");
                     })
-                    .catch(() => alert("Download failed."));
+                    .catch(() => showToast("Download failed. Check your connection and try again.", "error"));
                 }}
               >
                 ↓ Download PDF
@@ -2882,9 +2933,10 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                             a.href = blobUrl;
                             a.download = `AIDAL_${jur || "ALL"}_${new Date().toISOString().slice(0,10)}.pdf`;
                             document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                            showToast("Report downloaded.", "success");
                             setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
                           })
-                          .catch(() => alert("Download failed. Check your connection."));
+                          .catch(() => showToast("Download failed. Check your connection and try again.", "error"));
                       }}
                     >
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -3156,6 +3208,6 @@ export default function App() {
   };
 
   if (!ready) return null;
-  if (!apiKey) return <LoginScreen onLogin={handleLogin} />;
-  return <Dashboard apiKey={apiKey} companyName={companyName} onLogout={handleLogout} />;
+  if (!apiKey) return (<><LoginScreen onLogin={handleLogin} /><ToastHost /></>);
+  return (<><Dashboard apiKey={apiKey} companyName={companyName} onLogout={handleLogout} /><ToastHost /></>);
 }

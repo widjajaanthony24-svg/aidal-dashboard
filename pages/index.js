@@ -501,22 +501,6 @@ const styles = {
     color: textMuted,
     fontFamily: "'IBM Plex Mono', monospace",
   },
-  countdownBanner: {
-    background: "rgba(45,107,228,0.07)",
-    borderBottom: `1px solid rgba(45,107,228,0.2)`,
-    color: creamDim,
-    padding: "0 1.5rem",
-    textAlign: "center",
-    fontSize: "11px",
-    fontFamily: "'IBM Plex Mono', monospace",
-    height: "36px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "0",
-    letterSpacing: "0.04em",
-    position: "relative",
-  },
   certBox: {
     background: "rgba(16,185,129,0.04)",
     border: `1px solid rgba(16,185,129,0.3)`,
@@ -598,26 +582,6 @@ const styles = {
     letterSpacing: "0.02em",
   },
 };
-
-function useCountdown() {
-  const [time, setTime] = useState("");
-  useEffect(() => {
-    const deadline = new Date("2026-08-01T00:00:00");
-    const tick = () => {
-      const diff = deadline - new Date();
-      if (diff <= 0) { setTime("DEADLINE PASSED"); return; }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setTime(`${d}d ${h}h ${m}m ${s}s`);
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-  return time;
-}
 
 function formatDate(str) {
   if (!str) return "—";
@@ -2370,7 +2334,6 @@ function TestPanel({ apiKey, onSuccess }) {
 // DASHBOARD
 // ══════════════════════════════════════════════════════════════════════════════
 function Dashboard({ apiKey, companyName, onLogout }) {
-  const countdown = useCountdown();
   const [health, setHealth] = useState(null);
   const [summary, setSummary] = useState(null);
   const [verify, setVerify] = useState(null);
@@ -2385,18 +2348,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const [total, setTotal] = useState(0);
   const [openIncidentCount, setOpenIncidentCount] = useState(0);
   const [section, setSection] = useState("dashboard");
-  const [bannerDismissed, setBannerDismissed] = useState(() => {
-    if (typeof localStorage !== "undefined") {
-      return localStorage.getItem("aidal_banner_dismissed") === "1";
-    }
-    return false;
-  });
   const limit = 10;
-
-  const dismissBanner = () => {
-    setBannerDismissed(true);
-    localStorage.setItem("aidal_banner_dismissed", "1");
-  };
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -2528,24 +2480,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         .panel-card:hover { background: #22263A !important; }
       `}</style>
 
-      {!bannerDismissed && (
-        <div style={styles.countdownBanner}>
-          <span style={{ flex: 1 }}>
-            <span style={{ color: "#C8A96E", fontWeight: 600, letterSpacing: "0.06em" }}>EU AI Act deadline</span>
-            <span style={{ color: bgBorder, margin: "0 10px" }}>·</span>
-            <span style={{ color: cream, fontFamily: "'IBM Plex Mono', monospace" }}>{countdown} remaining</span>
-            <span style={{ color: bgBorder, margin: "0 10px" }}>·</span>
-            <span style={{ color: textMuted, fontSize: "10px" }}>Non-compliance: fines up to €30M or 6% global turnover</span>
-          </span>
-          <button
-            onClick={dismissBanner}
-            style={{ background: "transparent", border: "none", color: textMuted, cursor: "pointer", fontSize: "16px", lineHeight: 1, padding: "0 0 0 16px", flexShrink: 0 }}
-            aria-label="Dismiss"
-          >×</button>
-        </div>
-      )}
-
-      <div style={{ ...styles.header, position: "sticky", top: bannerDismissed ? "0" : "36px", zIndex: 100 }}>
+      <div style={{ ...styles.header, position: "sticky", top: "0", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ overflow:"hidden", width:"120px", height:"44px", position:"relative", flexShrink:0 }}>
             <img src="https://tryaidal.com/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"132px", height:"132px", mixBlendMode:"screen", top:"-44px", left:"-4px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:IBM Plex Sans,sans-serif;font-size:16px;font-weight:600;color:#F0F4F8;letter-spacing:1px">AIDAL.</span>'; }} />
@@ -2563,7 +2498,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         </div>
       </div>
 
-      <div style={{ display: "flex", height: bannerDismissed ? "calc(100vh - 52px)" : "calc(100vh - 88px)", overflow: "hidden" }}>
+      <div style={{ display: "flex", height: "calc(100vh - 52px)", overflow: "hidden" }}>
         {/* ── SIDEBAR ── */}
         <aside style={styles.sidebar}>
           <span style={styles.sidebarSection}>Overview</span>

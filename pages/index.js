@@ -583,6 +583,27 @@ const styles = {
   },
 };
 
+// Animates a number counting up from 0 to `target` (ease-out) once `active` is true.
+// Used for stat-grid numbers so real figures feel alive instead of static.
+function useCountUp(target, active) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!active || target == null || isNaN(target)) { setVal(target ?? 0); return; }
+    let raf, start;
+    const duration = 700;
+    function step(ts) {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setVal(Math.round(target * eased));
+      if (progress < 1) raf = requestAnimationFrame(step);
+    }
+    raf = requestAnimationFrame(step);
+    return () => raf && cancelAnimationFrame(raf);
+  }, [target, active]);
+  return val;
+}
+
 function formatDate(str) {
   if (!str) return "—";
   return new Date(str).toLocaleString("en-GB", {
@@ -2404,11 +2425,27 @@ function Dashboard({ apiKey, companyName, onLogout }) {
     }
   };
 
+  const verifySteps = [
+    "Walking the hash chain...",
+    "Recomputing SHA-256 for each record...",
+    "Cross-checking against the GitHub anchor...",
+  ];
+  const [verifying, setVerifying] = useState(false);
+  const [verifyStep, setVerifyStep] = useState(0);
+
   const runVerify = async () => {
-    const v = await fetch(`${API}/verify`, {
+    setVerifying(true);
+    setVerifyStep(0);
+    const resultPromise = fetch(`${API}/verify`, {
       headers: { Authorization: `Bearer ${apiKey}` }
     }).then(r => r.json());
+    for (let i = 0; i < verifySteps.length; i++) {
+      setVerifyStep(i);
+      await new Promise(res => setTimeout(res, i === 0 ? 350 : 480));
+    }
+    const v = await resultPromise;
     setVerify(v);
+    setVerifying(false);
   };
 
   const apiOk = health?.status === "ok";
@@ -2417,6 +2454,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const chainOk = verify?.verified === true;
   const oversight = summary?.human_oversight;
   const oversightPct = oversight?.oversight_rate_pct ?? 0;
+  const totalDecisionsAnimated = useCountUp(summary?.total_decisions ?? 0, !loading);
 
   // Section visibility: display:none + fade-in animation on the active section
   const secStyle = (name) => ({
@@ -2474,6 +2512,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         .sidebar-item { transition: background 0.12s ease, color 0.12s ease; }
         .sidebar-item:hover { background: rgba(200,169,110,0.06) !important; color: #F0F2F5 !important; }
         .bias-flag-badge { animation: bias-pulse 2.2s ease-in-out infinite; }
+        .verify-pulse-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:#C8A96E; animation: pulse-dot 1s ease-in-out infinite; flex-shrink:0; }
         .stat-card { transition: background 0.15s ease; }
         .stat-card:hover { background: #22263A !important; }
         .panel-card { transition: background 0.15s ease; border-radius: 0 !important; }
@@ -2610,12 +2649,23 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         <div style={styles.statGrid}>
           <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "0ms" }}>
             <span style={styles.statLabel}>Total decisions</span>
-            <span style={styles.statValue}>{loading ? "—" : (summary?.total_decisions ?? 0)}</span>
+            <span style={styles.statValue}>{loading ? "—" : totalDecisionsAnimated}</span>
             <div style={styles.statSub}>All time</div>
           </div>
           <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "80ms" }}>
             <span style={styles.statLabel}>Chain status</span>
-            {loading ? (
+            {verifying ? (
+              <div style={{ marginTop: "6px", marginBottom: "8px" }}>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: "6px",
+                  color: accentColor, fontSize: "11px", fontWeight: 600,
+                  fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.02em",
+                }}>
+                  <span className="verify-pulse-dot" />
+                  {verifySteps[verifyStep]}
+                </span>
+              </div>
+            ) : loading ? (
               <span style={{ ...styles.statValue, fontSize: "18px" }}>—</span>
             ) : chainOk ? (
               <div style={{ marginTop: "4px", marginBottom: "8px" }}>
@@ -2703,7 +2753,13 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                   : `Tampered record detected at ${verify.first_tampered_audit_id}`}
               </span>
             </div>
-            <button style={{ background: "transparent", border: `1px solid ${accentColor}`, color: accentColor, padding: "6px 16px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace" }} onClick={runVerify}>Verify Audit Trail</button>
+            <button
+              style={{ background: "transparent", border: `1px solid ${accentColor}`, color: accentColor, padding: "6px 16px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", cursor: verifying ? "default" : "pointer", borderRadius: 0, fontFamily: "'IBM Plex Mono', monospace", opacity: verifying ? 0.6 : 1 }}
+              onClick={runVerify}
+              disabled={verifying}
+            >
+              {verifying ? "Verifying..." : "Verify Audit Trail"}
+            </button>
           </div>
         )}
 

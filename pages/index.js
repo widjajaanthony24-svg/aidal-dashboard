@@ -2189,6 +2189,22 @@ function ModelRegistryPanel({ apiKey, onSuccess }) {
 // ══════════════════════════════════════════════════════════════════════════════
 // TEST PANEL
 // ══════════════════════════════════════════════════════════════════════════════
+// Bug 5 fix: jurisdiction and currency were two independent fields with no
+// sync between them, which is exactly how a "25,000 IDR loan for a US
+// applicant" got into the demo data. Picking a jurisdiction now defaults the
+// currency to match, and amount placeholders scale to something plausible
+// for that currency instead of a flat "e.g. 25000" regardless of scale.
+const JUR_CURRENCY = { ID: "IDR", SG: "SGD", EU: "EUR", UAE: "AED", UK: "GBP", US: "USD", AU: "AUD" };
+const CURRENCY_PLACEHOLDERS = {
+  IDR: { income: "80000000", loan_amount: "350000000" },
+  SGD: { income: "80000",    loan_amount: "45000" },
+  EUR: { income: "65000",    loan_amount: "32000" },
+  AED: { income: "220000",   loan_amount: "90000" },
+  GBP: { income: "55000",    loan_amount: "28000" },
+  USD: { income: "80000",    loan_amount: "25000" },
+  AUD: { income: "95000",    loan_amount: "40000" },
+};
+
 function TestPanel({ apiKey, onSuccess }) {
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
@@ -2299,7 +2315,10 @@ function TestPanel({ apiKey, onSuccess }) {
             </div>
             <div style={fieldStyle}>
               <label style={labelStyle}>Jurisdiction / Regulator</label>
-              <select style={selectStyle} value={form.jurisdiction} onChange={e => set("jurisdiction", e.target.value)}>
+              <select style={selectStyle} value={form.jurisdiction} onChange={e => {
+                const j = e.target.value;
+                setForm(f => ({ ...f, jurisdiction: j, currency: JUR_CURRENCY[j] || f.currency }));
+              }}>
                 <option value="ID">🇮🇩 Indonesia (OJK)</option>
                 <option value="SG">🇸🇬 Singapore (MAS FEAT)</option>
                 <option value="EU">🇪🇺 European Union (EU AI Act)</option>
@@ -2330,11 +2349,11 @@ function TestPanel({ apiKey, onSuccess }) {
             </div>
             <div style={fieldStyle}>
               <label style={labelStyle}>Applicant income (optional)</label>
-              <input style={inputStyle} type="number" placeholder="e.g. 80000" value={form.income} onChange={e => set("income", e.target.value)} />
+              <input style={inputStyle} type="number" placeholder={`e.g. ${CURRENCY_PLACEHOLDERS[form.currency]?.income || "80000"}`} value={form.income} onChange={e => set("income", e.target.value)} />
             </div>
             <div style={fieldStyle}>
               <label style={labelStyle}>Loan amount (optional)</label>
-              <input style={inputStyle} type="number" placeholder="e.g. 25000" value={form.loan_amount} onChange={e => set("loan_amount", e.target.value)} />
+              <input style={inputStyle} type="number" placeholder={`e.g. ${CURRENCY_PLACEHOLDERS[form.currency]?.loan_amount || "25000"}`} value={form.loan_amount} onChange={e => set("loan_amount", e.target.value)} />
             </div>
             <div style={fieldStyle}>
               <label style={labelStyle}>Currency</label>
@@ -2344,6 +2363,8 @@ function TestPanel({ apiKey, onSuccess }) {
                 <option value="USD">USD — US Dollar</option>
                 <option value="EUR">EUR — Euro</option>
                 <option value="AED">AED — UAE Dirham</option>
+                <option value="GBP">GBP — British Pound</option>
+                <option value="AUD">AUD — Australian Dollar</option>
               </select>
             </div>
           </div>
@@ -2482,6 +2503,54 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   ];
   const [verifying, setVerifying] = useState(false);
   const [verifyStep, setVerifyStep] = useState(0);
+
+  const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(null);
+
+  const handleExport = async () => {
+    setExporting(true);
+    setExportProgress({ fetched: 0, total: null });
+    try {
+      let allDecisions = [];
+      let offset = 0;
+      const limit = 500;
+      let total = null;
+      // Loop until every page is retrieved — do NOT fetch once and silently
+      // truncate. The endpoint caps at 500/page regardless of what's requested.
+      while (true) {
+        const r = await fetch(`${API}/decisions/export?limit=${limit}&offset=${offset}`, {
+          headers: { Authorization: `Bearer ${apiKey}` }
+        });
+        if (!r.ok) throw new Error("export request failed");
+        const data = await r.json();
+        allDecisions = allDecisions.concat(data.decisions);
+        total = data.total;
+        setExportProgress({ fetched: allDecisions.length, total });
+        if (offset + limit >= total) break;
+        offset += limit;
+      }
+      const payload = {
+        company: companyName,
+        exported_at: new Date().toISOString(),
+        total: allDecisions.length,
+        decisions: allDecisions,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const safeCompany = (companyName || "company").replace(/[^a-z0-9]+/gi, "_");
+      const dateStr = new Date().toISOString().slice(0, 10);
+      a.download = `aidal_export_${safeCompany}_${dateStr}.json`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast(`Exported ${allDecisions.length} decisions.`, "success");
+    } catch (e) {
+      showToast("Export failed. Check your connection and try again.", "error");
+    }
+    setExporting(false);
+    setExportProgress(null);
+  };
 
   const runVerify = async () => {
     setVerifying(true);
@@ -2833,6 +2902,25 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             </button>
           </div>
         )}
+
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px", marginBottom: chainOk && verify?.certificate ? "0" : "10px" }}>
+          <button
+            style={{
+              background: "transparent", border: `1px solid ${bgBorder}`, color: textMuted,
+              padding: "6px 14px", fontSize: "11px", fontWeight: 500, letterSpacing: "0.04em",
+              cursor: exporting ? "default" : "pointer", borderRadius: 0,
+              fontFamily: "'IBM Plex Sans', sans-serif", opacity: exporting ? 0.7 : 1,
+              display: "inline-flex", alignItems: "center", gap: "6px",
+            }}
+            onClick={handleExport}
+            disabled={exporting}
+            title="Download a complete copy of every decision — hash, explanation, compliance check, input/output data. Your own continuity backup, independent of AIDAL staying online."
+          >
+            ↓ {exporting
+              ? (exportProgress?.total ? `Exporting ${exportProgress.fetched}/${exportProgress.total}...` : "Exporting...")
+              : "Export All Decisions"}
+          </button>
+        </div>
 
         {chainOk && verify?.certificate && (
           <div style={styles.certBox}>

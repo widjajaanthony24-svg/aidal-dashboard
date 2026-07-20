@@ -2,6 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 
 const API = "https://aidal-production.up.railway.app";
 
+// Item 3 (verification pass): the explanation-generation fix (correct dates,
+// no raw internal IDs) deployed at this exact commit timestamp. Any decision
+// logged before this genuinely used the old, buggy generator and is
+// preserved unmodified per the append-only design — the banner below
+// discloses this automatically rather than silently showing old bugs.
+const EXPLANATION_FIX_CUTOFF = new Date("2026-07-16T00:34:33+00:00");
+const EXPLANATION_FIX_DATE_LABEL = "16 July 2026";
+
 const navy     = "#0F1117";
 const cream    = "#F0F2F5";
 const creamDim = "#8B92A5";
@@ -2442,6 +2450,8 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   const [section, setSection] = useState("dashboard");
   const limit = 10;
 
+  const [hasLegacyDecisions, setHasLegacyDecisions] = useState(false);
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -2457,6 +2467,26 @@ function Dashboard({ apiKey, companyName, onLogout }) {
       setHealth({ status: "error" });
     }
     setLoading(false);
+  }, [apiKey]);
+
+  // Checks specifically the OLDEST decision (via the export endpoint's
+  // oldest-first ordering, limit=1) rather than the paginated table view
+  // (newest-first, limit 10) — the table view would silently miss legacy
+  // pre-fix decisions on any account with more than 10 total decisions,
+  // which would defeat the entire point of this disclosure banner.
+  const checkLegacyDecisions = useCallback(async () => {
+    try {
+      const r = await fetch(`${API}/decisions/export?limit=1&offset=0`, {
+        headers: { Authorization: `Bearer ${apiKey}` }
+      }).then(r => r.json());
+      const oldest = r.decisions?.[0];
+      if (oldest?.logged_at) {
+        setHasLegacyDecisions(new Date(oldest.logged_at) < EXPLANATION_FIX_CUTOFF);
+      }
+    } catch (e) {
+      // fails closed (no banner) rather than blocking the dashboard — this
+      // is a disclosure nicety, not a correctness-critical path
+    }
   }, [apiKey]);
 
   const fetchDecisions = useCallback(async () => {
@@ -2477,6 +2507,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   }, [apiKey, filterType, filterJurisdiction, offset]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => { checkLegacyDecisions(); }, [checkLegacyDecisions]);
   useEffect(() => { fetchDecisions(); }, [fetchDecisions]);
 
   const handleSearch = async () => {
@@ -2784,6 +2815,19 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           {companyName} · AI decisions logged, explained, and cryptographically verified ·{" "}
           {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </div>
+
+        {hasLegacyDecisions && (
+          <div style={{
+            background: "rgba(200,169,110,0.06)", border: `1px solid rgba(200,169,110,0.25)`,
+            borderLeft: `3px solid ${accentColor}`, padding: "12px 16px", marginBottom: "1.5rem",
+            fontSize: "12.5px", color: creamDim, lineHeight: 1.6,
+          }}>
+            <strong style={{ color: cream }}>Some decisions in this account predate {EXPLANATION_FIX_DATE_LABEL}.</strong>{" "}
+            Those records used an earlier version of the explanation generator and are preserved exactly as
+            originally sealed — consistent with AIDAL's append-only design, decisions are never edited or
+            re-hashed after the fact, even to fix a display issue. Decisions logged after {EXPLANATION_FIX_DATE_LABEL} use the current generator.
+          </div>
+        )}
 
         {/* ── STAT GRID — 5 cards ── */}
         <div style={styles.statGrid}>

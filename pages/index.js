@@ -2452,6 +2452,12 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
   const [hasLegacyDecisions, setHasLegacyDecisions] = useState(false);
 
+  // A2 — specific decisions still needing human review, and the inline
+  // control for a company's own oversight target (null until they opt in).
+  const [needingReview, setNeedingReview] = useState({ total_needing_review: 0, decisions: [] });
+  const [targetInput, setTargetInput] = useState("");
+  const [savingTarget, setSavingTarget] = useState(false);
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -2463,11 +2469,37 @@ function Dashboard({ apiKey, companyName, onLogout }) {
       setHealth(h);
       setSummary(s);
       setVerify(v);
+      const target = s?.human_oversight?.oversight_target_pct;
+      const belowTarget = s?.human_oversight?.below_target;
+      if (target != null) setTargetInput(String(target));
+      if (belowTarget) {
+        try {
+          const nr = await fetch(`${API}/decisions/needing-review?limit=25`, { headers: { Authorization: `Bearer ${apiKey}` } }).then(r => r.json());
+          setNeedingReview(nr);
+        } catch (e) { /* non-critical — banner still works without the specific list */ }
+      } else {
+        setNeedingReview({ total_needing_review: 0, decisions: [] });
+      }
     } catch (e) {
       setHealth({ status: "error" });
     }
     setLoading(false);
   }, [apiKey]);
+
+  const saveOversightTarget = useCallback(async () => {
+    const parsed = targetInput.trim() === "" ? null : Number(targetInput);
+    if (parsed !== null && (Number.isNaN(parsed) || parsed < 0 || parsed > 100)) return;
+    setSavingTarget(true);
+    try {
+      await fetch(`${API}/company/settings`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ oversight_target_pct: parsed }),
+      });
+      await fetchAll();
+    } catch (e) { /* keep whatever was showing before the failed save */ }
+    setSavingTarget(false);
+  }, [apiKey, targetInput, fetchAll]);
 
   // Checks specifically the OLDEST decision (via the export endpoint's
   // oldest-first ordering, limit=1) rather than the paginated table view
@@ -2510,15 +2542,13 @@ function Dashboard({ apiKey, companyName, onLogout }) {
   useEffect(() => { checkLegacyDecisions(); }, [checkLegacyDecisions]);
   useEffect(() => { fetchDecisions(); }, [fetchDecisions]);
 
-  const handleSearch = async () => {
-    if (!searchId.trim()) return;
+  const openDecisionById = async (auditId) => {
     try {
-      const r = await fetch(`${API}/decision/${searchId.trim()}`, {
+      const r = await fetch(`${API}/decision/${auditId}`, {
         headers: { Authorization: `Bearer ${apiKey}` }
       });
       if (r.ok) {
-        const data = await r.json();
-        setSelected(data);
+        setSelected(await r.json());
       } else {
         showToast("No decision found for that audit ID.", "error");
       }
@@ -2526,6 +2556,8 @@ function Dashboard({ apiKey, companyName, onLogout }) {
       showToast("Search failed. Check your connection and try again.", "error");
     }
   };
+
+  const handleSearch = () => searchId.trim() && openDecisionById(searchId.trim());
 
   const verifySteps = [
     "Walking the hash chain...",
@@ -2887,7 +2919,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             <div style={styles.statSub}>{jurisdictions.join(", ") || "—"}</div>
           </div>
           <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "240ms" }}>
-            <span style={styles.statLabel}>Article 14 coverage</span>
+            <span style={styles.statLabel}>Human review coverage</span>
             <span style={{ ...styles.statValue, color: oversightPct > 0 ? green : amber }}>
               {loading ? <Skel w={56} h={30} /> : `${oversightPct}%`}
             </span>
@@ -2902,10 +2934,23 @@ function Dashboard({ apiKey, companyName, onLogout }) {
                   <div style={{ background: amber, height: "100%", width: `${Math.min(oversightPct, 100)}%`, transition: "width 0.6s ease" }} />
                 </div>
                 <div style={{ marginTop: "5px", fontSize: "10px", color: textMuted, fontFamily: "'IBM Plex Mono', monospace", letterSpacing: "0.04em" }}>
-                  Target: 25% minimum
+                  {oversight?.oversight_target_pct != null
+                    ? `Your team's target: ${oversight.oversight_target_pct}%`
+                    : "No target set — see Human Oversight section"}
                 </div>
               </>
             )}
+          </div>
+          <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "280ms" }}>
+            <span style={styles.statLabel}>Override rate</span>
+            <span style={{ ...styles.statValue, color: cream }}>
+              {loading ? <Skel w={56} h={30} /> : (oversight?.override_rate_pct != null ? `${oversight.override_rate_pct}%` : "—")}
+            </span>
+            <div style={styles.statSub}>
+              {loading ? "" : oversight?.completed_reviews
+                ? `of ${oversight.completed_reviews} completed review${oversight.completed_reviews !== 1 ? "s" : ""} changed the outcome`
+                : "No completed reviews yet"}
+            </div>
           </div>
           <div className="stat-card" style={{ ...styles.statCard, borderTop: "2px solid #C8A96E", animation: "statCardIn 0.3s ease both", animationDelay: "320ms" }}>
             <span style={styles.statLabel}>Open incidents</span>
@@ -3103,35 +3148,96 @@ function Dashboard({ apiKey, companyName, onLogout }) {
           </div>
         )}
 
-        {/* ── ARTICLE 14 BANNER ── */}
-        {!loading && summary && (
-          <div style={{
-            background: oversightPct > 0 ? "rgba(76,175,130,0.08)" : "rgba(212,135,58,0.08)",
-            border: `1px solid ${oversightPct > 0 ? "rgba(76,175,130,0.25)" : "rgba(212,135,58,0.3)"}`,
-            padding: "0.875rem 1.25rem",
-            marginBottom: "1.5rem",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderRadius: 0,
-          }}>
-            <div>
-              <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: "4px" }}>
-                EU AI Act Article 14 — Human Oversight
+        {/* ── HUMAN OVERSIGHT BANNER (EU AI Act Article 14 topic — target below is this team's own, not a legal number) ── */}
+        {!loading && summary && (() => {
+          const targetSet = oversight?.oversight_target_pct != null;
+          const belowTarget = !!oversight?.below_target;
+          const barColor = oversightPct === 0 ? amber : (belowTarget ? amber : green);
+          return (
+            <div style={{
+              background: belowTarget || oversightPct === 0 ? "rgba(212,135,58,0.08)" : "rgba(76,175,130,0.08)",
+              border: `1px solid ${belowTarget || oversightPct === 0 ? "rgba(212,135,58,0.3)" : "rgba(76,175,130,0.25)"}`,
+              padding: "0.875rem 1.25rem",
+              marginBottom: "1.5rem",
+              borderRadius: 0,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
+                <div>
+                  <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: "4px" }}>
+                    Human Oversight — EU AI Act Article 14
+                  </div>
+                  <div style={{ fontSize: "13px", color: barColor }}>
+                    {oversightPct > 0
+                      ? `${oversight?.decisions_reviewed} of ${oversight?.total_decisions} decisions have human review (${oversightPct}% coverage)`
+                      : "No human reviews logged yet — click any decision → Log review"}
+                    {oversight?.override_rate_pct != null && (
+                      <span style={{ color: textMuted }}> · {oversight.override_rate_pct}% of completed reviews changed the outcome</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Inline target control — always editable, framed honestly as this team's own choice */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ fontSize: "11px", color: textMuted, whiteSpace: "nowrap" }}>Your team's target:</span>
+                  <input
+                    type="number" min="0" max="100"
+                    value={targetInput}
+                    onChange={e => setTargetInput(e.target.value)}
+                    placeholder="none"
+                    style={{ width: "56px", fontSize: "12px", padding: "3px 6px", border: `1px solid ${bgBorder}`, borderRadius: 4, background: navyLight, color: cream, fontFamily: "'IBM Plex Mono', monospace" }}
+                  />
+                  <span style={{ fontSize: "11px", color: textMuted }}>%</span>
+                  <button
+                    onClick={saveOversightTarget}
+                    disabled={savingTarget}
+                    style={{ fontSize: "11px", padding: "4px 10px", border: `1px solid ${bgBorder}`, borderRadius: 4, background: "transparent", color: cream, cursor: savingTarget ? "not-allowed" : "pointer" }}
+                  >
+                    {savingTarget ? "Saving…" : "Save"}
+                  </button>
+                </div>
               </div>
-              <div style={{ fontSize: "13px", color: oversightPct > 0 ? green : amber }}>
-                {oversightPct > 0
-                  ? `✓ ${oversight?.decisions_reviewed} of ${oversight?.total_decisions} decisions have human review (${oversightPct}% coverage)`
-                  : "⚠ No human reviews logged yet — click any decision → Log review to satisfy Article 14"}
+
+              <div style={{ marginTop: "6px", fontSize: "10px", color: textMuted, lineHeight: 1.6 }}>
+                {targetSet
+                  ? "This is a target your team configured for itself — EU AI Act Article 14 does not specify a numeric coverage threshold."
+                  : "No target set. This is optional and entirely up to your team — Article 14 itself doesn't specify a numeric coverage requirement."}
               </div>
+
+              {/* Specific list of decisions still needing review — the whole point of A2 */}
+              {belowTarget && needingReview.total_needing_review > 0 && (
+                <div style={{ marginTop: "0.875rem", paddingTop: "0.875rem", borderTop: `1px solid ${bgBorder}` }}>
+                  <div style={{ fontSize: "11px", letterSpacing: "0.06em", textTransform: "uppercase", color: textMuted, marginBottom: "6px" }}>
+                    {needingReview.total_needing_review} decision{needingReview.total_needing_review !== 1 ? "s" : ""} still need review (oldest first)
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxHeight: "180px", overflowY: "auto" }}>
+                    {needingReview.decisions.map(d => (
+                      <button
+                        key={d.audit_id}
+                        onClick={() => openDecisionById(d.audit_id)}
+                        style={{
+                          display: "flex", justifyContent: "space-between", gap: "1rem",
+                          fontSize: "12px", padding: "5px 8px", background: "transparent",
+                          border: "none", borderRadius: 4, cursor: "pointer", textAlign: "left",
+                          fontFamily: "'IBM Plex Mono', monospace", color: cream,
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = navyLight}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                      >
+                        <span>{d.audit_id}</span>
+                        <span style={{ color: textMuted }}>{d.decision_type || "—"} · {d.jurisdiction || "—"}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {needingReview.total_needing_review > needingReview.decisions.length && (
+                    <div style={{ fontSize: "11px", color: textMuted, marginTop: "6px" }}>
+                      …and {needingReview.total_needing_review - needingReview.decisions.length} more.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            {oversightPct === 0 && (
-              <div style={{ fontSize: "12px", color: creamDim, textAlign: "right", maxWidth: "240px" }}>
-                Click any decision → "Log review" to satisfy Article 14.
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         {/* ── SECTION DIVIDER ── */}
         <div style={{ height: "1px", background: bgBorder, margin: "1.5rem 0" }} />

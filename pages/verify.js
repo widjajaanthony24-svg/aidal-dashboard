@@ -69,7 +69,7 @@ export default function PublicVerify() {
       }
       if (!res.ok) {
         setStatus("error");
-        setSteps(s => [...s, "✗ Verification service error. Try again."]);
+        setSteps(s => [...s, "✗ Verification service error."]);
         return;
       }
 
@@ -79,13 +79,14 @@ export default function PublicVerify() {
       setStatus(data.verified ? "verified" : "tampered");
     } catch (e) {
       setStatus("error");
-      setSteps(s => [...s, "✗ Could not reach AIDAL API. Check your connection."]);
+      setSteps(s => [...s, "✗ Could not reach AIDAL's servers."]);
     }
   };
 
   const isVerified  = status === "verified";
   const isTampered  = status === "tampered";
   const isNotFound  = status === "notfound";
+  const isError     = status === "error";
   const isLoading   = status === "loading";
 
   // ── Shared input / label styles ────────────────────────────────────────────
@@ -412,6 +413,45 @@ export default function PublicVerify() {
             <div style={{ fontSize: "14px", fontWeight: 500, color: cream, marginBottom: "0.5rem" }}>Audit ID not found</div>
             <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75 }}>
               This audit ID does not exist in AIDAL's ledger. Check the ID is correct and try again. If you believe this is an error, contact the company that issued it.
+            </div>
+          </div>
+        )}
+
+        {/* ── Result: ERROR (this page or AIDAL's API is unreachable) ─────── */}
+        {isError && (
+          <div style={{
+            background: navyDark,
+            border: `0.5px solid ${bgBorder}`,
+            borderRadius: 8,
+            padding: "1.75rem",
+            animation: "fadeIn 0.3s ease",
+          }}>
+            <div style={{ fontSize: "14px", fontWeight: 500, color: cream, marginBottom: "0.5rem" }}>
+              Couldn't reach AIDAL's verification service
+            </div>
+            <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75, marginBottom: "1.25rem" }}>
+              This doesn't mean anything is wrong with the record itself — this page just couldn't reach our servers right now. The whole point of the hash chain is that you don't have to rely on our servers being up to verify a record.
+            </div>
+            <div style={{
+              background: "rgba(200,169,110,0.06)",
+              border: `0.5px solid rgba(200,169,110,0.25)`,
+              borderRadius: 6,
+              padding: "1.25rem",
+            }}>
+              <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: accentColor, marginBottom: "8px", fontWeight: 500 }}>
+                Verify without us
+              </div>
+              <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75, marginBottom: "10px" }}>
+                Download <span style={{ fontFamily: "'JetBrains Mono', monospace", color: cream }}>verify_offline.py</span> from our public anchor repository and check your exported decisions locally — no AIDAL account, no network call, nothing to trust but your own Python interpreter.
+              </div>
+              <a
+                href="https://github.com/widjajaanthony24-svg/aidal-anchors"
+                target="_blank"
+                rel="noreferrer"
+                style={{ fontSize: "13px", color: accentColor, textDecoration: "underline" }}
+              >
+                github.com/widjajaanthony24-svg/aidal-anchors →
+              </a>
             </div>
           </div>
         )}

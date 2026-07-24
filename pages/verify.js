@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 
 const API = "https://aidal-production.up.railway.app";
 
-// ── Palette — black & cream ──────────────────────────────────────────────────
-const navy      = "#FAF3EB";   // page bg
-const cream     = "#0A0A0A";   // primary text
-const creamDim  = "#6B6560";   // muted text
-const navyDark  = "#F0E6D6";   // card / panel bg
-const navyLight = "#FFFFFF";   // input bg
+// ── Palette — cream & black ─────────────────────────────────────────────────
+const pageBg   = "#FAF3EB";   // page bg
+const ink      = "#0A0A0A";   // primary text
+const creamDim = "#6B6560";   // muted text
+const panelBg  = "#F0E6D6";   // card / panel bg
+const inputBg  = "#FFFFFF";   // input bg
 const green     = "#4CAF82";
 const red       = "#E05252";
 const bgBorder  = "#D8CFC4";
@@ -42,25 +42,19 @@ export default function PublicVerify() {
     }
   }, []);
 
+  // Every line below corresponds to something that actually just happened —
+  // no scripted delays standing in for work the server already finished
+  // before the response arrived.
   const runVerification = async () => {
     const id = auditId.trim();
     if (!id) return;
 
     setResult(null);
-    setSteps([]);
+    setSteps(["Request sent to AIDAL ledger..."]);
     setStatus("loading");
-
-    const addStep = (text, delay) =>
-      new Promise(r => setTimeout(() => { setSteps(s => [...s, text]); r(); }, delay));
-
-    await addStep("Locating audit record in AIDAL ledger...", 300);
-    await addStep("Fetching cryptographic hash from database...", 700);
-    await addStep("Recomputing SHA-256 hash from stored data...", 1100);
-    await addStep("Comparing computed hash against stored hash...", 1500);
 
     try {
       const res = await fetch(`${API}/verify/public/${id}`);
-      await addStep("Checking hash chain integrity...", 1900);
 
       if (res.status === 404) {
         setStatus("notfound");
@@ -74,7 +68,11 @@ export default function PublicVerify() {
       }
 
       const data = await res.json();
-      await addStep("Verification complete.", 2200);
+      setSteps(s => [
+        ...s,
+        "Response received — server recomputed the SHA-256 hash and compared it against the stored value.",
+        data.verified ? "✓ Hashes match — record is untampered." : "✗ Hash mismatch detected.",
+      ]);
       setResult(data);
       setStatus(data.verified ? "verified" : "tampered");
     } catch (e) {
@@ -92,9 +90,9 @@ export default function PublicVerify() {
   // ── Shared input / label styles ────────────────────────────────────────────
   const inputStyle = {
     width: "100%",
-    background: navyLight,
+    background: inputBg,
     border: `0.5px solid ${bgBorder}`,
-    color: cream,
+    color: ink,
     padding: "10px 14px",
     fontFamily: "'JetBrains Mono', monospace",
     fontSize: "13px",
@@ -116,7 +114,7 @@ export default function PublicVerify() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: navy, color: cream, fontFamily: "'Inter', sans-serif", fontSize: "13px", lineHeight: 1.6, WebkitFontSmoothing: "antialiased" }}>
+    <div style={{ minHeight: "100vh", background: pageBg, color: ink, fontFamily: "'Inter', sans-serif", fontSize: "13px", lineHeight: 1.6, WebkitFontSmoothing: "antialiased" }}>
 
       {/* Fonts */}
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
@@ -136,8 +134,8 @@ export default function PublicVerify() {
         ::-webkit-scrollbar-thumb { background: #D8CFC4; border-radius: 3px; }
         .verify-input:focus { border-color: ${accentColor} !important; box-shadow: 0 0 0 3px rgba(200,169,110,0.10) !important; }
         .verify-btn:hover:not(:disabled) { opacity: 0.88; }
-        .nav-link:hover { color: ${cream} !important; }
-        .how-card:hover { background: ${navyLight} !important; }
+        .nav-link:hover { color: ${ink} !important; }
+        .how-card:hover { background: ${inputBg} !important; }
       `}</style>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -148,23 +146,16 @@ export default function PublicVerify() {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        background: navy,
+        background: pageBg,
         position: "sticky",
         top: 0,
         zIndex: 100,
       }}>
         <a href="https://tryaidal.github.io/landing_page_aidal" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
-          <div style={{ overflow: "hidden", width: "160px", height: "60px", position: "relative", flexShrink: 0 }}>
-            <img
-              src="https://tryaidal.com/Copy_of_AIDAL.png"
-              alt="AIDAL."
-              style={{ position: "absolute", width: "175px", height: "175px", mixBlendMode: "multiply", filter: "invert(1)", top: "-58px", left: "-5px" }}
-              onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0A0A0A;letter-spacing:0.12em;text-transform:uppercase">AIDAL.</span>'; }}
-            />
-          </div>
+          <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "26px", width: "auto", display: "block" }} />
         </a>
         <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-          <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={{ fontSize: "12px", color: cream, textDecoration: "none", letterSpacing: "0.06em", transition: "color 0.15s ease" }}>
+          <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={{ fontSize: "12px", color: ink, textDecoration: "none", letterSpacing: "0.06em", transition: "color 0.15s ease" }}>
             Dashboard →
           </a>
           <a
@@ -201,7 +192,7 @@ export default function PublicVerify() {
           fontSize: "clamp(32px, 5.5vw, 52px)",
           fontWeight: 700,
           lineHeight: 1.1,
-          color: cream,
+          color: ink,
           marginBottom: "1rem",
           letterSpacing: "-0.01em",
         }}>
@@ -263,7 +254,7 @@ export default function PublicVerify() {
         {/* ── Verification log ───────────────────────────────────────────── */}
         {steps.length > 0 && (
           <div style={{
-            background: navyDark,
+            background: panelBg,
             border: `0.5px solid ${bgBorder}`,
             borderRadius: 8,
             padding: "1.25rem 1.5rem",
@@ -348,7 +339,7 @@ export default function PublicVerify() {
                 <span style={{ fontSize: "11px", letterSpacing: "0.07em", textTransform: "uppercase", color: textMuted, minWidth: "140px", paddingTop: "1px", fontWeight: 500 }}>{k}</span>
                 <span style={{
                   fontSize: "13px",
-                  color: cream,
+                  color: ink,
                   fontFamily: mono ? "'JetBrains Mono', monospace" : "'Inter', sans-serif",
                   letterSpacing: mono ? "0.02em" : "normal",
                   wordBreak: "break-all",
@@ -396,7 +387,7 @@ export default function PublicVerify() {
             </div>
             <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75 }}>
               This is a serious integrity violation. If you believe this is an error, contact the company that provided this audit ID and email{" "}
-              <span style={{ color: cream, fontFamily: "'JetBrains Mono', monospace", fontSize: "12px" }}>try.aidal@gmail.com</span> immediately.
+              <span style={{ color: ink, fontFamily: "'JetBrains Mono', monospace", fontSize: "12px" }}>try.aidal@gmail.com</span> immediately.
             </div>
           </div>
         )}
@@ -404,13 +395,13 @@ export default function PublicVerify() {
         {/* ── Result: NOT FOUND ──────────────────────────────────────────── */}
         {isNotFound && (
           <div style={{
-            background: navyDark,
+            background: panelBg,
             border: `0.5px solid ${bgBorder}`,
             borderRadius: 8,
             padding: "1.75rem",
             animation: "fadeIn 0.3s ease",
           }}>
-            <div style={{ fontSize: "14px", fontWeight: 500, color: cream, marginBottom: "0.5rem" }}>Audit ID not found</div>
+            <div style={{ fontSize: "14px", fontWeight: 500, color: ink, marginBottom: "0.5rem" }}>Audit ID not found</div>
             <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75 }}>
               This audit ID does not exist in AIDAL's ledger. Check the ID is correct and try again. If you believe this is an error, contact the company that issued it.
             </div>
@@ -420,13 +411,13 @@ export default function PublicVerify() {
         {/* ── Result: ERROR (this page or AIDAL's API is unreachable) ─────── */}
         {isError && (
           <div style={{
-            background: navyDark,
+            background: panelBg,
             border: `0.5px solid ${bgBorder}`,
             borderRadius: 8,
             padding: "1.75rem",
             animation: "fadeIn 0.3s ease",
           }}>
-            <div style={{ fontSize: "14px", fontWeight: 500, color: cream, marginBottom: "0.5rem" }}>
+            <div style={{ fontSize: "14px", fontWeight: 500, color: ink, marginBottom: "0.5rem" }}>
               Couldn't reach AIDAL's verification service
             </div>
             <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75, marginBottom: "1.25rem" }}>
@@ -442,7 +433,7 @@ export default function PublicVerify() {
                 Verify without us
               </div>
               <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75, marginBottom: "10px" }}>
-                Download <span style={{ fontFamily: "'JetBrains Mono', monospace", color: cream }}>verify_offline.py</span> from our public anchor repository and check your exported decisions locally — no AIDAL account, no network call, nothing to trust but your own Python interpreter.
+                Download <span style={{ fontFamily: "'JetBrains Mono', monospace", color: ink }}>verify_offline.py</span> from our public anchor repository and check your exported decisions locally — no AIDAL account, no network call, nothing to trust but your own Python interpreter.
               </div>
               <a
                 href="https://github.com/widjajaanthony24-svg/aidal-anchors"
@@ -473,12 +464,12 @@ export default function PublicVerify() {
                   key={title}
                   className="how-card"
                   style={{
-                    background: navyDark,
+                    background: panelBg,
                     padding: "1.5rem",
                     transition: "background 0.15s ease",
                   }}
                 >
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: cream, marginBottom: "6px", letterSpacing: "-0.01em" }}>{title}</div>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: ink, marginBottom: "6px", letterSpacing: "-0.01em" }}>{title}</div>
                   <div style={{ fontSize: "12px", color: creamDim, lineHeight: 1.75 }}>{desc}</div>
                 </div>
               ))}
@@ -495,7 +486,7 @@ export default function PublicVerify() {
           color: textMuted,
           lineHeight: 1.75,
         }}>
-          AIDAL public verification does not require authentication. Audit IDs are provided by the company that logged the decision — AIDAL does not expose audit IDs publicly. This page verifies integrity only — it does not reveal any personal data or decision content.
+          AIDAL public verification does not require authentication. Audit IDs are provided by the company that logged the decision — AIDAL does not expose audit IDs publicly. This page reveals only the decision category, jurisdiction, and compliance status needed to make sense of the integrity check — never the underlying inputs, applicant data, or model output.
         </div>
       </div>
     </div>

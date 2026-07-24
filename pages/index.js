@@ -1532,10 +1532,8 @@ function LoginScreen({ onLogin }) {
     <div style={styles.loginWrap}>
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
       <div style={styles.loginBox}>
-        <div style={{ marginBottom: "0.25rem" }}>
-          <div style={{ overflow:"hidden", width:"300px", height:"112px", position:"relative", margin:"0 auto" }}>
-            <img src="https://tryaidal.com/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"330px", height:"330px", mixBlendMode:"multiply", filter:"invert(1)", top:"-110px", left:"-10px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:IBM Plex Sans,sans-serif;font-size:32px;font-weight:600;color:#0A0A0A;letter-spacing:2px">AIDAL.</span>'; }} />
-          </div>
+        <div style={{ marginBottom: "0.25rem", display: "flex", justifyContent: "center" }}>
+          <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "44px", width: "auto", display: "block" }} />
         </div>
         <div style={styles.loginTagline}>AI Decision Accountability Layer</div>
         {error && <div style={styles.loginError}>{error}</div>}
@@ -2724,9 +2722,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
       <div style={{ ...styles.header, position: "sticky", top: "0", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ overflow:"hidden", width:"120px", height:"44px", position:"relative", flexShrink:0 }}>
-            <img src="https://tryaidal.com/Copy_of_AIDAL.png" alt="AIDAL." style={{ position:"absolute", width:"132px", height:"132px", mixBlendMode:"screen", top:"-44px", left:"-4px" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:IBM Plex Sans,sans-serif;font-size:16px;font-weight:600;color:#F0F4F8;letter-spacing:1px">AIDAL.</span>'; }} />
-          </div>
+          <img src="/aidal-logo.png" alt="AIDAL." style={{ height: "22px", width: "auto", display: "block", flexShrink: 0 }} />
           <span style={{ fontSize: "12px", color: bgBorder, marginLeft: "4px" }}>|</span>
           <span style={{ fontSize: "12px", color: creamDim, letterSpacing: "0.02em" }}>{companyName}</span>
         </div>
@@ -3448,9 +3444,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         </div>{/* end styles.main */}
 
         <div style={{ borderTop: `0.5px solid ${bgBorder}`, padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: textMuted }}>
-          <span style={{ display: "inline-block", overflow: "hidden", width: "120px", height: "45px", position: "relative", flexShrink: 0 }}>
-            <img src="https://tryaidal.com/Copy_of_AIDAL.png" alt="AIDAL." style={{ position: "absolute", width: "132px", height: "132px", mixBlendMode: "screen", top: "-44px", left: "-4px", display: "block" }} onError={e => { e.target.parentNode.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#9C9690;letter-spacing:0.06em">AIDAL.</span>'; }} />
-          </span>
+          <img src="/aidal-logo.png" alt="AIDAL." style={{ height: "20px", width: "auto", display: "block", flexShrink: 0 }} />
           <span>AI Decision Accountability Layer</span>
           <span>© 2026 AIDAL</span>
         </div>

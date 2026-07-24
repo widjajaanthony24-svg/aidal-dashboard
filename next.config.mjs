@@ -20,8 +20,9 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       // Google Fonts actual font files
       "font-src 'self' https://fonts.gstatic.com",
-      // B-7: logo now served from tryaidal.com (self-hosted), not raw GitHub
-      "img-src 'self' data: https://tryaidal.com https://flagcdn.com",
+      // Logo is now bundled locally (public/aidal-logo*.png) — no more
+      // cross-origin hotlink to tryaidal.com, so 'self' alone covers it.
+      "img-src 'self' data: https://flagcdn.com",
       // Only allow fetch() to our own Railway API and Formspree (signup notification)
       "connect-src 'self' https://aidal-production.up.railway.app https://formspree.io",
       // No <object>, <embed>, or <applet>

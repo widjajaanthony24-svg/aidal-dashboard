@@ -23,8 +23,9 @@ const nextConfig = {
       // Logo is now bundled locally (public/aidal-logo*.png) — no more
       // cross-origin hotlink to tryaidal.com, so 'self' alone covers it.
       "img-src 'self' data: https://flagcdn.com",
-      // Only allow fetch() to our own Railway API and Formspree (signup notification)
-      "connect-src 'self' https://aidal-production.up.railway.app https://formspree.io",
+      // Railway API, Formspree (signup notification), and the GitHub API
+      // (transparency page lists the public anchors repo's contents)
+      "connect-src 'self' https://aidal-production.up.railway.app https://formspree.io https://api.github.com",
       // No <object>, <embed>, or <applet>
       "object-src 'none'",
       // Prevent this page from being embedded in an iframe on any other origin

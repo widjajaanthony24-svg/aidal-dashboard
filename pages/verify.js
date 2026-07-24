@@ -155,6 +155,9 @@ export default function PublicVerify() {
           <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "26px", width: "auto", display: "block" }} />
         </a>
         <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+          <a href="/transparency" className="nav-link" style={{ fontSize: "12px", color: ink, textDecoration: "none", letterSpacing: "0.06em", transition: "color 0.15s ease" }}>
+            Transparency →
+          </a>
           <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={{ fontSize: "12px", color: ink, textDecoration: "none", letterSpacing: "0.06em", transition: "color 0.15s ease" }}>
             Dashboard →
           </a>
@@ -487,6 +490,21 @@ export default function PublicVerify() {
           lineHeight: 1.75,
         }}>
           AIDAL public verification does not require authentication. Audit IDs are provided by the company that logged the decision — AIDAL does not expose audit IDs publicly. This page reveals only the decision category, jurisdiction, and compliance status needed to make sense of the integrity check — never the underlying inputs, applicant data, or model output.
+        </div>
+
+        {/* ── Try to break this ─────────────────────────────────────────── */}
+        <div style={{
+          marginTop: "1.5rem",
+          paddingTop: "1.5rem",
+          borderTop: `0.5px solid ${bgBorder}`,
+          fontSize: "12px",
+          color: textMuted,
+          lineHeight: 1.75,
+        }}>
+          Found a flaw in this system?{" "}
+          <a href="mailto:anthony@tryaidal.com?subject=Found%20a%20flaw%20in%20AIDAL" style={{ color: accentColor, textDecoration: "underline" }}>
+            anthony@tryaidal.com
+          </a>. We'll publish what you find.
         </div>
       </div>
     </div>

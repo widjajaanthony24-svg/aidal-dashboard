@@ -3075,7 +3075,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "8px" }}>
               {[
                 { jur: "SG",  label: "MAS FEAT",         ref: "MAS Notice on FEAT",          flag: "🇸🇬" },
-                { jur: "ID",  label: "OJK Indonesia",    ref: "POJK No. 11/2022",            flag: "🇮🇩" },
+                { jur: "ID",  label: "OJK Indonesia",    ref: "AI Governance Guidance (2025)", flag: "🇮🇩" },
                 { jur: "EU",  label: "EU AI Act",        ref: "Regulation (EU) 2024/1689",   flag: "🇪🇺" },
                 { jur: "UAE", label: "VARA UAE",         ref: "VARA AI Governance 2024",     flag: "🇦🇪" },
                 { jur: "UK",  label: "UK FCA",           ref: "SYSC 3 / SM&CR / PS 22/3",    flag: "🇬🇧" },

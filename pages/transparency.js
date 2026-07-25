@@ -149,17 +149,33 @@ export default function Transparency() {
         </p>
 
         {/* ── Aggregate stats ──────────────────────────────────────────── */}
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "3.5rem" }}>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem" }}>
           <StatCard
             label="Decisions logged"
             value={statsError ? "—" : stats ? stats.total_decisions.toLocaleString() : "…"}
-            sub={statsError ? "Couldn't reach AIDAL's servers just now." : "Total across every company on the platform. This is a small, early-stage number — that's the honest current state, not something to dress up."}
+            sub={statsError ? "Couldn't reach AIDAL's servers just now." : "Total across every account on the platform, including internal ones — see the note below."}
           />
           <StatCard
-            label="Companies"
+            label="Accounts"
             value={statsError ? "—" : stats ? stats.total_companies.toLocaleString() : "…"}
-            sub="Aggregate count only — no per-company breakdown unless a company opts in to being named."
+            sub="Aggregate count only — no per-account breakdown unless an account opts in to being named."
           />
+        </div>
+
+        <div style={{
+          marginBottom: "3.5rem",
+          padding: "1rem 1.25rem",
+          background: "rgba(200,169,110,0.08)",
+          border: `0.5px solid ${accentColor}`,
+          borderRadius: 8,
+          fontSize: "13px",
+          color: creamDim,
+          lineHeight: 1.75,
+        }}>
+          <strong style={{ color: ink }}>0 external customers as of 2026-07-25.</strong> Every account above —
+          all {statsError ? "" : stats ? stats.total_companies : ""} of them, and all of the decision volume with
+          them — is the founder's own test and development usage. No company outside AIDAL has signed up yet.
+          Said plainly here instead of letting the raw numbers imply otherwise.
         </div>
 
         {/* ── Anchor history ───────────────────────────────────────────── */}

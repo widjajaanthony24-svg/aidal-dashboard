@@ -80,8 +80,6 @@ export default function Transparency() {
 
   return (
     <div style={{ minHeight: "100vh", background: pageBg, color: ink, fontFamily: "'Inter', sans-serif", fontSize: "13px", lineHeight: 1.6, WebkitFontSmoothing: "antialiased" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
-
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
         html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; }
@@ -89,10 +87,15 @@ export default function Transparency() {
         ::-webkit-scrollbar-track { background: #FAF3EB; }
         ::-webkit-scrollbar-thumb { background: #D8CFC4; border-radius: 3px; }
         .nav-link:hover { color: ${ink} !important; }
+        @media (max-width: 480px) {
+          .page-header { padding: 0.5rem 1.25rem !important; height: auto !important; flex-wrap: wrap; row-gap: 8px; }
+          .page-header-links { gap: 1rem !important; }
+          .page-content { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+        }
       `}</style>
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div style={{
+      <div className="page-header" style={{
         borderBottom: `0.5px solid ${bgBorder}`,
         padding: "0 2rem",
         height: "52px",
@@ -107,7 +110,7 @@ export default function Transparency() {
         <a href="https://tryaidal.github.io/landing_page_aidal" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
           <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "26px", width: "auto", display: "block" }} />
         </a>
-        <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+        <div className="page-header-links" style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
           <a href="/verify" className="nav-link" style={{ fontSize: "12px", color: ink, textDecoration: "none", letterSpacing: "0.06em" }}>
             Verify →
           </a>
@@ -125,7 +128,7 @@ export default function Transparency() {
       </div>
 
       {/* ── Main content ───────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 780, margin: "0 auto", padding: "5rem 2rem 6rem" }}>
+      <div className="page-content" style={{ maxWidth: 780, margin: "0 auto", padding: "5rem 2rem 6rem" }}>
 
         <div style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: textMuted, marginBottom: "1.25rem", fontWeight: 500 }}>
           Public Transparency

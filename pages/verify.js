@@ -116,13 +116,16 @@ export default function PublicVerify() {
   return (
     <div style={{ minHeight: "100vh", background: pageBg, color: ink, fontFamily: "'Inter', sans-serif", fontSize: "13px", lineHeight: 1.6, WebkitFontSmoothing: "antialiased" }}>
 
-      {/* Fonts */}
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
-
       {/* Global styles */}
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
         html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; }
+        @media (max-width: 480px) {
+          .page-header { padding: 0.5rem 1.25rem !important; height: auto !important; flex-wrap: wrap; row-gap: 8px; }
+          .page-header-links { gap: 1rem !important; }
+          .page-content { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+          .how-it-works-grid { grid-template-columns: 1fr !important; }
+        }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse-dot {
           0%, 100% { opacity: 1; transform: scale(1); }
@@ -139,7 +142,7 @@ export default function PublicVerify() {
       `}</style>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div style={{
+      <div className="page-header" style={{
         borderBottom: `0.5px solid ${bgBorder}`,
         padding: "0 2rem",
         height: "52px",
@@ -154,7 +157,7 @@ export default function PublicVerify() {
         <a href="https://tryaidal.github.io/landing_page_aidal" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
           <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "26px", width: "auto", display: "block" }} />
         </a>
-        <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+        <div className="page-header-links" style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
           <a href="/transparency" className="nav-link" style={{ fontSize: "12px", color: ink, textDecoration: "none", letterSpacing: "0.06em", transition: "color 0.15s ease" }}>
             Transparency →
           </a>
@@ -182,7 +185,7 @@ export default function PublicVerify() {
       </div>
 
       {/* ── Main content ───────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "5rem 2rem 6rem" }}>
+      <div className="page-content" style={{ maxWidth: 680, margin: "0 auto", padding: "5rem 2rem 6rem" }}>
 
         {/* Label */}
         <div style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: textMuted, marginBottom: "1.25rem", fontWeight: 500 }}>
@@ -456,7 +459,7 @@ export default function PublicVerify() {
             <div style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: textMuted, marginBottom: "1.75rem", fontWeight: 500 }}>
               How verification works
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: bgBorder, borderRadius: 8, overflow: "hidden" }}>
+            <div className="how-it-works-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: bgBorder, borderRadius: 8, overflow: "hidden" }}>
               {[
                 ["No login required",     "Anyone with an audit ID can verify it. No account. No API key. No asking AIDAL for permission."],
                 ["No sensitive data",     "Verification only confirms whether a record is untampered. It does not reveal the underlying decision data."],

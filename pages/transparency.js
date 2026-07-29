@@ -20,7 +20,7 @@ const radius   = 8;
 const radiusLg = 12;
 const shadowXs = "0 1px 2px 0 rgba(0,0,0,0.05)";
 
-const fontSans = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+const fontSans = "'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 const fontMono = "'JetBrains Mono', SFMono-Regular, Consolas, monospace";
 
 // Curated, static disclosure of AIDAL's own platform incidents — deliberately

@@ -24,7 +24,7 @@ const shadowXs = "0 1px 2px 0 rgba(0,0,0,0.05)";
 const shadowSm = "0 1px 2px 0 rgba(0,0,0,0.05), 0 2px 8px -2px rgba(0,0,0,0.06)";
 const shadowLg = "0 1px 2px 0 rgba(0,0,0,0.04), 0 16px 48px -12px rgba(0,0,0,0.12)";
 
-const fontSans = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+const fontSans = "'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 const fontMono = "'JetBrains Mono', SFMono-Regular, Consolas, monospace";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

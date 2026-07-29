@@ -42,7 +42,7 @@ const radiusLg = 12;                           // card/modal radius
 const shadowXs = "0 1px 2px 0 rgba(0,0,0,0.05)";
 const shadowLg = "0 1px 2px 0 rgba(0,0,0,0.04), 0 16px 48px -12px rgba(0,0,0,0.12)";
 
-const fontSans = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+const fontSans = "'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 const fontMono = "'JetBrains Mono', SFMono-Regular, Consolas, monospace";
 
 // Soft-tint chip helper: every status/category pill in the app is a 8%-alpha
@@ -2753,7 +2753,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
         html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        body { font-family: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
         @keyframes pulse-dot {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.45; transform: scale(0.85); }

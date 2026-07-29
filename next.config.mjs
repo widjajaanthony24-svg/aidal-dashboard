@@ -16,10 +16,10 @@ const nextConfig = {
       "default-src 'self'",
       // Next.js injects inline scripts; unsafe-inline is required for pages router
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      // Inline React styles + Google Fonts
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      // Google Fonts actual font files
-      "font-src 'self' https://fonts.gstatic.com",
+      // Inline React styles + Google Fonts + Fontshare (General Sans)
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com",
+      // Google Fonts + Fontshare actual font files
+      "font-src 'self' https://fonts.gstatic.com https://cdn.fontshare.com",
       // Logo is now bundled locally (public/aidal-logo*.png) — no more
       // cross-origin hotlink to tryaidal.com, so 'self' alone covers it.
       "img-src 'self' data: https://flagcdn.com",

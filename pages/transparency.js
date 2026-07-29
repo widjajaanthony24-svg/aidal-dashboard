@@ -3,16 +3,25 @@ import { useState, useEffect } from "react";
 const API = "https://aidal-production.up.railway.app";
 const ANCHORS_REPO = "widjajaanthony24-svg/aidal-anchors";
 
-// ── Palette — cream & black, same as the rest of the public pages ──────────
-const pageBg   = "#FAF3EB";
-const ink      = "#0A0A0A";
-const creamDim = "#6B6560";
-const panelBg  = "#F0E6D6";
-const bgBorder = "#D8CFC4";
-const textMuted = "#6B6560";
-const accentColor = "#C8A96E";
-const green = "#4CAF82";
-const red   = "#E05252";
+// ── Design tokens — Linear light, identical to /verify and the dashboard. ────
+const surface       = "#FFFFFF";
+const surfaceAlt    = "#FAFAFA";
+const surfaceSunken = "#F4F4F5";
+const ink           = "#09090B";
+const inkMuted      = "#71717A";
+const inkSubtle     = "#A1A1AA";
+const line          = "rgba(0,0,0,0.08)";
+const lineSolid     = "#E4E4E7";
+const greenInk      = "#047857";
+const redInk        = "#B91C1C";
+const accentColor   = "#5E6AD2";
+
+const radius   = 8;
+const radiusLg = 12;
+const shadowXs = "0 1px 2px 0 rgba(0,0,0,0.05)";
+
+const fontSans = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+const fontMono = "'JetBrains Mono', SFMono-Regular, Consolas, monospace";
 
 // Curated, static disclosure of AIDAL's own platform incidents — deliberately
 // NOT pulled from the customer incident-reporting API, which stores private
@@ -39,16 +48,54 @@ const PLATFORM_INCIDENTS = [
   },
 ];
 
+// Uppercase mono eyebrow, same component as /verify.
+function SectionLabel({ children, style }) {
+  return (
+    <div style={{
+      fontFamily: fontMono, fontSize: "10px", fontWeight: 500,
+      letterSpacing: "0.14em", textTransform: "uppercase", color: inkSubtle, ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// Severity chip: resolved reads green, disclosed-but-live reads amber.
+function SeverityChip({ severity }) {
+  const resolved = severity === "resolved";
+  return (
+    <span style={{
+      fontFamily: fontMono,
+      fontSize: "10px",
+      fontWeight: 500,
+      letterSpacing: "0.06em",
+      textTransform: "uppercase",
+      padding: "2px 8px",
+      borderRadius: 999,
+      color: resolved ? greenInk : "#B45309",
+      background: resolved ? "rgba(16,185,129,0.08)" : "rgba(245,158,11,0.10)",
+      border: `1px solid ${resolved ? "rgba(16,185,129,0.22)" : "rgba(245,158,11,0.25)"}`,
+      whiteSpace: "nowrap",
+    }}>
+      {severity}
+    </span>
+  );
+}
+
 function StatCard({ label, value, sub }) {
   return (
-    <div style={{ background: panelBg, border: `0.5px solid ${bgBorder}`, borderRadius: 8, padding: "1.5rem", flex: 1, minWidth: 180 }}>
-      <div style={{ fontSize: "28px", fontWeight: 700, color: ink, letterSpacing: "-0.01em", fontFamily: "'Playfair Display', Georgia, serif" }}>
+    <div style={{
+      background: surface, border: `1px solid ${line}`, borderRadius: radiusLg,
+      padding: "1.25rem 1.375rem", flex: 1, minWidth: 200, boxShadow: shadowXs,
+    }}>
+      <div style={{
+        fontSize: "28px", fontWeight: 500, color: ink, letterSpacing: "-0.03em",
+        fontFamily: fontMono, fontVariantNumeric: "tabular-nums", lineHeight: 1.1,
+      }}>
         {value}
       </div>
-      <div style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginTop: "4px", fontWeight: 500 }}>
-        {label}
-      </div>
-      {sub && <div style={{ fontSize: "12px", color: creamDim, marginTop: "6px", lineHeight: 1.5 }}>{sub}</div>}
+      <SectionLabel style={{ marginTop: "8px" }}>{label}</SectionLabel>
+      {sub && <div style={{ fontSize: "12.5px", color: inkMuted, marginTop: "8px", lineHeight: 1.6 }}>{sub}</div>}
     </div>
   );
 }
@@ -78,81 +125,95 @@ export default function Transparency() {
       .catch(() => setAnchorError(true));
   }, []);
 
+  const navLinkStyle = {
+    fontSize: "13px", fontWeight: 500, color: inkMuted, textDecoration: "none",
+    padding: "6px 10px", borderRadius: radius, transition: "background 0.15s ease, color 0.15s ease",
+  };
+
+  const codeStyle = {
+    fontFamily: fontMono, fontSize: "11.5px", background: surfaceSunken,
+    border: `1px solid ${line}`, borderRadius: 4, padding: "1px 5px", color: ink,
+  };
+
   return (
-    <div style={{ minHeight: "100vh", background: pageBg, color: ink, fontFamily: "'Inter', sans-serif", fontSize: "13px", lineHeight: 1.6, WebkitFontSmoothing: "antialiased" }}>
+    <div style={{ minHeight: "100vh", background: surface, color: ink, fontFamily: fontSans, fontSize: "13px", lineHeight: 1.6, letterSpacing: "-0.011em", WebkitFontSmoothing: "antialiased" }}>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
         html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #FAF3EB; }
-        ::-webkit-scrollbar-thumb { background: #D8CFC4; border-radius: 3px; }
-        .nav-link:hover { color: ${ink} !important; }
-        @media (max-width: 480px) {
-          .page-header { padding: 0.5rem 1.25rem !important; height: auto !important; flex-wrap: wrap; row-gap: 8px; }
-          .page-header-links { gap: 1rem !important; }
+        body { font-feature-settings: "cv02", "cv03", "cv04", "cv11"; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: ${lineSolid}; border-radius: 999px; border: 3px solid ${surface}; }
+        .nav-link:hover { background: ${surfaceSunken}; color: ${ink} !important; }
+        .nav-cta:hover { background: #27272A !important; }
+        a { color: inherit; }
+        @media (max-width: 560px) {
+          .page-header { padding: 0 1rem !important; }
+          .page-header-links { gap: 0.25rem !important; }
           .page-content { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
         }
       `}</style>
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="page-header" style={{
-        borderBottom: `0.5px solid ${bgBorder}`,
-        padding: "0 2rem",
-        height: "52px",
+        borderBottom: "1px solid rgba(0,0,0,0.06)",
+        padding: "0 1.5rem",
+        height: "56px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        background: pageBg,
+        background: "rgba(255,255,255,0.85)",
+        backdropFilter: "blur(12px) saturate(180%)",
+        WebkitBackdropFilter: "blur(12px) saturate(180%)",
         position: "sticky",
         top: 0,
         zIndex: 100,
       }}>
-        <a href="https://tryaidal.github.io/landing_page_aidal" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
-          <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "26px", width: "auto", display: "block" }} />
+        <a href="https://tryaidal.com" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
+          <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "22px", width: "auto", display: "block" }} />
         </a>
-        <div className="page-header-links" style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-          <a href="/verify" className="nav-link" style={{ fontSize: "12px", color: ink, textDecoration: "none", letterSpacing: "0.06em" }}>
-            Verify →
-          </a>
-          <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={{ fontSize: "12px", color: ink, textDecoration: "none", letterSpacing: "0.06em" }}>
-            Dashboard →
-          </a>
+        <div className="page-header-links" style={{ display: "flex", gap: "0.25rem", alignItems: "center" }}>
+          <a href="/verify" className="nav-link" style={navLinkStyle}>Verify</a>
+          <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={navLinkStyle}>Dashboard</a>
           <a
-            href="https://tryaidal.github.io/landing_page_aidal#get-key"
-            className="nav-link"
-            style={{ fontSize: "12px", color: "#FAF3EB", textDecoration: "none", background: "#0A0A0A", border: "none", padding: "5px 14px", borderRadius: 6, letterSpacing: "0.06em" }}
+            href="https://tryaidal.com/#get-key"
+            className="nav-cta"
+            style={{
+              fontSize: "13px", fontWeight: 500, color: surface, textDecoration: "none",
+              background: ink, border: "1px solid rgba(255,255,255,0.08)", padding: "7px 14px",
+              borderRadius: radius, boxShadow: shadowXs, marginLeft: "0.5rem",
+              transition: "background 0.15s ease",
+            }}
           >
-            Get API Key
+            Get API key
           </a>
         </div>
       </div>
 
       {/* ── Main content ───────────────────────────────────────────────── */}
-      <div className="page-content" style={{ maxWidth: 780, margin: "0 auto", padding: "5rem 2rem 6rem" }}>
+      <div className="page-content" style={{ maxWidth: 780, margin: "0 auto", padding: "4.5rem 2rem 5rem" }}>
 
-        <div style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: textMuted, marginBottom: "1.25rem", fontWeight: 500 }}>
-          Public Transparency
-        </div>
+        <SectionLabel style={{ marginBottom: "1.25rem" }}>Public transparency</SectionLabel>
 
         <h1 style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: "clamp(32px, 5.5vw, 48px)",
-          fontWeight: 700,
-          lineHeight: 1.15,
+          fontFamily: fontSans,
+          fontSize: "clamp(30px, 5vw, 46px)",
+          fontWeight: 600,
+          lineHeight: 1.1,
           color: ink,
-          marginBottom: "1rem",
-          letterSpacing: "-0.01em",
+          margin: "0 0 1rem",
+          letterSpacing: "-0.035em",
         }}>
           What AIDAL actually looks like<br />
-          <span style={{ color: creamDim, fontWeight: 400 }}>from the outside.</span>
+          <span style={{ color: inkSubtle }}>from the outside.</span>
         </h1>
 
-        <p style={{ fontSize: "15px", color: creamDim, lineHeight: 1.75, marginBottom: "3rem", maxWidth: 560 }}>
-          Real, unpadded numbers — how much runs through the platform, whether the anchor system has actually held up, and every time it hasn't.
+        <p style={{ fontSize: "16px", color: inkMuted, lineHeight: 1.65, marginBottom: "2.5rem", maxWidth: 560 }}>
+          Real, unpadded numbers — how much runs through the platform, whether the anchor system has actually held up, and every time it hasn&apos;t.
         </p>
 
         {/* ── Aggregate stats ──────────────────────────────────────────── */}
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }}>
           <StatCard
             label="Decisions logged"
             value={statsError ? "—" : stats ? stats.total_decisions.toLocaleString() : "…"}
@@ -165,56 +226,57 @@ export default function Transparency() {
           />
         </div>
 
+        {/* The disclosure that matters most on this page — indigo rail so it
+            reads as a deliberate statement rather than a warning. */}
         <div style={{
-          marginBottom: "3.5rem",
+          marginBottom: "3rem",
           padding: "1rem 1.25rem",
-          background: "rgba(200,169,110,0.08)",
-          border: `0.5px solid ${accentColor}`,
-          borderRadius: 8,
+          background: "rgba(94,106,210,0.05)",
+          border: `1px solid rgba(94,106,210,0.20)`,
+          borderLeft: `3px solid ${accentColor}`,
+          borderRadius: radius,
           fontSize: "13px",
-          color: creamDim,
-          lineHeight: 1.75,
+          color: inkMuted,
+          lineHeight: 1.7,
         }}>
-          <strong style={{ color: ink }}>0 external customers as of 2026-07-25.</strong> Every account above —
+          <strong style={{ color: ink, fontWeight: 600 }}>0 external customers as of 2026-07-25.</strong> Every account above —
           all {statsError ? "" : stats ? stats.total_companies : ""} of them, and all of the decision volume with
-          them — is the founder's own test and development usage. No company outside AIDAL has signed up yet.
+          them — is the founder&apos;s own test and development usage. No company outside AIDAL has signed up yet.
           Said plainly here instead of letting the raw numbers imply otherwise.
         </div>
 
         {/* ── Anchor history ───────────────────────────────────────────── */}
-        <div style={{ marginBottom: "3.5rem" }}>
-          <div style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: textMuted, marginBottom: "1rem", fontWeight: 500 }}>
-            Anchor system history
-          </div>
-          <div style={{ background: panelBg, border: `0.5px solid ${bgBorder}`, borderRadius: 8, padding: "1.5rem" }}>
+        <div style={{ marginBottom: "3rem" }}>
+          <SectionLabel style={{ marginBottom: "1rem" }}>Anchor system history</SectionLabel>
+          <div style={{ background: surface, border: `1px solid ${line}`, borderRadius: radiusLg, boxShadow: shadowXs, overflow: "hidden" }}>
             {anchorError ? (
-              <div style={{ fontSize: "13px", color: creamDim }}>Couldn't reach the public anchor repository just now — check it directly at{" "}
-                <a href={`https://github.com/${ANCHORS_REPO}`} target="_blank" rel="noreferrer" style={{ color: accentColor }}>github.com/{ANCHORS_REPO}</a>.
+              <div style={{ fontSize: "13px", color: inkMuted, padding: "1.25rem 1.5rem" }}>Couldn&apos;t reach the public anchor repository just now — check it directly at{" "}
+                <a href={`https://github.com/${ANCHORS_REPO}`} target="_blank" rel="noreferrer" style={{ color: accentColor, fontFamily: fontMono, fontSize: "12px" }}>github.com/{ANCHORS_REPO}</a>.
               </div>
             ) : !anchorDates ? (
-              <div style={{ fontSize: "13px", color: creamDim }}>Loading…</div>
+              <div style={{ fontSize: "13px", color: inkSubtle, fontFamily: fontMono, padding: "1.25rem 1.5rem" }}>Loading…</div>
             ) : (
               <>
-                <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", marginBottom: "1.25rem" }}>
-                  <div>
-                    <div style={{ fontSize: "20px", fontWeight: 700, color: ink }}>{anchorDates.length}</div>
-                    <div style={{ fontSize: "11px", color: textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Days anchored</div>
+                <div style={{ display: "flex", flexWrap: "wrap", background: surfaceAlt, borderBottom: `1px solid ${line}` }}>
+                  <div style={{ padding: "1rem 1.5rem", borderRight: `1px solid ${line}`, minWidth: 140 }}>
+                    <div style={{ fontSize: "22px", fontWeight: 500, color: ink, fontFamily: fontMono, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>{anchorDates.length}</div>
+                    <SectionLabel style={{ marginTop: "6px" }}>Days anchored</SectionLabel>
                   </div>
-                  <div>
-                    <div style={{ fontSize: "20px", fontWeight: 700, color: ink }}>{anchorDates[0]} → {anchorDates[anchorDates.length - 1]}</div>
-                    <div style={{ fontSize: "11px", color: textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>Coverage — one file per calendar day, no gaps</div>
+                  <div style={{ padding: "1rem 1.5rem" }}>
+                    <div style={{ fontSize: "15px", fontWeight: 500, color: ink, fontFamily: fontMono, letterSpacing: "-0.01em" }}>{anchorDates[0]} → {anchorDates[anchorDates.length - 1]}</div>
+                    <SectionLabel style={{ marginTop: "6px" }}>Coverage — one file per day, no gaps</SectionLabel>
                   </div>
                 </div>
-                <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75, borderTop: `0.5px solid ${bgBorder}`, paddingTop: "1rem" }}>
-                  <strong style={{ color: green }}>Verified clean:</strong> every anchor from <code>2026-05-04</code> onward — independently re-checked against the raw published files as part of the 2026-07-24 key rotation, not just assumed still valid.<br/>
-                  <strong style={{ color: red }}>Known bad signatures:</strong> <code>2026-05-01</code>, <code>2026-05-02</code>, <code>2026-05-03</code> — see the incident log below.<br/>
-                  <code>2026-04-30</code> predates signing entirely and has no signature to check.
+                <div style={{ fontSize: "13px", color: inkMuted, lineHeight: 1.8, padding: "1.25rem 1.5rem" }}>
+                  <strong style={{ color: greenInk, fontWeight: 600 }}>Verified clean:</strong> every anchor from <code style={codeStyle}>2026-05-04</code> onward — independently re-checked against the raw published files as part of the 2026-07-24 key rotation, not just assumed still valid.<br/>
+                  <strong style={{ color: redInk, fontWeight: 600 }}>Known bad signatures:</strong> <code style={codeStyle}>2026-05-01</code>, <code style={codeStyle}>2026-05-02</code>, <code style={codeStyle}>2026-05-03</code> — see the incident log below.<br/>
+                  <code style={codeStyle}>2026-04-30</code> predates signing entirely and has no signature to check.
                 </div>
-                <div style={{ fontSize: "12px", color: textMuted, marginTop: "1rem" }}>
-                  Don't take our word for any of this —{" "}
-                  <a href={`https://github.com/${ANCHORS_REPO}`} target="_blank" rel="noreferrer" style={{ color: accentColor }}>
+                <div style={{ fontSize: "12.5px", color: inkSubtle, padding: "0.875rem 1.5rem", borderTop: `1px solid ${line}`, background: surfaceAlt }}>
+                  Don&apos;t take our word for any of this —{" "}
+                  <a href={`https://github.com/${ANCHORS_REPO}`} target="_blank" rel="noreferrer" style={{ color: accentColor, textDecoration: "underline" }}>
                     clone the repo and check it yourself
-                  </a>, offline, with <code>verify_offline.py</code>.
+                  </a>, offline, with <code style={codeStyle}>verify_offline.py</code>.
                 </div>
               </>
             )}
@@ -222,37 +284,43 @@ export default function Transparency() {
         </div>
 
         {/* ── Incident log ─────────────────────────────────────────────── */}
-        <div style={{ marginBottom: "3.5rem" }}>
-          <div style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: textMuted, marginBottom: "1rem", fontWeight: 500 }}>
-            Platform incident log
-          </div>
-          <p style={{ fontSize: "12px", color: textMuted, marginBottom: "1rem", lineHeight: 1.6 }}>
-            Incidents about AIDAL's own infrastructure — not customers' private AI-incident reports, which stay confidential to the company that filed them.
+        <div style={{ marginBottom: "3rem" }}>
+          <SectionLabel style={{ marginBottom: "0.875rem" }}>Platform incident log</SectionLabel>
+          <p style={{ fontSize: "12.5px", color: inkMuted, marginBottom: "1rem", lineHeight: 1.6 }}>
+            Incidents about AIDAL&apos;s own infrastructure — not customers&apos; private AI-incident reports, which stay confidential to the company that filed them.
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1px", background: bgBorder, borderRadius: 8, overflow: "hidden" }}>
-            {PLATFORM_INCIDENTS.map((inc) => (
-              <div key={inc.title} style={{ background: panelBg, padding: "1.25rem 1.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "1rem", marginBottom: "6px", flexWrap: "wrap" }}>
-                  <span style={{ fontSize: "14px", fontWeight: 600, color: ink }}>{inc.title}</span>
-                  <span style={{ fontSize: "11px", color: textMuted, fontFamily: "'JetBrains Mono', monospace" }}>{inc.date}</span>
+          <div style={{ background: surface, border: `1px solid ${line}`, borderRadius: radiusLg, boxShadow: shadowXs, overflow: "hidden" }}>
+            {PLATFORM_INCIDENTS.map((inc, i) => (
+              <div
+                key={inc.title}
+                style={{
+                  padding: "1.125rem 1.5rem",
+                  borderBottom: i !== PLATFORM_INCIDENTS.length - 1 ? `1px solid ${line}` : "none",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", marginBottom: "8px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "14px", fontWeight: 500, color: ink, letterSpacing: "-0.015em" }}>{inc.title}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <SeverityChip severity={inc.severity} />
+                    <span style={{ fontSize: "11px", color: inkSubtle, fontFamily: fontMono }}>{inc.date}</span>
+                  </span>
                 </div>
-                <div style={{ fontSize: "13px", color: creamDim, lineHeight: 1.75 }}>{inc.body}</div>
+                <div style={{ fontSize: "13px", color: inkMuted, lineHeight: 1.7 }}>{inc.body}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── Footer note ──────────────────────────────────────────────── */}
-        <div style={{ marginTop: "3rem", paddingTop: "1.5rem", borderTop: `0.5px solid ${bgBorder}`, fontSize: "12px", color: textMuted, lineHeight: 1.75 }}>
-          This page shows aggregate, platform-wide numbers only. It does not reveal any single company's volume, decisions, or incidents unless that company has separately and explicitly opted in to being named — nothing does that yet.
+        {/* ── Footer notes ─────────────────────────────────────────────── */}
+        <div style={{ marginTop: "2.5rem", paddingTop: "1.5rem", borderTop: `1px solid ${line}`, fontSize: "12px", color: inkSubtle, lineHeight: 1.7 }}>
+          This page shows aggregate, platform-wide numbers only. It does not reveal any single company&apos;s volume, decisions, or incidents unless that company has separately and explicitly opted in to being named — nothing does that yet.
         </div>
 
-        {/* ── Try to break this ────────────────────────────────────────── */}
-        <div style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: `0.5px solid ${bgBorder}`, fontSize: "12px", color: textMuted, lineHeight: 1.75 }}>
+        <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: `1px solid ${line}`, fontSize: "12px", color: inkSubtle, lineHeight: 1.7 }}>
           Found a flaw in any of this?{" "}
           <a href="mailto:anthony@tryaidal.com?subject=Found%20a%20flaw%20in%20AIDAL" style={{ color: accentColor, textDecoration: "underline" }}>
             anthony@tryaidal.com
-          </a>. We'll publish what you find.
+          </a>. We&apos;ll publish what you find.
         </div>
       </div>
     </div>

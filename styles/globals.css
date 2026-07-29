@@ -1,13 +1,20 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   AIDAL — Linear-style light mode. White-dominant surfaces, zinc neutrals,
+   indigo accent. These variables mirror the token block in pages/index.js;
+   component styling lives there (inline), this file only sets the ground.
+   ────────────────────────────────────────────────────────────────────────── */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-}
+  --surface-alt: #fafafa;
+  --surface-sunken: #f4f4f5;
+  --foreground: #09090b;
+  --ink-muted: #71717a;
+  --ink-subtle: #a1a1aa;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-solid: #e4e4e7;
+  --accent: #5e6ad2;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: light;
 }
 
 html,
@@ -19,9 +26,19 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings tighten as they grow — the same tracking ladder as the landing page. */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.03em;
+  font-weight: 600;
 }
 
 * {
@@ -35,8 +52,7 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+::selection {
+  background: rgba(94, 106, 210, 0.2);
+  color: var(--foreground);
 }

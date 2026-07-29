@@ -1623,7 +1623,7 @@ function LoginScreen({ onLogin }) {
     <div style={styles.loginWrap}>
       <div style={styles.loginBox}>
         <div style={{ marginBottom: "0.25rem", display: "flex", justifyContent: "center" }}>
-          <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "44px", width: "auto", display: "block" }} />
+          <img src="/aidal-logo-black.png?v=2" alt="AIDAL." style={{ height: "44px", width: "auto", display: "block" }} />
         </div>
         <div style={styles.loginTagline}>AI Decision Accountability Layer</div>
         {error && <div style={styles.loginError}>{error}</div>}
@@ -2819,7 +2819,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
 
       <div style={{ ...styles.header, position: "sticky", top: "0", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "22px", width: "auto", display: "block", flexShrink: 0 }} />
+          <img src="/aidal-logo-black.png?v=2" alt="AIDAL." style={{ height: "22px", width: "auto", display: "block", flexShrink: 0 }} />
           <span style={{ fontSize: "12px", color: line, marginLeft: "4px" }}>|</span>
           <span style={{ fontSize: "12px", color: inkMuted, letterSpacing: "0.02em" }}>{companyName}</span>
         </div>
@@ -3541,7 +3541,7 @@ function Dashboard({ apiKey, companyName, onLogout }) {
         </div>{/* end styles.main */}
 
         <div style={{ borderTop: `0.5px solid ${line}`, padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: inkSubtle }}>
-          <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "20px", width: "auto", display: "block", flexShrink: 0 }} />
+          <img src="/aidal-logo-black.png?v=2" alt="AIDAL." style={{ height: "20px", width: "auto", display: "block", flexShrink: 0 }} />
           <span>AI Decision Accountability Layer</span>
           <span>© 2026 AIDAL</span>
         </div>

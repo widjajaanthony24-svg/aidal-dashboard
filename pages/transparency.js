@@ -170,7 +170,7 @@ export default function Transparency() {
         zIndex: 100,
       }}>
         <a href="https://tryaidal.com" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
-          <img src="/aidal-logo-black.png" alt="AIDAL." style={{ height: "22px", width: "auto", display: "block" }} />
+          <img src="/aidal-logo-black.png?v=2" alt="AIDAL." style={{ height: "22px", width: "auto", display: "block" }} />
         </a>
         <div className="page-header-links" style={{ display: "flex", gap: "0.25rem", alignItems: "center" }}>
           <a href="/verify" className="nav-link" style={navLinkStyle}>Verify</a>

@@ -1,3 +1,35 @@
+/* Self-hosted General Sans — matches the landing page. Avoids a third-party
+   render-blocking request to Fontshare (TLS 1.2 only, flagged by a real
+   performance audit). */
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/GeneralSans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/GeneralSans-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/GeneralSans-Semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/GeneralSans-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ──────────────────────────────────────────────────────────────────────────
    AIDAL — Linear-style light mode. White-dominant surfaces, zinc neutrals,
    indigo accent. These variables mirror the token block in pages/index.js;

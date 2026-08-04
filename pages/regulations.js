@@ -177,8 +177,34 @@ export default function Regulations() {
         ) : !regs ? (
           <div style={{ fontSize: "13px", color: inkSubtle, fontFamily: fontMono, padding: "2rem 0" }}>Loading…</div>
         ) : (
-          Object.keys(byJurisdiction).sort().map((jurisdiction) => (
-            <div key={jurisdiction} style={{ marginBottom: "2.25rem" }}>
+          <>
+            {/* Scan-first summary: jump straight to a jurisdiction instead of
+                scrolling past ones you don't need. */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2.5rem" }}>
+              {Object.keys(byJurisdiction).sort().map((jurisdiction) => {
+                const entries = byJurisdiction[jurisdiction];
+                const bindingCount = entries.filter((r) => r.is_binding).length;
+                return (
+                  <a
+                    key={jurisdiction}
+                    href={`#${jurisdiction}`}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "8px", textDecoration: "none",
+                      padding: "8px 12px", background: surfaceAlt, border: `1px solid ${line}`,
+                      borderRadius: radius, fontSize: "12.5px", color: ink, fontWeight: 500,
+                    }}
+                  >
+                    {jurisdiction}
+                    <span style={{ fontSize: "11px", color: inkSubtle, fontFamily: fontMono, fontWeight: 400 }}>
+                      {entries.length} · {bindingCount} binding
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+
+            {Object.keys(byJurisdiction).sort().map((jurisdiction) => (
+            <div key={jurisdiction} id={jurisdiction} style={{ marginBottom: "2.25rem", scrollMarginTop: "72px" }}>
               <SectionLabel style={{ marginBottom: "0.875rem" }}>{jurisdiction}</SectionLabel>
               <div style={{ background: surface, border: `1px solid ${line}`, borderRadius: radiusLg, boxShadow: shadowXs, overflow: "hidden" }}>
                 {byJurisdiction[jurisdiction].map((r, i) => (
@@ -209,7 +235,8 @@ export default function Regulations() {
                 ))}
               </div>
             </div>
-          ))
+            ))}
+          </>
         )}
 
         {/* ── Footer notes ─────────────────────────────────────────────── */}

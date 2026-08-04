@@ -33,6 +33,21 @@ function SectionLabel({ children, style }) {
 }
 
 function BindingChip({ isBinding }) {
+  // isBinding is null for status='new' rows — nobody has actually read the
+  // source yet, so no binding/guidance claim gets made. Don't collapse this
+  // into "Guidance" just because it's falsy; that would assert a fact no
+  // human has confirmed.
+  if (isBinding === null || isBinding === undefined) {
+    return (
+      <span style={{
+        fontFamily: fontMono, fontSize: "10px", fontWeight: 500, letterSpacing: "0.06em",
+        textTransform: "uppercase", padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap",
+        color: accentColor, background: "rgba(94,106,210,0.08)", border: `1px solid rgba(94,106,210,0.22)`,
+      }}>
+        New — not yet analyzed
+      </span>
+    );
+  }
   return (
     <span style={{
       fontFamily: fontMono, fontSize: "10px", fontWeight: 500, letterSpacing: "0.06em",
@@ -183,7 +198,8 @@ export default function Regulations() {
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2.5rem" }}>
               {Object.keys(byJurisdiction).sort().map((jurisdiction) => {
                 const entries = byJurisdiction[jurisdiction];
-                const bindingCount = entries.filter((r) => r.is_binding).length;
+                const bindingCount = entries.filter((r) => r.is_binding === true).length;
+                const newCount = entries.filter((r) => r.is_binding === null || r.is_binding === undefined).length;
                 return (
                   <a
                     key={jurisdiction}
@@ -196,7 +212,7 @@ export default function Regulations() {
                   >
                     {jurisdiction}
                     <span style={{ fontSize: "11px", color: inkSubtle, fontFamily: fontMono, fontWeight: 400 }}>
-                      {entries.length} · {bindingCount} binding
+                      {entries.length} · {bindingCount} binding{newCount ? ` · ${newCount} new` : ""}
                     </span>
                   </a>
                 );
@@ -229,7 +245,11 @@ export default function Regulations() {
                           Primary source ↗
                         </a>
                       ) : <span />}
-                      {fmtDate(r.verified_date) && <span style={{ fontSize: "11px", color: inkSubtle, fontFamily: fontMono }}>verified {fmtDate(r.verified_date)}</span>}
+                      {fmtDate(r.verified_date) ? (
+                        <span style={{ fontSize: "11px", color: inkSubtle, fontFamily: fontMono }}>verified {fmtDate(r.verified_date)}</span>
+                      ) : fmtDate(r.created_at) ? (
+                        <span style={{ fontSize: "11px", color: inkSubtle, fontFamily: fontMono }}>detected {fmtDate(r.created_at)}</span>
+                      ) : null}
                     </div>
                   </div>
                 ))}

@@ -442,7 +442,12 @@ function RegulationEditForm({ entry, secret, onDone }) {
     summary: entry.summary || "",
     source_url: entry.source_url || "",
     effective_date: entry.effective_date ? entry.effective_date.slice(0, 10) : "",
-    is_binding: entry.is_binding,
+    // entry.is_binding is null for auto-published 'new' rows (nobody has
+    // classified it yet) — coerce to a real boolean here so "Mark verified"
+    // always sends an explicit true/false and can never leave a "verified"
+    // entry stuck displaying as "not yet analyzed" because the checkbox
+    // was never touched.
+    is_binding: entry.is_binding === null || entry.is_binding === undefined ? false : entry.is_binding,
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -527,14 +532,15 @@ function RegulationTab({ secret }) {
 
   if (error) return <div style={{ color: red, fontSize: "13px", marginBottom: "1rem" }}>{error}</div>;
 
-  const detected = entries ? entries.filter((e) => e.status === "detected") : [];
+  const awaitingReview = entries ? entries.filter((e) => e.status !== "verified") : [];
   const verified = entries ? entries.filter((e) => e.status === "verified") : [];
+  const newCount = awaitingReview.filter((e) => e.status === "new").length;
 
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
         <span style={{ fontSize: "13px", color: inkMuted }}>
-          {entries ? `${verified.length} verified · ${detected.length} awaiting review` : "Loading…"}
+          {entries ? `${verified.length} verified · ${awaitingReview.length} awaiting review` : "Loading…"}
         </span>
         <button onClick={runCheck} disabled={checking} style={{ padding: "6px 12px", background: accentSoft, color: accentColor, border: "none", borderRadius: radius, fontFamily: fontSans, fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
           {checking ? "Checking…" : "Check regulator pages now"}
@@ -542,16 +548,26 @@ function RegulationTab({ secret }) {
       </div>
       {checkResult && <div style={{ fontSize: "12.5px", color: inkMuted, marginBottom: "1rem" }}>{checkResult}</div>}
 
-      {detected.length > 0 && (
+      {awaitingReview.length > 0 && (
         <div style={{ marginBottom: "1.5rem" }}>
           <div style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: red, fontFamily: fontMono, marginBottom: "8px" }}>
-            Awaiting review — a page changed, not yet confirmed against the source
+            Awaiting review{newCount ? ` — ${newCount} already public (unreviewed)` : ""}
           </div>
-          {detected.map((entry) => (
+          {awaitingReview.map((entry) => (
             <div key={entry.id} style={{ background: surface, border: `1px solid ${red}40`, borderRadius: radiusLg, padding: "1rem 1.1rem", marginBottom: "0.6rem", boxShadow: shadowXs }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
                 <div>
-                  <div style={{ fontSize: "14px", fontWeight: 600, color: ink }}>{entry.regulation_name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "14px", fontWeight: 600, color: ink }}>{entry.regulation_name}</span>
+                    <span style={{
+                      fontFamily: fontMono, fontSize: "10px", fontWeight: 500, letterSpacing: "0.06em",
+                      textTransform: "uppercase", padding: "1px 7px", borderRadius: 999,
+                      color: entry.status === "new" ? accentColor : inkSubtle,
+                      background: entry.status === "new" ? accentSoft : surfaceSunken,
+                    }}>
+                      {entry.status === "new" ? "Public · unreviewed" : "Not yet public"}
+                    </span>
+                  </div>
                   <div style={{ fontSize: "12.5px", color: inkMuted, marginTop: "2px" }}>{entry.jurisdiction}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>

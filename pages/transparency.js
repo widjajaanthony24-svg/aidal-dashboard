@@ -174,6 +174,7 @@ export default function Transparency() {
         </a>
         <div className="page-header-links" style={{ display: "flex", gap: "0.25rem", alignItems: "center" }}>
           <a href="/verify" className="nav-link" style={navLinkStyle}>Verify</a>
+          <a href="/regulations" className="nav-link" style={navLinkStyle}>Regulations</a>
           <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={navLinkStyle}>Dashboard</a>
           <a
             href="https://tryaidal.com/#get-key"

@@ -213,6 +213,7 @@ export default function PublicVerify() {
         </a>
         <div className="page-header-links" style={{ display: "flex", gap: "0.25rem", alignItems: "center" }}>
           <a href="/transparency" className="nav-link" style={navLinkStyle}>Transparency</a>
+          <a href="/regulations" className="nav-link" style={navLinkStyle}>Regulations</a>
           <a href="https://aidal-dashboard.vercel.app" className="nav-link" style={navLinkStyle}>Dashboard</a>
           <a
             href="https://tryaidal.com/#get-key"

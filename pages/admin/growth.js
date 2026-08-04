@@ -433,6 +433,169 @@ function ContentTab({ secret }) {
   );
 }
 
+// ── Regulation tab ─────────────────────────────────────────────────────────────
+function RegulationEditForm({ entry, secret, onDone }) {
+  const [form, setForm] = useState({
+    jurisdiction: entry.jurisdiction || "",
+    regulation_name: entry.regulation_name || "",
+    change_type: entry.change_type || "",
+    summary: entry.summary || "",
+    source_url: entry.source_url || "",
+    effective_date: entry.effective_date ? entry.effective_date.slice(0, 10) : "",
+    is_binding: entry.is_binding,
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const inputStyle = { width: "100%", padding: "7px 10px", fontFamily: fontSans, fontSize: "13px", border: `1px solid ${lineSolid}`, borderRadius: radius, outline: "none", boxSizing: "border-box" };
+
+  async function save(nextStatus) {
+    setSaving(true);
+    setError("");
+    try {
+      await apiFetch(`/admin/regulation-watch/${entry.id}`, secret, {
+        method: "PATCH",
+        body: JSON.stringify({ ...form, effective_date: form.effective_date || null, status: nextStatus }),
+      });
+      onDone();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginTop: "8px", borderTop: `1px solid ${line}`, paddingTop: "10px" }}>
+      <input style={inputStyle} placeholder="Jurisdiction (e.g. EU, ID — OJK)" value={form.jurisdiction} onChange={(e) => setForm({ ...form, jurisdiction: e.target.value })} />
+      <input style={inputStyle} placeholder="Regulation name" value={form.regulation_name} onChange={(e) => setForm({ ...form, regulation_name: e.target.value })} />
+      <input style={inputStyle} placeholder="Change type (e.g. guidance_update)" value={form.change_type} onChange={(e) => setForm({ ...form, change_type: e.target.value })} />
+      <input style={inputStyle} placeholder="Source URL" value={form.source_url} onChange={(e) => setForm({ ...form, source_url: e.target.value })} />
+      <input style={inputStyle} type="date" value={form.effective_date} onChange={(e) => setForm({ ...form, effective_date: e.target.value })} />
+      <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: inkMuted }}>
+        <input type="checkbox" checked={form.is_binding} onChange={(e) => setForm({ ...form, is_binding: e.target.checked })} style={{ accentColor }} />
+        Binding requirement
+      </label>
+      <textarea style={{ ...inputStyle, gridColumn: "1 / -1", minHeight: 70, fontFamily: fontSans }} placeholder="Summary — what actually changed, in plain language" value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
+      {error && <div style={{ gridColumn: "1 / -1", color: red, fontSize: "12px" }}>{error}</div>}
+      <div style={{ gridColumn: "1 / -1", display: "flex", gap: "0.5rem" }}>
+        <button onClick={() => save("verified")} disabled={saving} style={{ padding: "8px 12px", background: ink, color: surface, border: "none", borderRadius: radius, fontFamily: fontSans, fontSize: "12.5px", fontWeight: 600, cursor: "pointer" }}>
+          {saving ? "Saving…" : entry.status === "verified" ? "Save" : "Mark verified & publish"}
+        </button>
+        <button onClick={() => save(entry.status)} disabled={saving} style={{ padding: "8px 12px", background: "none", color: inkMuted, border: `1px solid ${lineSolid}`, borderRadius: radius, fontFamily: fontSans, fontSize: "12.5px", cursor: "pointer" }}>
+          Save without changing status
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RegulationTab({ secret }) {
+  const [entries, setEntries] = useState(null);
+  const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [checking, setChecking] = useState(false);
+  const [checkResult, setCheckResult] = useState(null);
+
+  const load = useCallback(() => {
+    apiFetch("/admin/regulation-watch", secret).then((d) => setEntries(d.regulations)).catch((e) => setError(e.message));
+  }, [secret]);
+  useEffect(load, [load]);
+
+  async function remove(entry) {
+    if (!confirm(`Remove "${entry.regulation_name}"?`)) return;
+    try {
+      await apiFetch(`/admin/regulation-watch/${entry.id}`, secret, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
+  async function runCheck() {
+    setChecking(true);
+    setCheckResult(null);
+    try {
+      const result = await apiFetch("/admin/regulatory-check", secret, { method: "POST" });
+      setCheckResult(result.note);
+      load();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  if (error) return <div style={{ color: red, fontSize: "13px", marginBottom: "1rem" }}>{error}</div>;
+
+  const detected = entries ? entries.filter((e) => e.status === "detected") : [];
+  const verified = entries ? entries.filter((e) => e.status === "verified") : [];
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <span style={{ fontSize: "13px", color: inkMuted }}>
+          {entries ? `${verified.length} verified · ${detected.length} awaiting review` : "Loading…"}
+        </span>
+        <button onClick={runCheck} disabled={checking} style={{ padding: "6px 12px", background: accentSoft, color: accentColor, border: "none", borderRadius: radius, fontFamily: fontSans, fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+          {checking ? "Checking…" : "Check regulator pages now"}
+        </button>
+      </div>
+      {checkResult && <div style={{ fontSize: "12.5px", color: inkMuted, marginBottom: "1rem" }}>{checkResult}</div>}
+
+      {detected.length > 0 && (
+        <div style={{ marginBottom: "1.5rem" }}>
+          <div style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: red, fontFamily: fontMono, marginBottom: "8px" }}>
+            Awaiting review — a page changed, not yet confirmed against the source
+          </div>
+          {detected.map((entry) => (
+            <div key={entry.id} style={{ background: surface, border: `1px solid ${red}40`, borderRadius: radiusLg, padding: "1rem 1.1rem", marginBottom: "0.6rem", boxShadow: shadowXs }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: ink }}>{entry.regulation_name}</div>
+                  <div style={{ fontSize: "12.5px", color: inkMuted, marginTop: "2px" }}>{entry.jurisdiction}</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <button onClick={() => setEditingId(editingId === entry.id ? null : entry.id)} style={{ padding: "5px 10px", background: editingId === entry.id ? surfaceSunken : ink, color: editingId === entry.id ? ink : surface, border: "none", borderRadius: radius, fontFamily: fontSans, fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
+                    {editingId === entry.id ? "Cancel" : "Review"}
+                  </button>
+                  <button onClick={() => remove(entry)} title="Dismiss" style={{ background: "none", border: "none", color: inkSubtle, cursor: "pointer", fontSize: "16px", padding: "0 4px" }}>×</button>
+                </div>
+              </div>
+              <div style={{ fontSize: "12.5px", color: inkMuted, marginTop: "8px", lineHeight: 1.6 }}>{entry.summary}</div>
+              {entry.source_url && <a href={entry.source_url} target="_blank" rel="noreferrer" style={{ fontSize: "12px", color: accentColor }}>{entry.source_url}</a>}
+              {editingId === entry.id && <RegulationEditForm entry={entry} secret={secret} onDone={() => { setEditingId(null); load(); }} />}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: inkSubtle, fontFamily: fontMono, marginBottom: "8px" }}>
+        Verified — visible on the public tracker
+      </div>
+      {verified.map((entry) => (
+        <div key={entry.id} style={{ background: surface, border: `1px solid ${line}`, borderRadius: radiusLg, padding: "1rem 1.1rem", marginBottom: "0.6rem", boxShadow: shadowXs }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: ink }}>{entry.regulation_name}</div>
+              <div style={{ fontSize: "12.5px", color: inkMuted, marginTop: "2px" }}>
+                {entry.jurisdiction}{entry.effective_date ? ` · effective ${entry.effective_date.slice(0, 10)}` : ""}{entry.is_binding ? "" : " · non-binding"}
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <button onClick={() => setEditingId(editingId === entry.id ? null : entry.id)} style={{ padding: "5px 10px", background: "none", color: inkMuted, border: `1px solid ${lineSolid}`, borderRadius: radius, fontFamily: fontSans, fontSize: "12px", cursor: "pointer" }}>
+                {editingId === entry.id ? "Cancel" : "Edit"}
+              </button>
+              <button onClick={() => remove(entry)} title="Remove" style={{ background: "none", border: "none", color: inkSubtle, cursor: "pointer", fontSize: "16px", padding: "0 4px" }}>×</button>
+            </div>
+          </div>
+          <div style={{ fontSize: "12.5px", color: inkMuted, marginTop: "8px", lineHeight: 1.6 }}>{entry.summary}</div>
+          {editingId === entry.id && <RegulationEditForm entry={entry} secret={secret} onDone={() => { setEditingId(null); load(); }} />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Page ────────────────────────────────────────────────────────────────────────
 export default function GrowthDashboard() {
   const [secret, setSecret] = useState(null);
@@ -500,11 +663,13 @@ export default function GrowthDashboard() {
           <TabButton active={tab === "goals"} onClick={() => setTab("goals")}>30-day plan</TabButton>
           <TabButton active={tab === "prospects"} onClick={() => setTab("prospects")}>Prospects</TabButton>
           <TabButton active={tab === "content"} onClick={() => setTab("content")}>Content</TabButton>
+          <TabButton active={tab === "regulation"} onClick={() => setTab("regulation")}>Regulation</TabButton>
         </div>
 
         {tab === "goals" && <GoalsTab secret={secret} />}
         {tab === "prospects" && <ProspectsTab secret={secret} />}
         {tab === "content" && <ContentTab secret={secret} />}
+        {tab === "regulation" && <RegulationTab secret={secret} />}
       </div>
     </div>
   );
